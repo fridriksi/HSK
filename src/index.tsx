@@ -20,7 +20,7 @@ app.use('*', async (c, next) => {
   if (c.res.status === 404 && c.req.method === 'GET') {
     const path = new URL(c.req.url).pathname.replace(/^\/+|\/+$/g, '');
     const hit = path ? await one<{ new_path: string }>(c.env.DB, 'SELECT new_path FROM redirects WHERE old_key = ?', 'path:' + path) : null;
-    if (hit) c.res = c.redirect(hit.new_path, 301);
+    if (hit) c.res = c.redirect(hit.new_path + new URL(c.req.url).search, 301);
   }
 });
 

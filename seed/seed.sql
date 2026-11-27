@@ -7,7 +7,7 @@ INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (5,4,'motaskra','mot/motaskra','Mótaskrá','','competitions',10,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (6,4,'urslit','mot/urslit','Úrslit','','results',20,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (7,4,'hsk-met','mot/hsk-met','HSK met','','records',30,1);
-INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (8,NULL,'vidburdir','vidburdir','Viðburðir','','events',30,1);
+INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (8,4,'vidburdir','mot/vidburdir','Viðburðir','','events',15,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (9,NULL,'adildarfelog','adildarfelog','Aðildarfélög','<p>Aðildarfélög HSK eru íþrótta- og ungmennafélög á sambandssvæðinu í Árnes- og Rangárvallasýslum.</p>','clubs',40,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (10,NULL,'um-hsk','um-hsk','Um HSK','<p>Héraðssambandið Skarphéðinn (HSK) var stofnað árið 1910 og er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi. Skrifstofa HSK er í Selinu, Engjavegi 48 á Selfossi.</p>','',50,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (11,10,'stjorn-nefndir-og-rad','um-hsk/stjorn-nefndir-og-rad','Stjórn, nefndir og ráð','','committees',10,1);
@@ -15,7 +15,7 @@ INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (13,10,'fundargerdir','um-hsk/fundargerdir','Fundargerðir og skjöl','','documents',30,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (14,10,'verkefnasjodur','um-hsk/verkefnasjodur','Verkefnasjóður','<p>Verkefnasjóður HSK styrkir verkefni aðildarfélaga.</p>','',40,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (15,10,'vidbragdsaaetlun','um-hsk/vidbragdsaaetlun','Viðbragðsáætlun','<p>Viðbragðsáætlun HSK vegna eineltis, ofbeldis og áreitni.</p>','',50,1);
-INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (16,NULL,'myndir','myndir','Myndir','','albums',60,1);
+INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (16,1,'myndir','frettir/myndir','Myndir','','albums',30,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (17,NULL,'styrktaradilar','styrktaradilar','Styrktaraðilar','<p>HSK þakkar styrktar- og samstarfsaðilum sínum fyrir stuðninginn.</p>','sponsors',70,0);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (18,NULL,'en','en','English','<h2>The Skarphéðinn District Sports Association</h2><p>Héraðssambandið Skarphéðinn (HSK) is the district sports and youth association for South Iceland, founded in 1910. It is an umbrella organisation for sports clubs and youth associations in Árnessýsla and Rangárvallasýsla, and a member of the National Olympic and Sports Association of Iceland (ÍSÍ) and the Icelandic Youth Association (UMFÍ).</p><h3>Contact</h3><p>Selið, Engjavegur 48, 800 Selfoss, Iceland<br>Phone: +354 482 1189<br>Email: hsk@hsk.is</p>','',80,0);
 INSERT INTO clubs (id,slug,name,sports,legacy_id) VALUES (1,'akstursithrottafelag-hreppakappa','Akstursíþróttafélag Hreppakappa','Motocross',124);

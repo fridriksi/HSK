@@ -101,7 +101,7 @@ app.get('/', async (c) => {
         <div>
           <h2 class="col-title">Viðburðir framundan</h2>
           {events.length ? <ul class="event-list">{events.map((e) => <EventItem e={e} />)}</ul> : <p class="muted">Engir viðburðir skráðir á næstunni.</p>}
-          <a class="more" href="/vidburdir">Viðburðadagatal<Icon name="chevronRight" /></a>
+          <a class="more" href="/mot/vidburdir">Viðburðadagatal<Icon name="chevronRight" /></a>
         </div>
         <div>
           <h2 class="col-title">Nýjustu úrslit</h2>
@@ -179,7 +179,7 @@ app.get('/forsida-ny', async (c) => {
       )}
 
       <section class="wrap h2-block">
-        <div class="h2-head"><h2>Framundan</h2><a href="/vidburdir">Viðburðadagatal</a></div>
+        <div class="h2-head"><h2>Framundan</h2><a href="/mot/vidburdir">Viðburðadagatal</a></div>
         {events.length ? (
           <ol class="h2-dates">
             {events.map((e) => (
@@ -227,7 +227,7 @@ app.get('/forsida-ny', async (c) => {
 
       {photos.length > 0 && (
         <section class="wrap h2-block">
-          <div class="h2-head"><h2>Myndir</h2><a href="/myndir">Öll myndasöfn</a></div>
+          <div class="h2-head"><h2>Myndir</h2><a href="/frettir/myndir">Öll myndasöfn</a></div>
           <div class="h2-photos">
             {photos.map((p) => <a href={'/album/' + p.slug} title={p.title}><img src={p.src} alt="" loading="lazy" /></a>)}
           </div>
@@ -308,7 +308,7 @@ app.get('/vidburdur/:id{[0-9]+}', async (c) => {
     : `${weekday(e.starts_at)} ${dateLong(e.starts_at)} ${timeOf(e.starts_at)}`;
   return render(c, e.title, (
     <article class="article">
-      <PageHead title={e.title} crumbs={[isMot ? { title: 'Mótaskrá', path: '/mot/motaskra' } : { title: 'Viðburðir', path: '/vidburdir' }]} />
+      <PageHead title={e.title} crumbs={[isMot ? { title: 'Mótaskrá', path: '/mot/motaskra' } : { title: 'Viðburðir', path: '/mot/vidburdir' }]} />
       <div class="wrap article-body">
         <dl class="facts-list">
           <div><dt>Hvenær</dt><dd>{when}</dd></div>
@@ -484,7 +484,7 @@ app.get('/album/:slug', async (c) => {
   const photos = await all<{ src: string; caption: string }>(c.env.DB, 'SELECT src, caption FROM photos WHERE album_id = ? ORDER BY sort, id', a.id);
   return render(c, a.title, (
     <>
-      <PageHead title={a.title} crumbs={[{ title: 'Myndir', path: '/myndir' }]} lead={a.date.slice(0, 4)} />
+      <PageHead title={a.title} crumbs={[{ title: 'Myndir', path: '/frettir/myndir' }]} lead={a.date.slice(0, 4)} />
       <div class="wrap block">
         {a.description && <Prose html={a.description} />}
         <div class="gallery" data-gallery>
@@ -589,8 +589,8 @@ app.get('/web/*', async (c) => {
   }
   const sections: Record<string, string> = {
     frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/adsendar-greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
-    log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/motaskra', vidburdir_l: '/vidburdir',
-    myndir: '/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk',
+    log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/motaskra', vidburdir_l: '/mot/vidburdir',
+    myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk',
   };
   return c.redirect(sections[page] ?? '/', 301);
 });
