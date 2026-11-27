@@ -51,7 +51,7 @@ def upload(key: str, path: str) -> bool:
     with open(path, 'rb') as f:
         data = f.read()
     req = urllib.request.Request(f'{TARGET}/stjorn/innflutningur/{urllib.parse.quote(key)}', data=data, method='PUT',
-                                 headers={'Authorization': f'Bearer {TOKEN}', 'Content-Type': ctype})
+                                 headers={'Authorization': f'Bearer {TOKEN}', 'Content-Type': ctype, 'User-Agent': UA})  # Cloudflare hafnar sjálfgefnum Python-UA
     for i in range(3):
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
@@ -66,7 +66,8 @@ def main():
         sys.exit('Vantar IMPORT_TOKEN')
     rows = [l.rstrip('\n').split('\t') for l in open('.migration/media.tsv', encoding='utf-8') if '\t' in l]
     done = set(open(DONE_LOG).read().split()) if os.path.exists(DONE_LOG) else set()
-    todo = [(u, k) for u, k in rows if k not in done]
+    # Nýjustu skrárnar (neðst í listanum) fyrst svo forsíðan fyllist strax
+    todo = [(u, k) for u, k in reversed(rows) if k not in done]
     print(f'{len(rows)} skrár, {len(todo)} eftir', flush=True)
     missing = []
     log = open(DONE_LOG, 'a')
