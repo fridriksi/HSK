@@ -147,10 +147,15 @@ export const NewsCard: FC<{ n: NewsRow; big?: boolean }> = ({ n, big }) => (
 
 export type EventRow = { id: number; kind: string; title: string; starts_at: string; ends_at: string | null; location: string; sport: string; image: string };
 
+/** Dagsetningarreitur: sama útlit fyrir mót, viðburði og úrslit alls staðar á vefnum */
+export const DateBox: FC<{ d: string }> = ({ d }) => (
+  <time class="datebox" datetime={d.slice(0, 10)}><b>{dayNum(d)}</b>{monthShort(d)}</time>
+);
+
 export const EventItem: FC<{ e: EventRow }> = ({ e }) => (
   <li class={'event-item' + (e.kind === 'mot' ? ' is-mot' : '')}>
     <a href={'/vidburdur/' + e.id}>
-      <span class="datebox"><b>{dayNum(e.starts_at)}</b>{monthShort(e.starts_at)}</span>
+      <DateBox d={e.starts_at} />
       <span class="ev-txt">
         <span class={'kind-tag' + (e.kind === 'mot' ? ' mot' : '')}>{e.kind === 'mot' ? 'Mót' : 'Viðburður'}</span>
         <strong>{e.title}</strong>
@@ -161,10 +166,13 @@ export const EventItem: FC<{ e: EventRow }> = ({ e }) => (
 );
 
 export const ResultItem: FC<{ r: { id: number; title: string; date: string; sport: string } }> = ({ r }) => (
-  <li class="result-item">
+  <li class="event-item">
     <a href={'/urslit/' + r.id}>
-      <time class="d" datetime={r.date}>{dateLong(r.date)}</time>
-      <span>{r.title}</span>
+      <DateBox d={r.date} />
+      <span class="ev-txt">
+        {r.sport && <span class="kind-tag">{r.sport}</span>}
+        <strong>{r.title}</strong>
+      </span>
     </a>
   </li>
 );

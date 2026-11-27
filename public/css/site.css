@@ -290,8 +290,6 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .h2-dates a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 14px 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
 .h2-dates a:hover { border-color: var(--blue); }
 .h2-dates a:hover strong { color: var(--blue); }
-.h2-dates .d { color: var(--blue); font-weight: 600; font-size: .95rem; line-height: 1.1; }
-.h2-dates .d b { display: block; font: 800 2rem/1 var(--display); }
 .h2-dates strong { font: 700 1rem/1.3 var(--display); }
 .h2-dates small { color: var(--muted); font-size: .88rem; margin-top: auto; }
 .h2-news { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
@@ -418,3 +416,4 @@ details.record[open] { padding-bottom: 12px; }
 .form-error { background: #fdecec; color: #8a1c1c; padding: 12px 14px; border-radius: var(--radius); }
 .form-ok { background: #e6f5ec; color: #1f5f3b; padding: 14px 16px; border-radius: var(--radius); font-weight: 600; }
 @media (max-width: 720px) { .grant-form { grid-template-columns: 1fr; } .gf.half { grid-column: 1 / -1; } }
+.h2-band .datebox, .h2-band .kind-tag { background: var(--white); }

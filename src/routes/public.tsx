@@ -1,10 +1,10 @@
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import {
-  type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
+  type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
-  Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
+  Layout, PageHead, NewsCard, EventItem, ResultItem, DateBox, Pager, Prose,
   type MenuItem, type SiteChrome, type NewsRow, type EventRow,
 } from '../views/site';
 import { Icon } from '../views/icons';
@@ -114,7 +114,7 @@ app.get('/', async (c) => {
           <ol class="h2-dates">
             {events.map((e) => (
               <li><a href={'/vidburdur/' + e.id} class={e.kind === 'mot' ? 'is-mot' : ''}>
-                <span class="d"><b>{dayNum(e.starts_at)}</b>{monthShort(e.starts_at)}</span>
+                <DateBox d={e.starts_at} />
                 <span class={'kind-tag' + (e.kind === 'mot' ? ' mot' : '')}>{e.kind === 'mot' ? 'Mót' : 'Viðburður'}</span>
                 <strong>{e.title}</strong>
                 <small>{[e.sport, e.location].filter(Boolean).join(' · ') || weekday(e.starts_at)}</small>
@@ -128,7 +128,7 @@ app.get('/', async (c) => {
         <div class="wrap h2-two">
           <div>
             <div class="h2-head"><h2>Nýjustu úrslit</h2><a href="/mot/urslit">Öll úrslit</a></div>
-            <ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul>
+            <ul class="event-list">{results.map((r) => <ResultItem r={r} />)}</ul>
           </div>
           <div>
             <div class="h2-head"><h2>HSK met</h2><a href="/mot/hsk-met">Allar metaskrár</a></div>
@@ -257,7 +257,7 @@ app.get('/vidburdur/:id{[0-9]+}', async (c) => {
           {e.attachment && <a class="btn ghost" href={e.attachment}><Icon name="file" />{isMot ? 'Boðsbréf og reglugerð' : 'Fylgiskjal'}</a>}
           <a class="btn ghost" href={`/vidburdur/${e.id}.ics`}><Icon name="calendar" />Bæta í dagatal</a>
         </p>
-        {results.length > 0 && <><h2>Úrslit</h2><ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul></>}
+        {results.length > 0 && <><h2>Úrslit</h2><ul class="event-list">{results.map((r) => <ResultItem r={r} />)}</ul></>}
         {albums.length > 0 && <><h2>Myndir</h2><ul>{albums.map((a) => <li><a href={'/album/' + a.slug}>{a.title}</a></li>)}</ul></>}
       </div>
     </article>
@@ -640,17 +640,7 @@ app.get('/*', async (c) => {
           {[...groups].map(([month, list]) => (
             <section class="month-group">
               <h2>{month}</h2>
-              <ul class="event-list wide">{list.map((r) => (
-                <li class="event-item">
-                  <a href={'/urslit/' + r.id}>
-                    <span class="datebox"><b>{dayNum(r.date)}</b>{monthShort(r.date)}</span>
-                    <span class="ev-txt">
-                      {r.sport && <span class="kind-tag">{r.sport}</span>}
-                      <strong>{r.title}</strong>
-                    </span>
-                  </a>
-                </li>
-              ))}</ul>
+              <ul class="event-list wide">{list.map((r) => <ResultItem r={r} />)}</ul>
             </section>
           ))}
         </>
