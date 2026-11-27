@@ -3,3 +3,4 @@ node_modules/
 public/vendor/
 .dev.vars
 *.log
+.migration/

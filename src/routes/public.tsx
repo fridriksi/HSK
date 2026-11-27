@@ -7,6 +7,7 @@ import {
   Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
   type MenuItem, type SiteChrome, type NewsRow, type EventRow,
 } from '../views/site';
+import { Icon } from '../views/icons';
 
 const app = new Hono<AppEnv>();
 const PER_PAGE = 12;
@@ -77,7 +78,6 @@ app.get('/', async (c) => {
               <a href={'/frett/' + featured.slug}>
                 {featured.image && <img src={featured.image} alt="" />}
                 <div class="hero-txt">
-                  <span class="tag">{featured.kind === 'frett' ? 'Frétt' : 'Grein'}</span>
                   <time>{dateLong(featured.published_at)}</time>
                   <h2>{featured.title}</h2>
                   <p>{featured.excerpt || plainText(featured.body, 160)}</p>
@@ -92,7 +92,7 @@ app.get('/', async (c) => {
                 <strong>{n.title}</strong>
               </a>
             ))}
-            <a class="more" href="/frettir">Allar fréttir →</a>
+            <a class="more" href="/frettir">Allar fréttir<Icon name="chevronRight" /></a>
           </div>
         </div>
       </section>
@@ -107,17 +107,17 @@ app.get('/', async (c) => {
         <div>
           <h2 class="col-title">Viðburðir framundan</h2>
           {events.length ? <ul class="event-list">{events.map((e) => <EventItem e={e} />)}</ul> : <p class="muted">Engir viðburðir skráðir á næstunni.</p>}
-          <a class="more" href="/vidburdir">Viðburðadagatal →</a>
+          <a class="more" href="/vidburdir">Viðburðadagatal<Icon name="chevronRight" /></a>
         </div>
         <div>
           <h2 class="col-title">Nýjustu úrslit</h2>
           {results.length ? <ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul> : <p class="muted">Engin úrslit skráð.</p>}
-          <a class="more" href="/mot/urslit">Öll úrslit →</a>
+          <a class="more" href="/mot/urslit">Öll úrslit<Icon name="chevronRight" /></a>
         </div>
         <div>
           <h2 class="col-title">Flýtileiðir</h2>
           <ul class="quick-list">
-            {quick.map(([label, url]) => <li><a href={url}>{label}</a></li>)}
+            {quick.map(([label, url]) => <li><a href={url}><Icon name="chevronRight" />{label}</a></li>)}
           </ul>
         </div>
       </section>
@@ -159,8 +159,8 @@ app.get('/frett/:slug', async (c) => {
         </p>
         {n.image && <figure class="lead-img"><img src={n.image} alt="" /></figure>}
         <Prose html={n.body} />
-        {n.album_slug && <p><a class="btn" href={'/album/' + n.album_slug}>Skoða myndir →</a></p>}
-        <p><a href="/frettir">← Allar fréttir</a></p>
+        {n.album_slug && <p><a class="btn" href={'/album/' + n.album_slug}>Skoða myndir<Icon name="chevronRight" /></a></p>}
+        <p><a href="/frettir"><Icon name="chevronLeft" />Allar fréttir</a></p>
       </div>
     </article>
   ), { description: n.excerpt || plainText(n.body, 160), image: n.image || undefined });
@@ -219,8 +219,8 @@ app.get('/vidburdur/:id{[0-9]+}', async (c) => {
         <Prose html={e.description} />
         <p class="btn-row">
           {e.url && <a class="btn" href={e.url} rel="noopener">Skráning og nánari upplýsingar</a>}
-          {e.attachment && <a class="btn ghost" href={e.attachment}>{isMot ? 'Boðsbréf / reglugerð (PDF)' : 'Fylgiskjal'}</a>}
-          <a class="btn ghost" href={`/vidburdur/${e.id}.ics`}>Bæta í dagatal</a>
+          {e.attachment && <a class="btn ghost" href={e.attachment}><Icon name="file" />{isMot ? 'Boðsbréf og reglugerð' : 'Fylgiskjal'}</a>}
+          <a class="btn ghost" href={`/vidburdur/${e.id}.ics`}><Icon name="calendar" />Bæta í dagatal</a>
         </p>
         {results.length > 0 && <><h2>Úrslit</h2><ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul></>}
         {albums.length > 0 && <><h2>Myndir</h2><ul>{albums.map((a) => <li><a href={'/album/' + a.slug}>{a.title}</a></li>)}</ul></>}
@@ -299,7 +299,7 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
             <noscript><button>Sía</button></noscript>
           </form>
         )}
-        <a class="ics-link" href="/dagatal.ics">Gerast áskrifandi að dagatali (iCal)</a>
+        <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
       </div>
       {data.rows.length === 0 && <p class="muted">Ekkert skráð.</p>}
       {[...groups].map(([month, list]) => (
@@ -322,7 +322,7 @@ app.get('/urslit/:id{[0-9]+}', async (c) => {
       <div class="wrap article-body wide">
         <p class="meta">{dateLong(r.date)}{r.sport && <> · {r.sport}</>}{r.event_id && <> · <a href={'/vidburdur/' + r.event_id}>Um mótið</a></>}</p>
         <div class="table-wrap"><Prose html={r.body} /></div>
-        {r.attachment && <p><a class="btn" href={r.attachment}>Úrslit (PDF)</a></p>}
+        {r.attachment && <p><a class="btn ghost" href={r.attachment}><Icon name="file" />Úrslit í skjali</a></p>}
       </div>
     </article>
   ));
@@ -436,7 +436,7 @@ app.get('/leit', async (c) => {
         <ol class="search-hits">
           {hits.map((h) => (
             <li>
-              <span class="tag small">{h.type}</span>
+              <span class="hit-type">{h.type}</span>
               <a href={h.url}><strong>{h.title}</strong></a>
               {h.date && <time> · {dateLong(h.date)}</time>}
               {h.snippet && <p>{h.snippet}</p>}
@@ -583,8 +583,8 @@ app.get('/*', async (c) => {
             {rows.map((d) => (
               <li>
                 <time>{dateShort(d.date)}</time>
-                {d.file ? <a href={d.file}>{d.title}</a> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
-                <span class="tag small">{cats[d.category] ?? d.category}</span>
+                {d.file ? <a href={d.file}><Icon name="file" />{d.title}</a> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
+                <span class="muted small">{cats[d.category] ?? d.category}</span>
               </li>
             ))}
           </ul>
@@ -651,7 +651,7 @@ export async function notFound(c: Context<AppEnv>) {
       <div class="wrap block narrow">
         <p>Síðan sem þú leitaðir að er ekki til eða hefur verið færð.</p>
         <form action="/leit" method="get" class="search-big"><label class="sr" for="q404">Leita</label><input id="q404" name="q" type="search" placeholder="Leita á vefnum…" /><button class="btn">Leita</button></form>
-        <p><a href="/">← Forsíða</a></p>
+        <p><a href="/"><Icon name="chevronLeft" />Forsíða</a></p>
       </div>
     </>
   ), { status: 404 });

@@ -1,5 +1,6 @@
 import type { Child, FC } from 'hono/jsx';
 import { raw } from 'hono/html';
+import { Icon } from './icons';
 import { dateLong, dayMonth, dayNum, monthShort, timeOf, plainText } from '../lib';
 
 export type MenuItem = { id: number; title: string; path: string; children: MenuItem[] };
@@ -40,7 +41,6 @@ export const Layout: FC<{
       </head>
       <body>
         <a class="skip" href="#efni">Fara í efni</a>
-        <div class="topstripe" aria-hidden="true"></div>
         <header class="site-header">
           <div class="wrap header-inner">
             <a class="brand" href="/">
@@ -48,7 +48,7 @@ export const Layout: FC<{
               <span>Héraðssambandið<br />Skarphéðinn<small>Stofnað 1910</small></span>
             </a>
             <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="valmynd">
-              <span></span><span></span><span></span><b>Valmynd</b>
+              <Icon name="menu" /><span>Valmynd</span>
             </button>
             <nav id="valmynd" class="main-nav" aria-label="Aðalvalmynd">
               <ul>
@@ -65,7 +65,8 @@ export const Layout: FC<{
                 <li class="search-li">
                   <form action="/leit" method="get" class="nav-search" role="search">
                     <label class="sr" for="leit-q">Leita</label>
-                    <input id="leit-q" name="q" type="search" placeholder="Leita…" />
+                    <Icon name="search" />
+                    <input id="leit-q" name="q" type="search" placeholder="Leita" />
                   </form>
                 </li>
               </ul>
@@ -173,9 +174,9 @@ export const Pager: FC<{ page: number; hasNext: boolean; base: string }> = ({ pa
   const sep = base.includes('?') ? '&' : '?';
   return (
     <nav class="pager" aria-label="Síður">
-      {page > 1 ? <a href={`${base}${sep}s=${page - 1}`}>← Nýrra</a> : <span></span>}
+      {page > 1 ? <a href={`${base}${sep}s=${page - 1}`}><Icon name="chevronLeft" />Nýrra</a> : <span></span>}
       <span>Síða {page}</span>
-      {hasNext ? <a href={`${base}${sep}s=${page + 1}`}>Eldra →</a> : <span></span>}
+      {hasNext ? <a href={`${base}${sep}s=${page + 1}`}>Eldra<Icon name="chevronRight" /></a> : <span></span>}
     </nav>
   );
 };

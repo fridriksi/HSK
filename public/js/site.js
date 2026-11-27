@@ -37,7 +37,8 @@
       box.className = 'lightbox';
       box.setAttribute('role', 'dialog');
       box.setAttribute('aria-label', 'Myndaskoðari');
-      box.innerHTML = '<img alt=""><p></p><button class="lb-close" aria-label="Loka">×</button><button class="lb-prev" aria-label="Fyrri mynd">‹</button><button class="lb-next" aria-label="Næsta mynd">›</button>';
+      const svg = (d) => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+      box.innerHTML = `<img alt=""><p></p><button class="lb-close" aria-label="Loka">${svg('M6 6l12 12M18 6L6 18')}</button><button class="lb-prev" aria-label="Fyrri mynd">${svg('M15 6l-6 6 6 6')}</button><button class="lb-next" aria-label="Næsta mynd">${svg('M9 6l6 6-6 6')}</button>`;
       box.querySelector('.lb-close').onclick = close;
       box.querySelector('.lb-prev').onclick = () => show(idx - 1);
       box.querySelector('.lb-next').onclick = () => show(idx + 1);

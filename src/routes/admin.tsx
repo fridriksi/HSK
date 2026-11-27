@@ -12,6 +12,7 @@ import {
 import { sendMail, notifyAdmins } from '../mail';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
+import { Icon } from '../views/icons';
 
 const app = new Hono<AppEnv>();
 type Row = Record<string, unknown> & { id: number };
@@ -89,7 +90,7 @@ app.post('/innskraning', async (c) => {
           <a href={devLink}>Skrá inn</a>
         </div>
       )}
-      <p><a href="/stjorn/innskraning">← Til baka</a></p>
+      <p><a class="back" href="/stjorn/innskraning"><Icon name="chevronLeft" />Til baka</a></p>
     </div>
   ));
 });
@@ -284,18 +285,18 @@ app.get('/sidur', async (c) => {
   const pages = await all<PageRow>(c.env.DB, 'SELECT id, parent_id, title, path, module, sort, in_menu, status FROM pages ORDER BY sort, title');
   const tree = (parent: number | null, depth: number): Child[] => pages.filter((p) => p.parent_id === parent).flatMap((p, i, arr) => [
     <tr>
-      <td style={`padding-left:${0.75 + depth * 1.5}rem`}>
-        {depth > 0 && <span class="tree-mark">└ </span>}<a href={`/stjorn/sidur/${p.id}`}><strong>{p.title}</strong></a>
+      <td style={`padding-left:${0.75 + depth * 1.75}rem`} class={depth ? 'child' : ''}>
+        <a href={`/stjorn/sidur/${p.id}`}><strong>{p.title}</strong></a>
         <div class="muted small">/{p.path}{p.module && ` · ${MODULES[p.module]}`}</div>
       </td>
       <td>{p.in_menu ? 'Í valmynd' : <span class="muted">Falin</span>}</td>
       <td><StatusPill status={p.status} /></td>
       <td class="row-actions">
         <form method="post" action={`/stjorn/sidur/${p.id}/faera`} class="inline">
-          <button name="att" value="upp" class="icon-btn" title="Færa upp" disabled={i === 0}>↑</button>
-          <button name="att" value="nidur" class="icon-btn" title="Færa niður" disabled={i === arr.length - 1}>↓</button>
+          <button name="att" value="upp" class="icon-btn" title="Færa upp" aria-label="Færa upp" disabled={i === 0}><Icon name="chevronUp" /></button>
+          <button name="att" value="nidur" class="icon-btn" title="Færa niður" aria-label="Færa niður" disabled={i === arr.length - 1}><Icon name="chevronDown" /></button>
         </form>
-        <a class="btn small ghost" href={`/stjorn/sidur/nytt?foreldri=${p.id}`}>+ Undirsíða</a>
+        <a class="btn small ghost" href={`/stjorn/sidur/nytt?foreldri=${p.id}`}>Bæta við undirsíðu</a>
         <a class="btn small ghost" href={'/' + p.path} target="_blank">Skoða</a>
       </td>
     </tr>,
@@ -567,7 +568,7 @@ app.get('/saga/:table/:id{[0-9]+}', async (c) => {
   return page(c, 'Breytingasaga', t?.key ?? 'sidur', (
     <>
       <h1>Breytingasaga</h1>
-      <p><a href={back}>← Til baka</a></p>
+      <p><a class="back" href={back}><Icon name="chevronLeft" />Til baka</a></p>
       <table class="tbl">
         <thead><tr><th>Hvenær</th><th>Hver</th><th>Aðgerð</th><th>Útgáfa</th><th></th></tr></thead>
         <tbody>{revs.map((r, i) => {
@@ -685,9 +686,9 @@ app.get('/:type', async (c) => {
       </table>
       {rows.length === 0 && <p class="muted">Ekkert fannst.</p>}
       <nav class="pager">
-        {pageNo > 1 ? <a href={qs({ s: String(pageNo - 1) })}>← Fyrri</a> : <span></span>}
+        {pageNo > 1 ? <a href={qs({ s: String(pageNo - 1) })}><Icon name="chevronLeft" />Fyrri</a> : <span></span>}
         <span>Síða {pageNo}</span>
-        {rows.length > per ? <a href={qs({ s: String(pageNo + 1) })}>Næsta →</a> : <span></span>}
+        {rows.length > per ? <a href={qs({ s: String(pageNo + 1) })}>Næsta<Icon name="chevronRight" /></a> : <span></span>}
       </nav>
     </>
   ));
