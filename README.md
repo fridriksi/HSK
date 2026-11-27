@@ -49,11 +49,13 @@ seed/                   Upphafsgögn til prófunar
 
 ## Uppfæra metaskrár
 
-Bættu eða uppfærðu færslu í `scripts/record-book-sources.json` og tengdu sömu
-Excel-skrá við metaskrána í vefumsjón. `file` er slóðin úr vefumsjón og `source`
-er opinber slóð á frumskrána. Vefurinn opnar tengilinn sem töflu þegar skráin er
-í innfluttu gögnunum. Keyrðu svo úr rót verkefnisins og vistaðu breytta gagnaskrá
-með kóðanum.
+Í vefumsjón undir **HSK met** er hægt að hlaða upp `.xlsx`-skrá (allt að 5 MB)
+og vista hana. Vefumsjónin býr til vef­töflu við vistun. Slóð á frumskrána
+fylgir töflunni.
+
+Forsmíðaða safnið með eldri skrám er skráð í `scripts/record-book-sources.json`.
+Ef þarf að endurbyggja það er `file` slóðin úr vefumsjón og `source` opinber slóð
+á frumskrána. Keyrðu eftirfarandi úr rót verkefnisins.
 
 ```bash
 python -m pip install xlrd==2.0.2 openpyxl==3.1.5

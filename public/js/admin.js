@@ -95,6 +95,51 @@
     });
   });
 
+  const recordForm = document.querySelector('form[data-record-import]');
+  if (recordForm) {
+    const attachment = recordForm.elements.namedItem('file');
+    const sheets = recordForm.elements.namedItem('record_sheets');
+    const status = recordForm.querySelector('[data-record-status]');
+    let preparedFor = '';
+    let working = false;
+    const message = (text, error = false) => {
+      status.hidden = !text;
+      status.textContent = text;
+      status.className = error ? 'flash err' : 'muted';
+    };
+    recordForm.addEventListener('submit', async (event) => {
+      if (working || recordForm.querySelector('.upload-field.busy')) {
+        event.preventDefault();
+        message(working ? 'Útbý vef­töflu…' : 'Bíddu þar til upphleðslan klárast.');
+        return;
+      }
+      const source = attachment.value.trim();
+      if (source !== preparedFor) sheets.value = '';
+      if (!/^\/media\/uploads\/\d{4}\/\d{2}\/[\w-]+\.xlsx$/i.test(source) || source === recordForm.dataset.recordReady || source === preparedFor) return;
+      event.preventDefault();
+      working = true;
+      message('Útbý vef­töflu…');
+      try {
+        const { importRecordBook } = await import(recordForm.dataset.recordImport);
+        const file = await fetch(source);
+        if (!file.ok) throw new Error('Excel-skráin fannst ekki. Hladdu henni upp aftur.');
+        const data = await importRecordBook(await file.blob());
+        if (attachment.value.trim() !== source) {
+          message('Metaskránni var breytt. Vistaðu aftur til að lesa nýju skrána.');
+          return;
+        }
+        sheets.value = data;
+        preparedFor = source;
+        working = false;
+        recordForm.requestSubmit(event.submitter || undefined);
+      } catch (error) {
+        message(error instanceof Error ? error.message : 'Ekki tókst að útbúa vef­töflu.', true);
+      } finally {
+        working = false;
+      }
+    });
+  }
+
   // Fjölupphleðsla: myndasafn og albúm
   document.querySelectorAll('.upload-drop').forEach((drop) => {
     const input = drop.querySelector('input[type=file]');

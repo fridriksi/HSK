@@ -114,7 +114,7 @@ export const contentTypes: ContentType[] = [
       { name: 'title', label: 'Heiti', type: 'text', required: true, help: 'T.d. HSK metaskrá öldunga í frjálsum innanhúss 2027', wide: true },
       { name: 'category', label: 'Flokkur', type: 'select', required: true, options: RECORD_CATEGORIES, help: 'Ræður á hvaða spjaldi skráin birtist á síðunni HSK met.' },
       { name: 'year', label: 'Ár', type: 'number', help: 'Nýjasta árið birtist efst á spjaldinu.' },
-      { name: 'file', label: 'Metaskrá (skjal)', type: 'file', help: 'Excel- eða PDF-skjal með metunum.' },
+      { name: 'file', label: 'Metaskrá (skjal)', type: 'file', help: 'Hladdu upp .xlsx-skrá og vistaðu til að birta metin sem töflu á vefnum.' },
       { name: 'sport', label: 'Íþróttagrein', type: 'select', options: { '': '—', ...sportOptions } },
       { name: 'body', label: 'Texti', type: 'richtext', help: 'Aðeins fyrir flokkinn „Reglur og skýringar“, eða ef metin eru sett inn sem tafla í stað skjals.', wide: true },
     ],

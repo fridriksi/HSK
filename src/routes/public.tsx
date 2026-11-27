@@ -4,11 +4,12 @@ import {
   type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
-  Layout, PageHead, NewsCard, EventItem, ResultItem, DateBox, Pager, Prose,
+  Layout, PageHead, SectionTabs, NewsCard, EventItem, ResultItem, DateBox, Pager, Prose,
   type MenuItem, type SiteChrome, type NewsRow, type EventRow,
 } from '../views/site';
 import { Icon } from '../views/icons';
-import { RECORDS_PATH, RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
+import { RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
+import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 import { RECORD_CATEGORIES } from '../content-types';
 
@@ -43,14 +44,14 @@ async function chrome(c: Context<AppEnv>): Promise<SiteChrome> {
   };
 }
 
-async function render(c: Context<AppEnv>, title: string, body: Child, opts: { description?: string; image?: string; status?: number; lang?: string } = {}) {
+async function render(c: Context<AppEnv>, title: string, body: Child, opts: { description?: string; image?: string; status?: number; lang?: string; fresh?: boolean } = {}) {
   const ch = await chrome(c);
   const html = (
     <Layout title={title} chrome={ch} path={new URL(c.req.url).pathname} description={opts.description} image={opts.image} lang={opts.lang}>
       {body}
     </Layout>
   );
-  c.header('Cache-Control', 'public, max-age=60');
+  c.header('Cache-Control', opts.fresh ? 'public, max-age=0, must-revalidate' : 'public, max-age=60');
   return c.html('<!doctype html>' + html.toString(), (opts.status ?? 200) as 200);
 }
 
@@ -76,11 +77,11 @@ app.get('/', async (c) => {
   const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
   const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 5");
   // Nýjasta metaskrá í hverjum flokki, t.d. „Utanhúss 2026“
-  const recRows = await all<{ category: string; year: number | null; file: string }>(db, "SELECT category, year, file FROM records WHERE file <> '' AND category NOT IN ('annad', 'reglur') ORDER BY year DESC");
+  const recRows = await all<{ id: number; category: string; year: number | null; file: string }>(db, "SELECT id, category, year, file FROM records WHERE file <> '' AND category NOT IN ('annad', 'reglur') ORDER BY year DESC");
   const records = Object.entries(RECORD_CATEGORIES).map(([k, label]) => {
     const r = recRows.find((x) => x.category === k);
-    return r ? { title: `${label}${r.year ? ' ' + r.year : ''}`, file: r.file } : null;
-  }).filter((x): x is { title: string; file: string } => !!x);
+    return r ? { title: `${label}${r.year ? ' ' + r.year : ''}`, href: recordLink(r.file, r.id) } : null;
+  }).filter((x) => x !== null);
   const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
   const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
   // Ein mynd úr hverju af nýjustu myndasöfnunum
@@ -134,7 +135,7 @@ app.get('/', async (c) => {
           <div>
             <div class="h2-head"><h2>HSK met</h2><a href="/mot/hsk-met">Allar metaskrár</a></div>
             <ul class="h2-links">
-              {records.map((r) => <li><a href={recordLink(r.file)}>{r.title}</a></li>)}
+              {records.map((r) => <li><a href={r.href}>{r.title}</a></li>)}
             </ul>
           </div>
         </div>
@@ -588,15 +589,35 @@ app.get('/web/*', async (c) => {
 
 // ---------- Síður úr veftré (allar aðrar slóðir) ----------
 
+async function sectionPages(db: D1Database, path: string) {
+  return all<{ title: string; path: string }>(db,
+    "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", path);
+}
+
 app.get(`${RECORDS_PATH}/skra/:id`, async (c) => {
-  const book = recordBook(c.req.param('id'));
+  const id = c.req.param('id');
+  const db = c.env.DB;
+  let book: RecordBook | undefined = recordBook(id);
+  const uploaded = /^innflutt-(\d+)$/.exec(id);
+  if (uploaded) {
+    const row = await one<{ file: string; title: string; updated_at: string }>(db,
+      "SELECT file, title, updated_at FROM records WHERE id = ? AND category <> 'reglur'", Number(uploaded[1]));
+    const key = row && uploadedRecordKey(row.file);
+    if (!row || !key) return notFound(c);
+    const data = await c.env.MEDIA.get(key);
+    if (!data) return c.redirect(row.file);
+    book = { id, title: row.title, source: row.file, updatedAt: row.updated_at, sheets: await data.json<RecordSheet[]>() };
+  }
   if (!book) return notFound(c);
+  const [parent, tabs] = await Promise.all([one<{ title: string; module: string }>(db, "SELECT title, module FROM pages WHERE path = 'mot' AND status = 'published'"), sectionPages(db, 'mot')]);
   return render(c, book.title, (
     <>
-      <PageHead title={book.title} crumbs={[{ title: 'Mót og úrslit', path: '/mot' }, { title: 'HSK met', path: RECORDS_PATH }]} />
+      <PageHead title={book.title} />
+      {parent && <SectionTabs title={parent.title} path={`${RECORDS_PATH}/skra/${id}`} tabs={tabs.map((tab) => ({ ...tab, path: '/' + tab.path }))}
+        overview={parent.module !== 'first' ? '/mot' : undefined} />}
       <RecordBookView book={book} sheetParam={c.req.query('blad')} query={c.req.query('q')} />
     </>
-  ));
+  ), { fresh: !!uploaded });
 });
 
 app.get('/*', async (c) => {
@@ -661,12 +682,15 @@ app.get('/*', async (c) => {
     }
     case 'records': {
       // Metaskrár á spjöldum eftir flokki; nýjasta árið efst og eldri ár sem tenglar
-      const rows = await all<{ title: string; category: string; year: number | null; file: string; body: string }>(c.env.DB, 'SELECT title, category, year, file, body FROM records ORDER BY year DESC, title');
-      const hasPublishedBooks = rows.some((r) => r.file);
+      const rows = await all<{ id: number; title: string; category: string; year: number | null; file: string; body: string }>(c.env.DB, 'SELECT id, title, category, year, file, body FROM records ORDER BY year DESC, title');
+      const archiveFiles = new Set(recordEditions.map((edition) => edition.file));
+      const hasPublishedArchive = rows.some((r) => archiveFiles.has(r.file));
       const groups = Object.entries(RECORD_CATEGORIES).filter(([k]) => k !== 'reglur')
-        .map(([k, label]) => [label, hasPublishedBooks
-          ? rows.filter((r) => r.category === k && r.file)
-          : recordEditions.filter((r) => r.category === label)] as const).filter(([, l]) => l.length);
+        .map(([k, label]) => {
+          const fromDb = rows.filter((r) => r.category === k && r.file);
+          const archive = hasPublishedArchive ? [] : recordEditions.filter((r) => r.category === label).map((r) => ({ ...r, id: null }));
+          return [label, [...fromDb, ...archive].sort((a, b) => (b.year ?? 0) - (a.year ?? 0))] as const;
+        }).filter(([, l]) => l.length);
       const rules = rows.filter((r) => r.category === 'reglur' || (!r.file && r.body));
       moduleView = (
         <>
@@ -674,14 +698,14 @@ app.get('/*', async (c) => {
           <div class="record-grid">
             {groups.map(([label, list]) => {
               if (label === 'Önnur met') {
-                return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={recordLink(d.file)}>{d.title}</a></li>)}</ul></div></section>;
+                return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={recordLink(d.file, d.id)}>{d.title}</a></li>)}</ul></div></section>;
               }
               const [latest, ...older] = list;
               return (
                 <section class="record-card">
                   <h2>{label}</h2>
-                  <a class="record-latest" href={recordLink(latest.file)}><Icon name="chevronRight" />Metaskrá {latest.year ?? ''}</a>
-                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={recordLink(d.file)}>{d.year ?? d.title}</a></>)}</p>}
+                  <a class="record-latest" href={recordLink(latest.file, latest.id)}><Icon name="chevronRight" />Metaskrá {latest.year ?? ''}</a>
+                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={recordLink(d.file, d.id)}>{d.year ?? d.title}</a></>)}</p>}
                 </section>
               );
             })}
@@ -839,11 +863,8 @@ app.get('/*', async (c) => {
   // Hliðarvalmynd hlutans (t.d. allt undir „Um HSK“): síður sem eru í valmynd, núverandi síða merkt
   const top = p.parent_id ? crumbs[0] : { title: p.title, path: '/' + p.path };
   const sectionPath = top.path.slice(1);
-  const section = await all<{ title: string; path: string }>(c.env.DB,
-    "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", sectionPath);
+  const section = await sectionPages(c.env.DB, sectionPath);
   const topModule = p.parent_id ? (await one<{ module: string }>(c.env.DB, 'SELECT module FROM pages WHERE path = ?', sectionPath))?.module : p.module;
-  const showNav = section.length > 0;
-  const isOn = (sp: string) => p.path === sp || p.path.startsWith(sp + '/');
   // Undirsíður sem eru hvorki í valmynd né tengdar í textanum birtast sem listi neðst
   const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
   const inNav = new Set(section.map((x) => x.path));
@@ -851,16 +872,8 @@ app.get('/*', async (c) => {
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />
-      {showNav && (
-        <nav class="section-tabs" aria-label={top.title}>
-          <div class="wrap">
-            <ul>
-              {topModule !== 'first' && <li><a href={top.path} class={p.path === sectionPath ? 'on' : ''} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a></li>}
-              {section.map((x) => <li><a href={'/' + x.path} class={isOn(x.path) ? 'on' : ''} aria-current={p.path === x.path ? 'page' : undefined}>{x.title}</a></li>)}
-            </ul>
-          </div>
-        </nav>
-      )}
+      <SectionTabs title={top.title} path={'/' + p.path} tabs={section.map((tab) => ({ ...tab, path: '/' + tab.path }))}
+        overview={topModule !== 'first' ? top.path : undefined} />
       <div class="wrap block page-layout">
         <div class="page-main">
           {p.body && <Prose html={p.body} />}
@@ -869,7 +882,7 @@ app.get('/*', async (c) => {
         </div>
       </div>
     </>
-  ), { description: plainText(p.body, 160) || undefined, lang: p.path === 'en' ? 'en' : undefined });
+  ), { description: plainText(p.body, 160) || undefined, lang: p.path === 'en' ? 'en' : undefined, fresh: p.module === 'records' });
 });
 
 export async function notFound(c: Context<AppEnv>) {

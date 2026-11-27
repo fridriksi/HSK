@@ -130,6 +130,18 @@ export const PageHead: FC<{ title: string; crumbs?: { title: string; path: strin
   </div>
 );
 
+export const SectionTabs: FC<{ title: string; path: string; tabs: { title: string; path: string }[]; overview?: string }> = ({ title, path, tabs, overview }) => tabs.length ? (
+  <nav class="section-tabs" aria-label={title}>
+    <div class="wrap">
+      <ul>{overview && <li><a href={overview} class={path === overview ? 'on' : ''} aria-current={path === overview ? 'page' : undefined}>{title}</a></li>}{tabs.map((tab) => {
+        const current = path === tab.path;
+        const active = current || path.startsWith(tab.path + '/');
+        return <li><a href={tab.path} class={active ? 'on' : ''} aria-current={current ? 'page' : active ? 'location' : undefined}>{tab.title}</a></li>;
+      })}</ul>
+    </div>
+  </nav>
+) : null;
+
 export type NewsRow = { slug: string; title: string; excerpt: string; body: string; image: string; published_at: string; kind: string; author: string };
 
 export const NewsCard: FC<{ n: NewsRow; big?: boolean }> = ({ n, big }) => (

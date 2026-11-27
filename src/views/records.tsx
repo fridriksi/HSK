@@ -1,30 +1,37 @@
 import recordBooks from '../data/hsk-record-books.json';
 import { Icon } from './icons';
+import { dateLong, MONTHS } from '../lib';
+import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
 
-type RecordTable = { title: string; headers: string[]; rows: string[][] };
-type RecordSheet = { name: string; notes: string[][]; sections: RecordTable[] };
-type RecordBook = {
-  id: string;
+type ArchivedRecordBook = RecordBook & {
   category: string;
-  title: string;
-  source: string;
   year: number | null;
   file: string;
-  sheets: RecordSheet[];
 };
 
-const books: RecordBook[] = recordBooks;
+const books: ArchivedRecordBook[] = recordBooks;
 const booksById = new Map(books.map((book) => [book.id, book]));
 const bookIdsBySource = new Map(books.flatMap((book) => [[book.file, book.id], [book.source, book.id]]));
-export const RECORDS_PATH = '/mot/hsk-met';
 
 export function recordBook(id: string) {
   return booksById.get(id);
 }
 
-export function recordLink(file: string) {
-  const id = bookIdsBySource.get(file);
+export function recordLink(file: string, rowId: number | null = null) {
+  const id = bookIdsBySource.get(file) ?? (rowId && uploadedRecordKey(file) ? `innflutt-${rowId}` : null);
   return id ? `${RECORDS_PATH}/skra/${id}` : file || RECORDS_PATH;
+}
+
+function workbookDate(note: string[]) {
+  const cells = note.filter(Boolean);
+  if (cells.length !== 1) return '';
+  const value = cells[0].replace(/^(?:Frá\s+|Uppfært:?\s+)/i, '');
+  const match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(value) ?? /^(\d{1,2})\.\s+([a-záéíóúýðþæö]+)\s+(\d{4})$/i.exec(value);
+  if (!match) return '';
+  const month = /^\d+$/.test(match[2]) ? Number(match[2]) : MONTHS.indexOf(match[2].toLocaleLowerCase('is')) + 1;
+  const iso = `${match[3]}-${String(month).padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+  const date = new Date(iso);
+  return !isNaN(date.getTime()) && date.toISOString().slice(0, 10) === iso ? iso : '';
 }
 
 export const recordEditions = books.map(({ category, title, year, file }) => ({ category, title, year, file }));
@@ -52,6 +59,9 @@ export function RecordBookView({ book, sheetParam, query }: { book: RecordBook; 
     return rows.length ? [{ ...table, rows }] : [];
   }) : sheet.sections;
   const detailPath = `${RECORDS_PATH}/skra/${book.id}`;
+  const noteDate = sheet.notes.findIndex((note) => workbookDate(note));
+  const updated = noteDate >= 0 ? workbookDate(sheet.notes[noteDate]) : book.updatedAt;
+  const displayDate = dateLong(updated);
 
   return (
     <section class="record-book wrap block">
@@ -69,7 +79,10 @@ export function RecordBookView({ book, sheetParam, query }: { book: RecordBook; 
         <a class="record-source" href={book.source}><Icon name="file" /> Upprunaleg Excel-skrá</a>
       </div>
       <h2>{sheetLabel(sheet)}</h2>
-      {sheet.notes.length > 0 && <div class="record-notes">{sheet.notes.map((row) => <p>{row.filter(Boolean).join(' · ')}</p>)}</div>}
+      {(sheet.notes.length > 0 || displayDate) && <div class="record-notes">
+        {sheet.notes.map((row, i) => i === noteDate ? null : <p>{row.filter(Boolean).join(' · ')}</p>)}
+        {displayDate && <p>Uppfært <time datetime={updated?.slice(0, 10)}>{displayDate}</time></p>}
+      </div>}
       {!sections.length && words.length > 0 && <p>Engar færslur fundust í þessu vinnublaði.</p>}
       {sections.map((table) => {
         const label = table.title || sheetLabel(sheet);

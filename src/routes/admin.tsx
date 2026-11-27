@@ -15,6 +15,8 @@ import { DEFAULT_TILES } from '../lib';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
 import { Icon } from '../views/icons';
+import { MAX_RECORD_FILE, uploadedRecordKey, validateRecordSheets } from '../record-books';
+import { asset } from '../static';
 
 const app = new Hono<AppEnv>();
 type Row = Record<string, unknown> & { id: number };
@@ -290,12 +292,14 @@ app.post('/upload', async (c) => {
   const file = form.get('file');
   if (!(file instanceof File)) return c.json({ error: 'Engin skrá' }, 400);
   if (file.size > 25 * 1024 * 1024) return c.json({ error: 'Skráin er of stór (hámark 25 MB).' }, 400);
-  if (!ALLOWED_UPLOAD.test(file.type)) return c.json({ error: 'Þessi skráartegund er ekki leyfð.' }, 400);
+  const mime = /\.xlsx$/i.test(file.name) && (!file.type || file.type === 'application/octet-stream')
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : file.type;
+  if (!ALLOWED_UPLOAD.test(mime)) return c.json({ error: 'Þessi skráartegund er ekki leyfð.' }, 400);
   const d = new Date();
   const safe = slugify(file.name.replace(/\.[^.]+$/, '')) + (file.name.match(/\.[a-zA-Z0-9]+$/)?.[0].toLowerCase() ?? '');
   const key = `uploads/${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${randomId(6)}-${safe}`;
-  await c.env.MEDIA.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
-  await run(c.env.DB, 'INSERT INTO media (key, filename, content_type, size, uploaded_by) VALUES (?, ?, ?, ?, ?)', key, file.name, file.type, file.size, c.get('user')!.id);
+  await c.env.MEDIA.put(key, file.stream(), { httpMetadata: { contentType: mime } });
+  await run(c.env.DB, 'INSERT INTO media (key, filename, content_type, size, uploaded_by) VALUES (?, ?, ?, ?, ?)', key, file.name, mime, file.size, c.get('user')!.id);
   return c.json({ location: '/media/' + key });
 });
 
@@ -915,6 +919,9 @@ async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | 
   const title = isNew ? (isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`) : String(row![t.titleField] ?? '');
   const photos = t.table === 'albums' && row?.id ? await all<{ id: number; src: string; caption: string; sort: number }>(c.env.DB, 'SELECT * FROM photos WHERE album_id = ? ORDER BY sort, id', row.id) : [];
   const isPending = status === 'pending';
+  const recordSource = t.table === 'records' ? String(row?.file ?? '') : '';
+  const recordKey = uploadedRecordKey(recordSource);
+  const readyFile = recordKey && await c.env.MEDIA.head(recordKey) ? recordSource : undefined;
   return page(c, title, t.key, (
     <>
       <div class="title-row">
@@ -936,13 +943,16 @@ async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | 
           </div>
         </section>
       )}
-      <form method="post" action={isNew ? `/stjorn/${t.key}/nytt` : `/stjorn/${t.key}/${row!.id}`} class="edit-form">
+      <form method="post" action={isNew ? `/stjorn/${t.key}/nytt` : `/stjorn/${t.key}/${row!.id}`} class="edit-form"
+        data-record-import={t.table === 'records' ? asset('/js/record-import.js') : undefined} data-record-ready={readyFile}
+        enctype={t.table === 'records' ? 'multipart/form-data' : undefined}>
         <div class="form-grid">
           {t.slug && isStaff(user) && !isNew && (
             <div class="field"><label for="f_slug">Slóð</label><input id="f_slug" name="slug" value={String(row?.slug ?? '')} /></div>
           )}
           {visibleFields(t, user).map((f) => <FieldInput f={f} value={row?.[f.name]} options={opts[f.type as 'club' | 'event' | 'album']} />)}
         </div>
+        {t.table === 'records' && <><input type="hidden" name="record_sheets" /><p role="status" data-record-status hidden></p></>}
         <div class="form-actions">
           {isStaff(user) ? (
             t.status ? (
@@ -1049,6 +1059,20 @@ function readFields(t: ContentType, user: User, f: FormData): Record<string, unk
   return data;
 }
 
+async function saveRecordWorkbook(c: Context<AppEnv>, source: string, form: FormData) {
+  const key = uploadedRecordKey(source);
+  if (!key || await c.env.MEDIA.head(key)) return '';
+  const original = await c.env.MEDIA.head(source.slice('/media/'.length));
+  if (!original) return 'Excel-skráin fannst ekki. Hladdu henni upp aftur í reitnum Metaskrá.';
+  if (original.size > MAX_RECORD_FILE) return 'Metaskrá má vera að hámarki 5 MB.';
+  const json = form.get('record_sheets');
+  const sheets = typeof json === 'string' ? validateRecordSheets(json) : null;
+  if (!sheets) return 'Ekki tókst að útbúa vef­töflu úr skránni. Prófaðu að velja .xlsx-skrána aftur.';
+  // Skráin er tilbúin áður en færslan vísar á hana. Upphleðsluslóðir eru einstakar.
+  await c.env.MEDIA.put(key, JSON.stringify(sheets), { httpMetadata: { contentType: 'application/json' }, onlyIf: { etagDoesNotMatch: '*' } });
+  return '';
+}
+
 async function saveItem(c: Context<AppEnv>, t: ContentType, id: number | null) {
   const db = c.env.DB;
   const user = c.get('user')!;
@@ -1061,6 +1085,10 @@ async function saveItem(c: Context<AppEnv>, t: ContentType, id: number | null) {
   if (missing.length) return editForm(c, t, { ...existing, ...data }, `Fylla þarf út: ${missing.map((m) => m.label).join(', ')}`);
   if (data.ends_at && data.starts_at && String(data.ends_at) < String(data.starts_at)) {
     return editForm(c, t, { ...existing, ...data }, 'Lokatími getur ekki verið á undan upphafstíma.');
+  }
+  if (t.table === 'records') {
+    const error = await saveRecordWorkbook(c, String(data.file ?? ''), f);
+    if (error) return editForm(c, t, { ...existing, ...data }, error);
   }
 
   let action = id ? 'update' : 'create';
