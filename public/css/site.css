@@ -370,6 +370,28 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .record-latest:hover { text-decoration: underline; }
 .record-older { margin: 10px 0 0; color: var(--muted); font-size: .95rem; line-height: 1.8; }
 .record-card .link-list { margin: 0; }
+
+.record-book { min-width: 0; }
+.record-book-tools { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+.record-book-filters label { font-weight: 600; }
+.record-book-filters select, .record-book-filters input { max-width: 100%; min-width: 0; }
+.record-book-filters .btn { min-height: 38px; }
+.record-source { display: inline-flex; align-items: center; gap: 6px; }
+.record-notes { color: var(--muted); margin-bottom: 16px; }
+.record-notes p { margin: 0 0 4px; white-space: pre-line; }
+.record-table-section { margin-block: 24px 32px; }
+.record-table-section h3 { margin: 0 0 10px; }
+.record-table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.record-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.record-table th, .record-table td { min-width: 72px; text-align: left; padding: 9px 12px; vertical-align: top; border-bottom: 1px solid var(--line); white-space: pre-line; }
+.record-table th:first-child { min-width: 120px; }
+.record-table thead th, .record-table tbody tr:nth-child(even) { background: var(--tint); }
+.record-table tbody tr:last-child > * { border-bottom: 0; }
+
+@media (max-width: 550px) {
+  .record-book-filters { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
+  .record-book-filters .btn { justify-self: start; }
+}
 /* Undirsíður á einni síðu */
 .toc { max-width: 760px; margin-bottom: 28px; }
 .toc h2 { font-size: 1.05rem; color: var(--muted); margin: 0 0 6px; }

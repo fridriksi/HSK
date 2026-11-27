@@ -1,6 +1,6 @@
 // Býr til src/static-files.ts úr public/ svo fastar skrár (CSS, JS, merki) séu hluti af Worker-kóðanum.
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, relative, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const TYPES = { '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
@@ -12,7 +12,8 @@ function walk(dir) {
     const type = TYPES[extname(f)];
     if (!type) continue;
     const buf = readFileSync(p);
-    out['/' + p.slice('public/'.length)] = { type, b64: buf.toString('base64'), v: createHash('sha1').update(buf).digest('hex').slice(0, 10) };
+    const assetPath = '/' + relative('public', p).split(sep).join('/');
+    out[assetPath] = { type, b64: buf.toString('base64'), v: createHash('sha1').update(buf).digest('hex').slice(0, 10) };
   }
 }
 walk('public');
