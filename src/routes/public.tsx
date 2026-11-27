@@ -714,8 +714,7 @@ app.get('/*', async (c) => {
   const sectionPath = top.path.slice(1);
   const section = await all<{ title: string; path: string }>(c.env.DB,
     "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", sectionPath);
-  const wide = ['committees', 'clubs', 'albums', 'sponsors', 'news', 'events', 'competitions', 'results', 'documents'].includes(p.module);
-  const showNav = section.length > 0 && !wide;
+  const showNav = section.length > 0;
   const isOn = (sp: string) => p.path === sp || p.path.startsWith(sp + '/');
   // Undirsíður sem eru hvorki í valmynd né tengdar í textanum birtast sem listi neðst
   const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
@@ -724,18 +723,22 @@ app.get('/*', async (c) => {
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />
-      <div class={`wrap block page-layout${showNav ? ' with-sub' : ''}`}>
+      {showNav && (
+        <nav class="section-tabs" aria-label={top.title}>
+          <div class="wrap">
+            <ul>
+              <li><a href={top.path} class={p.path === sectionPath ? 'on' : ''} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a></li>
+              {section.map((x) => <li><a href={'/' + x.path} class={isOn(x.path) ? 'on' : ''} aria-current={p.path === x.path ? 'page' : undefined}>{x.title}</a></li>)}
+            </ul>
+          </div>
+        </nav>
+      )}
+      <div class="wrap block page-layout">
         <div class="page-main">
           {p.body && <Prose html={p.body} />}
           {moduleView}
           {extra.length > 0 && <div class="prose"><ul class="link-list">{extra.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul></div>}
         </div>
-        {showNav && (
-          <nav class="section-nav" aria-label={top.title}>
-            <a class={'section-top' + (p.path === sectionPath ? ' on' : '')} href={top.path} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a>
-            <ul>{section.map((x) => <li><a href={'/' + x.path} class={isOn(x.path) ? 'on' : ''} aria-current={p.path === x.path ? 'page' : undefined}>{x.title}</a></li>)}</ul>
-          </nav>
-        )}
       </div>
     </>
   ), { description: plainText(p.body, 160) || undefined, lang: p.path === 'en' ? 'en' : undefined });
