@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hsk-vefur",
+  "main": "src/index.tsx",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": false },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "hsk", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "hsk-media" }],
+  "vars": {
+    "SITE_URL": "http://localhost:8787",
+    // Netföng sem fá stjórnandaréttindi sjálfkrafa (komma á milli)
+    "ADMIN_EMAILS": "",
+    // Lén sem fá ritstjóraaðgang sjálfkrafa
+    "STAFF_DOMAIN": "hsk.is",
+    // Í þróun: innskráningartengill birtist á skjánum í stað þess að vera sendur í pósti
+    "DEV_LOGIN_LINKS": "true"
+  },
+  "observability": { "enabled": true }
+}

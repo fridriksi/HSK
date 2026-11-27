@@ -1,0 +1,5 @@
+# Afritaðu í .dev.vars fyrir staðbundna þróun
+ADMIN_EMAILS=stjornandi@hsk.is
+# Fyrir „Skrá inn með Google“ (valkvætt)
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=

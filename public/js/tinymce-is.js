@@ -1,0 +1,21 @@
+// Íslenskar þýðingar á helstu hnöppum ritilsins (TinyMCE). Annað birtist á ensku.
+tinymce.addI18n('is_IS', {
+  'Bold': 'Feitletrað', 'Italic': 'Skáletrað', 'Underline': 'Undirstrikað', 'Strikethrough': 'Yfirstrikað',
+  'Bullet list': 'Punktalisti', 'Numbered list': 'Númeraður listi', 'Blockquote': 'Tilvitnun',
+  'Align left': 'Vinstrijafna', 'Align center': 'Miðjujafna', 'Align right': 'Hægrijafna', 'Justify': 'Jafna',
+  'Clear formatting': 'Hreinsa snið', 'Source code': 'Frumkóði', 'Blocks': 'Snið',
+  'Paragraph': 'Málsgrein', 'Heading 1': 'Fyrirsögn 1', 'Heading 2': 'Fyrirsögn 2', 'Heading 3': 'Fyrirsögn 3',
+  'Undo': 'Afturkalla', 'Redo': 'Endurtaka', 'Cancel': 'Hætta við', 'Save': 'Vista', 'Close': 'Loka', 'Ok': 'Í lagi',
+  'Insert/edit link': 'Setja inn / breyta tengli', 'Link': 'Tengill', 'URL': 'Slóð', 'Text to display': 'Texti',
+  'Title': 'Titill', 'Open link in...': 'Opna tengil í...', 'Current window': 'Sama glugga', 'New window': 'Nýjum glugga',
+  'Remove link': 'Fjarlægja tengil', 'Open link': 'Opna tengil',
+  'Insert/edit image': 'Setja inn / breyta mynd', 'Image': 'Mynd', 'Source': 'Slóð', 'Alternative description': 'Lýsing (fyrir skjálesara)',
+  'Image is decorative': 'Myndin er skraut', 'Width': 'Breidd', 'Height': 'Hæð', 'Constrain proportions': 'Halda hlutföllum',
+  'Upload': 'Hlaða upp', 'General': 'Almennt', 'Browse for an image': 'Velja mynd', 'Drop an image here': 'Dragðu mynd hingað',
+  'Insert/edit media': 'Setja inn myndband', 'Media': 'Myndband', 'Embed': 'Ívefja',
+  'Table': 'Tafla', 'Insert table': 'Setja inn töflu', 'Table properties': 'Eiginleikar töflu', 'Delete table': 'Eyða töflu',
+  'Row': 'Röð', 'Column': 'Dálkur', 'Cell': 'Reitur', 'Insert row before': 'Ný röð fyrir ofan', 'Insert row after': 'Ný röð fyrir neðan',
+  'Delete row': 'Eyða röð', 'Insert column before': 'Nýr dálkur vinstra megin', 'Insert column after': 'Nýr dálkur hægra megin',
+  'Delete column': 'Eyða dálki', 'Merge cells': 'Sameina reiti', 'Split cell': 'Skipta reit', 'Header row': 'Fyrirsagnaröð',
+  'Words': 'Orð', '{0} words': '{0} orð', 'Rich Text Area': 'Ritill', 'Find and replace': 'Finna og skipta út',
+});

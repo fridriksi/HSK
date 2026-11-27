@@ -1,0 +1,141 @@
+// Prófar helstu leiðir í gegnum vef og vefumsjón á staðbundnum þjóni (npm run dev).
+// Krefst ADMIN_EMAILS=stjornandi@hsk.is í .dev.vars og DEV_LOGIN_LINKS=true.
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { chromium } = require('playwright');
+
+const BASE = process.env.BASE_URL || 'http://localhost:8787';
+const stamp = Date.now().toString(36);
+let failures = 0;
+const ok = (cond, msg) => { console.log(`${cond ? '✓' : '✗'} ${msg}`); if (!cond) failures++; };
+
+async function login(page, email) {
+  await page.goto(`${BASE}/stjorn/innskraning`);
+  await page.fill('#email', email);
+  await page.click('button:has-text("Senda innskráningartengil")');
+  const link = page.locator('.dev-box a');
+  if (!(await link.count())) return false;
+  await link.click();
+  await page.waitForURL(`${BASE}/stjorn`);
+  return true;
+}
+
+async function setRte(page, html) {
+  await page.waitForFunction(() => window.tinymce && tinymce.activeEditor && tinymce.activeEditor.initialized);
+  await page.evaluate((h) => { const eds = tinymce.get(); eds[eds.length - 1].setContent(h); }, html);
+}
+
+const browser = await chromium.launch();
+// Ytri leturgerðir eru óþarfar í prófun
+async function newPage() {
+  const ctx = await browser.newContext();
+  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  return ctx.newPage();
+}
+try {
+  // 1. Stjórnandi
+  const admin = await newPage();
+  admin.on('dialog', (d) => d.accept());
+  ok(await login(admin, 'stjornandi@hsk.is'), 'Stjórnandi skráir sig inn með tengli');
+  ok(await admin.locator('a:has-text("Notendur")').count() > 0, 'Stjórnandi sér notendastjórnun');
+
+  // 2. Ný frétt með mynd
+  await admin.goto(`${BASE}/stjorn/frettir/nytt`);
+  await admin.fill('#f_title', `Prófunarfrétt ${stamp}`);
+  await admin.setInputFiles('.upload-field[data-kind=image] input[type=file]', 'seed/media/hakon.jpg');
+  await admin.waitForFunction(() => document.querySelector('#f_image').value.startsWith('/media/'));
+  await setRte(admin, '<p>Þetta er <strong>prófun</strong>.</p><script>alert(1)</script>');
+  await admin.click('button[value=published]');
+  await admin.waitForURL(/m=birt/);
+  const newsUrl = await admin.locator('a:has-text("Skoða á vef")').getAttribute('href');
+  const pub = await (await fetch(BASE + newsUrl)).text();
+  ok(pub.includes(`Prófunarfrétt ${stamp}`) && pub.includes('<strong>prófun</strong>'), 'Frétt birtist á vefnum');
+  ok(!pub.includes('<script>alert(1)'), 'Hættulegur kóði er hreinsaður úr texta');
+  const imgSrc = pub.match(/class="lead-img"><img src="([^"]+)"/)?.[1];
+  const img = imgSrc ? await fetch(BASE + imgSrc) : null;
+  ok(img?.ok && Number(img.headers.get('content-length') || (await img.arrayBuffer()).byteLength) < 1_500_000, 'Mynd var minnkuð og er sótt úr R2');
+  ok((await (await fetch(BASE + '/')).text()).includes(`Prófunarfrétt ${stamp}`), 'Frétt birtist á forsíðu');
+
+  // 3. Ný undirsíða
+  await admin.goto(`${BASE}/stjorn/sidur/nytt`);
+  await admin.fill('#title', `Prufusíða ${stamp}`);
+  await admin.selectOption('#parent_id', { label: 'Um HSK (/um-hsk)' });
+  await setRte(admin, '<p>Texti undirsíðu.</p>');
+  await admin.click('button[value=published]');
+  await admin.waitForURL(/m=vistad/);
+  const sub = await fetch(`${BASE}/um-hsk/prufusida-${stamp}`);
+  ok(sub.ok, 'Undirsíða birtist á /um-hsk/prufusida-…');
+  ok((await (await fetch(BASE + '/')).text()).includes(`Prufusíða ${stamp}`), 'Undirsíða birtist í valmynd');
+
+  // 4. Viðburður (mót)
+  await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
+  await admin.fill('#f_title', `Héraðsmót ${stamp}`);
+  await admin.selectOption('#f_kind', 'mot');
+  await admin.selectOption('#f_sport', 'Frjálsíþróttir');
+  await admin.fill('#f_starts_at', '2027-01-15T10:00');
+  await admin.fill('#f_location', 'Selfoss');
+  await admin.click('button[value=published]');
+  await admin.waitForURL(/m=birt/);
+  ok((await (await fetch(`${BASE}/mot/motaskra`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í mótaskrá');
+
+  // 5. Albúm með myndum
+  await admin.goto(`${BASE}/stjorn/myndasofn/nytt`);
+  await admin.fill('#f_title', `Albúm ${stamp}`);
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/myndasofn\/\d+\?m=/);
+  await admin.setInputFiles('.upload-drop input[type=file]', ['seed/media/ithrottaeldhugi.jpg', 'seed/media/sjalfbodalidar.png']);
+  await admin.waitForSelector('.photo-grid figure:nth-child(2)', { timeout: 20000 });
+  ok(await admin.locator('.photo-grid figure').count() === 2, 'Tvær myndir hlaðnar í albúm');
+
+  // 6. Bjóða formanni
+  await admin.goto(`${BASE}/stjorn/notendur`);
+  const clubEmail = `formadur.${stamp}@gmail.com`;
+  await admin.fill('#email', clubEmail);
+  await admin.fill('#name', 'Prófunar Formaður');
+  await admin.selectOption('#club_id', { label: 'Ungmennafélag Selfoss' });
+  await admin.click('button:has-text("Senda boð")');
+  await admin.waitForURL(/m=bodid/);
+
+  // 7. Formaður sendir inn frétt
+  const club = await newPage();
+  ok(await login(club, clubEmail), 'Formaður skráir sig inn með Gmail-netfangi');
+  ok(!(await login(await newPage(), `okunnugur.${stamp}@gmail.com`)), 'Óboðið netfang fær ekki aðgang');
+  const denied = await club.goto(`${BASE}/stjorn/sidur`);
+  ok(denied.status() === 403, 'Formaður hefur ekki aðgang að síðum');
+  await club.goto(`${BASE}/stjorn/frettir/nytt`);
+  ok(await club.locator('#f_kind').count() === 0, 'Formaður sér ekki reiti sem eru aðeins fyrir starfsfólk');
+  await club.fill('#f_title', `Frétt frá félagi ${stamp}`);
+  await setRte(club, '<p>Frá Umf. Selfoss.</p>');
+  await club.click('button[value=pending]');
+  await club.waitForURL(/m=sent/);
+  const pendingId = club.url().match(/frettir\/(\d+)/)[1];
+  ok(!(await (await fetch(`${BASE}/frettir`)).text()).includes(`Frétt frá félagi ${stamp}`), 'Innsend frétt er ekki birt fyrr en hún er samþykkt');
+
+  // 8. Formaður uppfærir sitt félag
+  await club.click('a:has-text("Mitt félag")');
+  await club.fill('#f_contact_name', 'Prófunar Formaður');
+  await club.click('button:has-text("Vista")');
+  await club.waitForURL(/m=vistad/);
+  ok((await (await fetch(`${BASE}/felag/ungmennafelag-selfoss`)).text()).includes('Prófunar Formaður'), 'Formaður uppfærði upplýsingar um félagið');
+  const other = await club.goto(`${BASE}/stjorn/felog/1`);
+  ok(other.status() === 403, 'Formaður getur ekki breytt öðru félagi');
+
+  // 9. Stjórnandi samþykkir
+  await admin.goto(`${BASE}/stjorn`);
+  ok(await admin.locator(`text=Frétt frá félagi ${stamp}`).count() > 0, 'Innsend frétt birtist í biðröð stjórnanda');
+  await admin.goto(`${BASE}/stjorn/frettir/${pendingId}`);
+  await admin.click('button:has-text("Samþykkja og birta")');
+  await admin.waitForURL(/m=samthykkt/);
+  ok((await (await fetch(`${BASE}/frettir`)).text()).includes(`Frétt frá félagi ${stamp}`), 'Samþykkt frétt birtist á vefnum');
+
+  // 10. Breytingasaga
+  await admin.goto(`${BASE}/stjorn/saga/news/${pendingId}`);
+  ok(await admin.locator('td:has-text("Samþykkti")').count() > 0, 'Breytingasaga skráir samþykkt');
+} catch (e) {
+  console.error(e);
+  failures++;
+} finally {
+  await browser.close();
+}
+console.log(failures ? `\n${failures} próf mistókust` : '\nÖll próf stóðust');
+process.exit(failures ? 1 : 0);
