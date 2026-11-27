@@ -637,7 +637,10 @@ app.get('/*', async (c) => {
       break;
     }
   }
-  const showChildren = children.length > 0 && !p.module;
+  // Undirsíður sem textinn vísar þegar á eru ekki endurteknar í hliðardálki
+  const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
+  const unlisted = children.filter((ch) => !linked.has(ch.path));
+  const showChildren = unlisted.length > 0 && !p.module;
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />
@@ -649,7 +652,7 @@ app.get('/*', async (c) => {
         {showChildren && (
           <aside class="subpages">
             <h2 class="col-title">Undirsíður</h2>
-            <ul>{children.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul>
+            <ul>{unlisted.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul>
           </aside>
         )}
       </div>
