@@ -145,6 +145,7 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
       <tr><td>Úrslit héraðsmóta</td><td><code>page=urslitin</code></td><td>Úrslit eftir íþróttagrein og ári</td></tr>
       <tr><td>Mótaskrá og viðburðir</td><td><code>page=motaskra</code>, <code>page=vidburdir</code></td><td>Sameiginlegt dagatal fyrir mót og viðburði</td></tr>
       <tr><td>HSK met og sögulegur fróðleikur</td><td><code>page=hsk_met1</code></td><td>Metaskrár sem töflur sem hægt er að uppfæra</td></tr>
+      <tr><td>Styrktaraðilar og samstarfsaðilar</td><td>Merki á forsíðu</td><td>Styrktaraðilar með merki, vefslóð og röðun</td></tr>
       <tr><td>Myndasöfn</td><td><code>myndir_yfirl.cfm?flokkur=</code></td><td>Myndaalbúm geymd í Cloudflare R2</td></tr>
       <tr><td>Skjöl og myndir í efni</td><td><code>web/img/…</code>, <code>myndir/…</code></td><td>Skráasafn í R2. Allar vísanir uppfærðar</td></tr>
     </tbody>
@@ -193,7 +194,7 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
         <li><span>→</span>Ársskýrsla HSK</li>
         <li><span>→</span>Verkefnasjóður</li></ul></div>
     </div>
-    <div class="m-foot"><span>Selinu, Engjavegi 48, 800 Selfossi</span><span>Sími 482 1189</span><span>hsk@hsk.is</span><span>ÍSÍ · UMFÍ · Lottó</span></div>
+    <div class="m-foot"><span>Selinu, Engjavegi 48, 800 Selfossi</span><span>Sími 482 1189</span><span>hsk@hsk.is</span><span>Styrktaraðilar: Arion banki · Hótel Örk · Lottó · ÍSÍ · UMFÍ</span></div>
   </div>
   <p class="caption">Efnið í sýnishorninu er tekið af núverandi forsíðu hsk.is í dag. Á farsíma raðast allt í einn dálk og valmyndin fer í hamborgarahnapp.</p>
 </section>
@@ -204,11 +205,11 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   <p class="prose">Sex aðalflokkar í stað margra ótengdra síðugerða. Allar síður eru í einu veftré í vefumsjónarkerfinu, svo hægt er að færa þær til, endurraða þeim og bæta við undirsíðum að vild.</p>
   <div class="tree">
     <div><h3>Fréttir</h3><ul><li>Fréttir</li><li>Greinar</li><li>Aðsendar greinar</li><li>Fréttasafn eftir árum</li></ul></div>
-    <div><h3>Mót og úrslit</h3><ul><li>Mótaskrá og dagatal</li><li>Úrslit héraðsmóta</li><li>HSK met</li><li>Sögulegur fróðleikur</li></ul></div>
+    <div><h3>Mót og úrslit</h3><ul><li>Mótaskrá (mót framundan)</li><li>Viðburðadagatal</li><li>Úrslit móta</li><li>HSK met</li><li>Sögulegur fróðleikur</li></ul></div>
     <div><h3>Aðildarfélög</h3><ul><li>Félagaskrá með leit</li><li>Síða hvers félags</li></ul></div>
     <div><h3>Um HSK</h3><ul><li>Stjórn, nefndir og ráð</li><li>Lög og reglugerðir</li><li>Fundargerðir</li><li>Ársskýrslur</li><li>Viðbragðsáætlun</li></ul></div>
     <div><h3>Sjóðir og verkefni</h3><ul><li>Verkefnasjóður</li><li>Hvatasjóður</li><li>Ungmennaráð</li></ul></div>
-    <div><h3>Myndir</h3><ul><li>Myndaalbúm eftir árum</li></ul></div>
+    <div><h3>Myndir og styrktaraðilar</h3><ul><li>Myndaalbúm eftir árum</li><li>Styrktaraðilar</li></ul></div>
   </div>
 </section>
 
@@ -224,16 +225,26 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   </div>
 
   <h3 style="margin-top:28px">Hvað vefumsjónarkerfið gerir</h3>
-  <ul class="plain prose">
-    <li><b>Fréttir:</b> skrifa, setja inn forsíðumynd, vista drög, tímasetja birtingu og birta.</li>
-    <li><b>Síður:</b> breyta hvaða síðu sem er og búa til nýjar undirsíður. Síðum er raðað í veftré með því að draga þær til, og valmyndin uppfærist sjálfkrafa.</li>
-    <li><b>Viðburðir og mót:</b> skrá dagsetningu, staðsetningu og íþróttagrein. Viðburðir birtast á forsíðu og í dagatali.</li>
-    <li><b>Úrslit, met og fundargerðir:</b> einföld innsláttarform eða upphleðsla á PDF-skjölum.</li>
-    <li><b>Félög og nefndir:</b> halda utan um tengiliði á einum stað.</li>
-    <li><b>Myndir og skjöl:</b> skráasafn með upphleðslu með því að draga skrár inn.</li>
-    <li><b>Notendur:</b> stjórnandi og ritstjóri. Hægt er að veita hverjum og einum aðgang.</li>
-    <li><b>Leit</b> í öllu efni, líka gömlum fréttum.</li>
-  </ul>
+  <p class="prose">Hver efnistegund hefur sitt svæði í vefumsjóninni með formi sem passar efninu. Allt sem er skráð birtist sjálfkrafa á réttum stöðum á vefnum, t.d. á forsíðu, í dagatali og á síðu viðkomandi íþróttagreinar.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Svæði</th><th>Hvað er hægt að gera</th><th>Hvar það birtist</th></tr></thead>
+    <tbody>
+      <tr><td><b>Fréttir og greinar</b></td><td>Skrifa, setja inn forsíðumynd og myndir í texta, vista drög, tímasetja birtingu og birta.</td><td>Forsíða, fréttasíða, fréttasafn</td></tr>
+      <tr><td><b>Síður</b></td><td>Breyta hvaða síðu sem er og búa til nýjar undirsíður. Síðum er raðað í veftré með því að draga þær til.</td><td>Valmynd og veftré uppfærast sjálfkrafa</td></tr>
+      <tr><td><b>Viðburðadagatal</b></td><td>Stofna viðburð með heiti, dagsetningu og tíma, staðsetningu, lýsingu, mynd og tengli á skráningu. Hægt er að endurtaka viðburði og bæta þeim við eigið dagatal (iCal).</td><td>Forsíða (næstu viðburðir), dagatal með mánaðar- og listasýn</td></tr>
+      <tr><td><b>Mótaskrá</b></td><td>Skrá mót sem eru framundan: íþróttagrein, aldursflokkar, dagsetning, keppnisstaður, mótshaldari, skráningarfrestur og boðsbréf eða reglugerð sem PDF.</td><td>Mótaskrá eftir grein og mánuði, forsíða, dagatal</td></tr>
+      <tr><td><b>Úrslit móta</b></td><td>Tengja úrslit við mót í mótaskrá. Úrslit eru slegin inn sem tafla, límd inn úr Excel eða hlaðið upp sem PDF. Úrslitin verða leitanleg.</td><td>Úrslitasíða eftir grein og ári, „Nýjustu úrslit“ á forsíðu</td></tr>
+      <tr><td><b>HSK met</b></td><td>Uppfæra metaskrár eftir grein og aldursflokki. Saga eldri meta geymist.</td><td>Metasíður</td></tr>
+      <tr><td><b>Myndir og myndasöfn</b></td><td>Hlaða upp mörgum myndum í einu með því að draga þær inn, búa til albúm, raða myndum og skrifa myndatexta. Myndir minnka sjálfkrafa og eru birtar í réttri stærð. Hægt er að tengja albúm við frétt eða mót.</td><td>Myndasafn, fréttir, mótasíður</td></tr>
+      <tr><td><b>Styrktaraðilar</b></td><td>Bæta við styrktaraðila með merki, vefslóð og flokki (t.d. aðalstyrktaraðili eða samstarfsaðili), raða þeim og stilla gildistíma.</td><td>Merkjaborði neðst á öllum síðum og síða um styrktaraðila</td></tr>
+      <tr><td><b>Aðildarfélög</b></td><td>Merki félags, íþróttagreinar, tengiliðir, vefslóð og samfélagsmiðlar.</td><td>Félagaskrá með leit og síða hvers félags</td></tr>
+      <tr><td><b>Stjórn, nefndir og ráð</b></td><td>Fólk, hlutverk, myndir og netföng.</td><td>Um HSK</td></tr>
+      <tr><td><b>Fundargerðir og skjöl</b></td><td>Hlaða upp fundargerðum, ársskýrslum, lögum og eyðublöðum, flokkað eftir tegund og ári.</td><td>Skjalasafn og viðeigandi síður</td></tr>
+      <tr><td><b>Forsíða og tilkynningar</b></td><td>Velja hvaða frétt er efst, stjórna flýtileiðum og birta tilkynningaborða, t.d. „Opið fyrir umsóknir í Hvatasjóð“.</td><td>Forsíða</td></tr>
+      <tr><td><b>Notendur</b></td><td>Hlutverkin stjórnandi og ritstjóri. Hægt er að veita einstökum aðildarfélögum eða nefndum aðgang til að skrá eigin viðburði og úrslit.</td><td>Aðeins í vefumsjón</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Leitin nær yfir allt efni, líka gamlar fréttir og úrslit. Kerfið er byggt þannig að auðvelt er að bæta við nýjum efnistegundum síðar, t.d. sjálfboðaliðaskráningu eða umsóknum í sjóði.</p>
 </section>
 
 <section>
@@ -253,9 +264,9 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   <h2>Áfangar</h2>
   <div class="phases">
     <div class="phase"><div class="when">Áfangi 1</div><h3>Grunnur og útlit</h3><p>Astro-verkefni á Cloudflare Workers, D1 og R2 sett upp, og forsíða og síðusnið smíðuð. Prufuvefur á <span class="mono">*.workers.dev</span>.</p></div>
-    <div class="phase"><div class="when">Áfangi 2</div><h3>Vefumsjónarkerfi</h3><p>Innskráning, ritill, fréttir, síður með veftré og skráasafn.</p></div>
+    <div class="phase"><div class="when">Áfangi 2</div><h3>Vefumsjónarkerfi</h3><p>Innskráning, ritill, fréttir, síður með veftré, myndir og myndasöfn, og styrktaraðilar.</p></div>
     <div class="phase"><div class="when">Áfangi 3</div><h3>Flutningur alls efnis</h3><p>Forritið sem sækir efnið keyrt, efnið hreinsað og flutt inn, og samanburðarskýrsla gerð.</p></div>
-    <div class="phase"><div class="when">Áfangi 4</div><h3>Sértækt efni</h3><p>Mótaskrá, úrslit, met, félagaskrá, nefndir, fundargerðir og myndaalbúm.</p></div>
+    <div class="phase"><div class="when">Áfangi 4</div><h3>Sértækt efni</h3><p>Viðburðadagatal, mótaskrá, úrslit, met, félagaskrá, nefndir og fundargerðir.</p></div>
     <div class="phase"><div class="when">Áfangi 5</div><h3>Prófun og opnun</h3><p>Starfsfólk HSK prófar vefinn, tilvísanir eru settar upp og lénið hsk.is er tengt við Cloudflare.</p></div>
   </div>
 </section>
