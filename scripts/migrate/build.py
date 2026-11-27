@@ -14,6 +14,8 @@ import unicodedata
 from html.parser import HTMLParser
 from urllib.parse import urljoin, unquote, urlparse, parse_qs
 
+import classify
+
 CACHE = '.migration/cache'
 OUT = '.migration'
 OLD = 'https://www.hsk.is/web/default.cfm'
@@ -77,7 +79,26 @@ def absolute(href: str, base: str) -> str:
     return urljoin(base, href.replace(' ', '%20'))
 
 
+def inline_image(data_uri: str) -> str:
+    """Myndir sem voru límdar beint inn í texta (data:) eru vistaðar sem sérstakar skrár."""
+    import base64
+    import hashlib
+    m = re.match(r'data:image/(jpeg|jpg|png|gif|webp);base64,(.+)', data_uri, re.S)
+    if not m:
+        return ''
+    raw = base64.b64decode(re.sub(r'\s+', '', m.group(2)) + '==')
+    key = f"old/inline/{hashlib.sha1(raw).hexdigest()[:16]}.{'jpg' if m.group(1) in ('jpeg', 'jpg') else m.group(1)}"
+    path = os.path.join(OUT, 'media', key)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'wb') as f:
+        f.write(raw)
+    media['inline:' + key] = key
+    return '/media/' + key
+
+
 def rewrite_url(href: str, base: str = 'https://www.hsk.is/web/') -> str:
+    if href.startswith('data:'):
+        return inline_image(href)
     if not href or href.startswith(('#', 'mailto:', 'tel:', 'javascript:')):
         return '' if href.startswith('javascript:') else href
     url = absolute(href, base)
@@ -300,13 +321,19 @@ def main():
         return out
 
     news_count = 0
+    candidates = []
     for fid in files('frett'):
-        page = read(f'frett/{fid}')
-        it = news_item(page or '')
+        it = news_item(read(f'frett/{fid}') or '')
         if not it or not it['dates'] or not it['h3']:
             continue
         date = parse_is_date(it['dates'])
-        if not date:
+        if date:
+            candidates.append((int(fid), date, it))
+    hsk = classify.hsk_ids([(f, d) for f, d, _ in candidates])
+    skipped = [(f, it['h3']) for f, d, it in candidates if f not in hsk or re.match(r'^(prufa|test|bara að prófa)', it['h3'], re.I)]
+    skipped_ids = {f for f, _ in skipped}
+    for fid, date, it in candidates:
+        if fid in skipped_ids:
             continue
         img, body = lead_image(it['section'])
         title = it['h3'][:300]
@@ -315,7 +342,9 @@ def main():
         sql.append(f"INSERT INTO news (slug,title,body,image,kind,status,published_at,legacy_id) VALUES ({q(slug)},{q(title)},{q(body)},{q(img)},'frett','published',{q(date + ' 12:00:00')},{int(fid)});")
         redirects[f'frettirnar:{fid}'] = f'/frett/{slug}'
         news_count += 1
-    report.append(f'Fréttir: {news_count}')
+    report.append(f'Fréttir: {news_count} (sleppt {len(skipped)} fréttum annarra vefja á sama kerfi)')
+    with open(os.path.join(OUT, 'skipped-news.txt'), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(f'{i}\t{t}' for i, t in skipped))
 
     # ---- Greinar og aðsendar greinar ----
     adsgr = read('list/adsgr') or ''
@@ -343,14 +372,41 @@ def main():
     # ---- Síður (sidur og hsk_uppl) undir „Um HSK“ ----
     page_rows = []
     used_paths = set()
+    # Síðutaflan er sameiginleg með öðrum vefjum: aðeins síður sem efni HSK vísar á eru teknar með
+    ref_pat = re.compile(r'id=(\d+)(?:&amp;|&)page=sidur|page=sidur(?:&amp;|&)[^"]*?id=(\d+)')
+    referenced: set[str] = set()
+    for sub in os.listdir(CACHE):
+        if sub in ('sida', 'vidburdur'):
+            continue
+        for fn in os.listdir(os.path.join(CACHE, sub)):
+            if sub == 'frett' and (int(fn[:-5]) not in hsk or int(fn[:-5]) in skipped_ids):
+                continue
+            for a, b in ref_pat.findall(open(os.path.join(CACHE, sub, fn), encoding='utf-8').read()):
+                referenced.add(a or b)
+    frontier = set(referenced)
+    while frontier:  # síður sem vísa á aðrar síður
+        nxt = set()
+        for pid in frontier:
+            for a, b in ref_pat.findall(read(f'sida/{pid}') or ''):
+                if (a or b) not in referenced:
+                    nxt.add(a or b)
+        referenced |= nxt
+        frontier = nxt
     for prefix, oldpage in (('sida', 'sidur'), ('hsk_uppl', 'hsk_uppl')):
         for pid in files(prefix):
+            if prefix == 'sida' and pid not in referenced:
+                continue
             it = news_item(read(f'{prefix}/{pid}') or '')
             if not it:
                 continue
             title = it['h3'] or it['h2']
             body = clean(it['section'])
             if not title or (not text(body) and '<img' not in body):
+                continue
+            merge = {'Um HSK': 'um-hsk', 'Verkefnasjóður HSK': 'um-hsk/verkefnasjodur'}.get(title)
+            if merge:
+                sql.append(f"UPDATE pages SET body={q(body)} WHERE path={q(merge)};")
+                redirects[f'{oldpage}:{pid}'] = '/' + merge
                 continue
             slug = slugify(title)
             path = f'um-hsk/{slug}'
@@ -413,11 +469,16 @@ def main():
         body = clean(it['section'])
         if title and text(body):
             law_parts.append((lid, title, body))
-            redirects[f'login:{lid}'] = f'/um-hsk/log-og-reglugerdir#log-{lid}'
     if law_parts:
-        toc = '<ul>' + ''.join(f'<li><a href="#log-{lid}">{html.escape(t)}</a></li>' for lid, t, _ in law_parts) + '</ul>'
-        full = toc + ''.join(f'<h2 id="log-{lid}">{html.escape(t)}</h2>{b}' for lid, t, b in law_parts)
-        sql.append(f"UPDATE pages SET body={q(full)} WHERE path='um-hsk/log-og-reglugerdir';")
+        # Hver lög/reglugerð fær sína undirsíðu (allt saman færi yfir hámarksstærð í D1)
+        items = []
+        for i, (lid, t, b) in enumerate(law_parts):
+            slug = slugify(t)
+            path = f'um-hsk/log-og-reglugerdir/{slug}'
+            sql.append(f"INSERT INTO pages (parent_id,slug,path,title,body,sort,in_menu) VALUES ((SELECT id FROM pages WHERE path='um-hsk/log-og-reglugerdir'),{q(slug)},{q(path)},{q(t)},{q(b)},{(i + 1) * 10},0);")
+            redirects[f'login:{lid}'] = '/' + path
+            items.append(f'<li><a href="/{path}">{html.escape(t)}</a></li>')
+        sql.append(f"UPDATE pages SET body={q('<p>Lög Héraðssambandsins Skarphéðins og reglugerðir sambandsins.</p><ul>' + ''.join(items) + '</ul>')} WHERE path='um-hsk/log-og-reglugerdir';")
     report.append(f'Lög og reglugerðir (kaflar): {len(law_parts)}')
 
     # ---- Fundargerðir og skjöl ----
@@ -473,13 +534,25 @@ def main():
     # ---- Viðburðir og mót ----
     def event_rows(sub: str, kind: str) -> int:
         n = 0
+        cands = []
         for eid in files(sub):
+            it = news_item(read(f'{sub}/{eid}') or '')
+            ds = re.findall(r'\d{1,2}\.\d{1,2}\.\d{4}', it['dates']) if it else []
+            if it and ds and parse_is_date(ds[0]):
+                cands.append((int(eid), parse_is_date(ds[0])))
+        ok = classify.hsk_ids(cands, min_id=0) if kind == 'vidburdur' else {c[0] for c in cands}
+        for eid in files(sub):
+            if int(eid) not in ok:
+                continue
             it = news_item(read(f'{sub}/{eid}') or '')
             if not it or not it['dates']:
                 continue
             title = it['h2']
             ds = re.findall(r'\d{1,2}\.\d{1,2}\.\d{4}', it['dates'])
             if not title or not ds:
+                continue
+            if kind == 'vidburdur' and (parse_is_date(ds[0]) < classify.EVENTS_FROM or not classify.looks_like_hsk(title, text(it['h3_html'] + it['section']))):
+                skipped_events.append((eid, title))
                 continue
             start, end = parse_is_date(ds[0]), parse_is_date(ds[-1])
             desc = clean(it['h3_html'] + it['section'])
@@ -493,9 +566,12 @@ def main():
             redirects[f'{"vidburdir" if kind == "vidburdur" else "motaskra"}:{eid}'] = f'/web/legacy-event/{kind}/{eid}'
             n += 1
         return n
+    skipped_events: list[tuple[str, str]] = []
     n_ev = event_rows('vidburdur', 'vidburdur')
+    with open(os.path.join(OUT, 'skipped-events.txt'), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(f'{i}\t{t}' for i, t in skipped_events))
     n_mot = event_rows('mot', 'mot')
-    report.append(f'Viðburðir: {n_ev}')
+    report.append(f'Viðburðir: {n_ev} (sleppt {len(skipped_events)} viðburðum annarra vefja)')
     report.append(f'Mót í mótaskrá: {n_mot}')
 
     # ---- HSK met ----
@@ -505,8 +581,8 @@ def main():
         if not it:
             continue
         title = it['h2'] or it['h3']
-        body = clean(it['section'] or it['h3_html'])
-        if not title or not text(body):
+        body = clean((it['section'] or it['h3_html']) + it['after'])
+        if not title or (not text(body) and '<a' not in body):
             continue
         sql.append(f"INSERT INTO records (title,sport,body,sort,legacy_id) VALUES ({q(title)},{q(guess_sport(title))},{q(body)},{n_met * 10},{int(mid)});")
         redirects[f'hsk_met1:{mid}'] = '/mot/hsk-met'
@@ -524,6 +600,7 @@ def main():
 
     # ---- Myndasöfn ----
     n_alb = n_ph = 0
+    last_year = '2006'  # albúm eru í tímaröð; albúm án ártals fá ár næsta albúms á undan
     for aid in files('album'):
         page = read(f'album/{aid}') or ''
         if 'lucee' in page.lower() and 'SESSLANG' in page:
@@ -535,7 +612,9 @@ def main():
         if not title or not imgs:
             continue
         yr = re.search(r'(19|20)\d{2}', title)
-        date = f'{yr.group(0)}-01-01' if yr else '2000-01-01'
+        if yr:
+            last_year = yr.group(0)
+        date = f'{yr.group(0) if yr else last_year}-01-01'
         slug = f'{slugify(title)}-{aid}'
         srcs = [media_key(u) for u in imgs]
         sql.append(f"INSERT INTO albums (slug,title,date,cover,legacy_id) VALUES ({q(slug)},{q(title)},{q(date)},{q(srcs[0])},{int(aid)});")
@@ -563,6 +642,7 @@ def main():
         '-- Efni flutt af gamla hsk.is. Búið til með scripts/migrate/build.py',
         'DELETE FROM photos; DELETE FROM albums; DELETE FROM results; DELETE FROM events; DELETE FROM news;',
         'DELETE FROM committees; DELETE FROM records; DELETE FROM documents; DELETE FROM redirects WHERE old_key NOT LIKE \'path:%\';',
+        "DELETE FROM pages WHERE path LIKE 'um-hsk/log-og-reglugerdir/%';",
         "DELETE FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path='um-hsk') AND path NOT IN ('um-hsk/stjorn-nefndir-og-rad','um-hsk/log-og-reglugerdir','um-hsk/fundargerdir','um-hsk/verkefnasjodur','um-hsk/vidbragdsaaetlun');",
     ]
     with open(os.path.join(OUT, 'import.sql'), 'w', encoding='utf-8') as f:

@@ -114,8 +114,9 @@ def main():
     jobs += [(f'fundargerd/{i}', f'{q}&page=fundargerd&grein={i}') for i in range(1, 40)]
     jobs += [(f'urslit_grein/{i}', f'{q}&page=urslitin&grein={i}') for i in range(1, 40)]
     jobs += [(f'met/{i}', f'{q}&page=hsk_met1&id={i}') for i in ids(html['list/met_b'] + html['list/met_c'], r'id=(\d+)&page=hsk_met1')]
-    ev = ids(html['list/vidburdir'], r'id=(\d+)&lang=1&brid=0&page=vidburdir')
-    jobs += [(f'vidburdur/{i}', f'{q}&page=vidburdir&id={i}') for i in ev]
+    # Viðburðalistinn sýnir aðeins nýjustu viðburði, svo öll númer upp að því hæsta eru sótt
+    ev = ids(html['list/vidburdir'] + html['list/frettir'], r'id=(\d+)&lang=1&brid=0&page=vidburdir')
+    jobs += [(f'vidburdur/{i}', f'{q}&page=vidburdir&id={i}') for i in range(1, max(map(int, ev or ['6900'])) + 30)]
     mot = ids(html['list/vidburdir'] + html['list/motaskra'] + html['list/frettir'], r'id=(\d+)&lang=1&brid=0&page=motaskra')
     top = max(map(int, mot or ['700']))
     jobs += [(f'mot/{i}', f'{q}&page=motaskra&id={i}') for i in range(1, top + 30)]

@@ -26,6 +26,8 @@ UA = 'Mozilla/5.0 (HSK vefflutningur)'
 def download(url: str, path: str) -> bool:
     if os.path.exists(path) and os.path.getsize(path) > 0:
         return True
+    if url.startswith('inline:'):
+        return False
     for i in range(3):
         try:
             req = urllib.request.Request(url, headers={'User-Agent': UA})
