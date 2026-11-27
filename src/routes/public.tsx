@@ -559,7 +559,8 @@ app.get('/*', async (c) => {
       const rows = await all<{ slug: string; name: string; logo: string; sports: string; area: string }>(c.env.DB, 'SELECT slug, name, logo, sports, area FROM clubs ORDER BY name');
       moduleView = (
         <>
-          <div class="club-filter"><label class="sr" for="felag-leit">Leita að félagi</label><input id="felag-leit" type="search" placeholder="Leita að félagi eða íþróttagrein…" data-filter=".club-grid > a" /></div>
+          <div class="club-filter"><label class="sr" for="felag-leit">Leita að félagi</label><input id="felag-leit" type="search" placeholder="Leita að félagi, íþróttagrein eða svæði" data-filter=".club-grid > a" data-empty="#felag-tomt" /></div>
+          <p id="felag-tomt" class="filter-empty" hidden>Ekkert félag fannst.</p>
           <div class="club-grid">
             {rows.map((f) => (
               <a href={'/felag/' + f.slug} data-text={`${f.name} ${f.sports} ${f.area}`.toLowerCase()}>
@@ -574,7 +575,13 @@ app.get('/*', async (c) => {
     }
     case 'committees': {
       const rows = await all<{ name: string; body: string }>(c.env.DB, 'SELECT name, body FROM committees ORDER BY sort, name');
-      moduleView = <div class="committee-grid">{rows.map((r) => <section class="committee"><h2>{r.name}</h2><Prose html={r.body} /></section>)}</div>;
+      moduleView = (
+        <>
+          <div class="club-filter"><label class="sr" for="nefnd-leit">Leita í stjórn, nefndum og ráðum</label><input id="nefnd-leit" type="search" placeholder="Leita að nefnd eða nafni" data-filter=".committee-grid > section" data-empty="#nefnd-tomt" /></div>
+          <p id="nefnd-tomt" class="filter-empty" hidden>Engin nefnd eða manneskja fannst.</p>
+          <div class="committee-grid">{rows.map((r) => <section class="committee" data-text={`${r.name} ${plainText(r.body)}`.toLowerCase()}><h2>{r.name}</h2><Prose html={r.body} /></section>)}</div>
+        </>
+      );
       break;
     }
     case 'documents': {

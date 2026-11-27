@@ -10,11 +10,22 @@
   }
 
   document.querySelectorAll('[data-filter]').forEach((input) => {
-    const items = document.querySelectorAll(input.dataset.filter);
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase();
-      items.forEach((el) => { el.hidden = q !== '' && !(el.dataset.text || el.textContent.toLowerCase()).includes(q); });
-    });
+    const items = [...document.querySelectorAll(input.dataset.filter)];
+    const empty = input.dataset.empty ? document.querySelector(input.dataset.empty) : null;
+    // Öll orð í leitinni þurfa að koma fyrir (hástafir skipta ekki máli)
+    const norm = (t) => t.toLowerCase().replace(/\s+/g, ' ');
+    const filter = () => {
+      const words = norm(input.value).trim().split(' ').filter(Boolean);
+      let shown = 0;
+      items.forEach((el) => {
+        const text = norm(el.dataset.text || el.textContent);
+        el.hidden = !words.every((w) => text.includes(w));
+        if (!el.hidden) shown++;
+      });
+      if (empty) empty.hidden = shown > 0;
+    };
+    input.addEventListener('input', filter);
+    if (input.value) filter();
   });
 
   const gallery = document.querySelector('[data-gallery]');
