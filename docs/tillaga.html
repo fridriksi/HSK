@@ -45,33 +45,42 @@ ul.plain{margin:0;padding-left:1.1em}ul.plain li{margin-bottom:6px}
 .issues div{border-top:2px solid var(--red);padding-top:12px;min-width:0}
 .issues p{color:var(--muted);font-size:.97rem}
 
-/* Sýnishorn af forsíðu */
-.mock{border:1px solid var(--line);background:var(--surface);overflow:hidden;box-shadow:0 18px 40px -24px rgba(1,40,90,.35)}
-.mock .bar{display:flex;gap:6px;align-items:center;padding:8px 12px;background:var(--tint);border-bottom:1px solid var(--line);font:.75rem var(--mono);color:var(--muted)}
-.mock .bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
-.m-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;padding:14px 22px;background:var(--navy);color:#fff}
-:root[data-theme="dark"] .m-nav{background:#1c2a55}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .m-nav{background:#1c2a55}}
-.m-logo{display:flex;align-items:center;gap:10px;font:800 1.05rem var(--display);margin-right:auto}
-.m-logo span{display:grid;place-items:center;width:34px;height:34px;background:#fff;color:#25336e;font-size:.8rem;border-radius:50%}
-.m-nav a{color:#dfe6ff;font-size:.92rem;text-decoration:none}
-.m-hero{display:grid;grid-template-columns:1.4fr 1fr;min-height:250px}
-.m-hero .img{background:linear-gradient(160deg,#0166b3 0%,#25336e 70%);color:#fff;padding:28px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
-.m-hero .img::before{content:"";position:absolute;inset:auto -40px -60px auto;width:260px;height:260px;border:28px solid rgba(255,255,255,.08);border-radius:50%}
-.m-hero .img small{font:600 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.8}
-.m-hero .img h3{font-size:1.55rem;color:#fff;margin-top:6px;max-width:22ch}
-.m-hero .side{padding:20px 22px;display:grid;gap:14px;align-content:start;min-width:0}
-.m-item{display:grid;gap:2px;border-bottom:1px solid var(--line);padding-bottom:12px}
+/* Sýnishorn af forsíðu: alltaf hvítur grunnur, litir úr merki HSK */
+:root{--hsk-blue:#01279a; --hsk-blue-2:#1f4fc4; --hsk-red:#e20404; --hsk-ink:#16203f; --hsk-muted:#5b6582; --hsk-line:#e3e8f2; --hsk-tint:#f2f5fb}
+.mock{border:1px solid var(--line);background:#fff;color:var(--hsk-ink);overflow:hidden;box-shadow:0 18px 40px -24px rgba(1,39,154,.35);color-scheme:light}
+.mock .bar{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#eef1f6;border-bottom:1px solid var(--hsk-line);font:.75rem var(--mono);color:var(--hsk-muted)}
+.mock .bar i{width:9px;height:9px;border-radius:50%;background:#d3d9e4}
+.m-top{height:5px;background:linear-gradient(90deg,var(--hsk-blue) 0 70%,#fff 70% 72%,var(--hsk-red) 72%)}
+.m-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:14px 22px;background:#fff;border-bottom:1px solid var(--hsk-line)}
+.m-logo{display:flex;align-items:center;gap:12px;margin-right:auto;color:var(--hsk-blue);font:800 1.05rem/1.1 var(--display)}
+.m-logo img{height:54px;width:auto}
+.m-logo small{display:block;font:600 .7rem var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--hsk-muted)}
+.m-nav a{color:var(--hsk-ink);font:600 .92rem var(--body);text-decoration:none;padding-bottom:4px;border-bottom:2px solid transparent}
+.m-nav a.on{color:var(--hsk-blue);border-color:var(--hsk-red)}
+.m-hero{display:grid;grid-template-columns:1.4fr 1fr;gap:0}
+.m-hero .img{background:linear-gradient(160deg,var(--hsk-blue-2) 0%,var(--hsk-blue) 75%);color:#fff;padding:28px;display:flex;flex-direction:column;justify-content:flex-end;min-height:250px;position:relative;overflow:hidden}
+.m-hero .img::before{content:"";position:absolute;inset:auto -40px -60px auto;width:260px;height:260px;border:28px solid rgba(255,255,255,.09);border-radius:50%}
+.m-hero .img small{font:600 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+.m-hero .img small b{background:var(--hsk-red);padding:2px 7px;margin-right:8px}
+.m-hero .img h3{font-size:1.55rem;color:#fff;margin-top:10px;max-width:22ch}
+.m-hero .side{padding:20px 22px;display:grid;gap:14px;align-content:start;min-width:0;background:#fff}
+.m-item{display:grid;gap:2px;border-bottom:1px solid var(--hsk-line);padding-bottom:12px}
 .m-item:last-child{border:0}
-.m-item time{font:.75rem var(--mono);color:var(--muted)}
-.m-item b{font:700 .98rem/1.3 var(--display)}
-.m-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}
-.m-row>div{background:var(--surface);padding:18px 22px;min-width:0}
-.m-row h4{margin:0 0 10px;font:700 .75rem var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
-.m-row li{list-style:none;display:flex;gap:10px;font-size:.92rem;padding:5px 0;border-bottom:1px dashed var(--line)}
+.m-item time{font:.75rem var(--mono);color:var(--hsk-red)}
+.m-item b{font:700 .98rem/1.3 var(--display);color:var(--hsk-ink)}
+.m-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:22px;background:#fff;border-top:1px solid var(--hsk-line)}
+.m-row>div{min-width:0}
+.m-row h4{margin:0 0 10px;font:800 .8rem var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--hsk-blue);padding-bottom:6px;border-bottom:2px solid var(--hsk-blue)}
 .m-row ul{margin:0;padding:0}
-.m-row li span{font:.78rem var(--mono);color:var(--red);min-width:44px;font-variant-numeric:tabular-nums}
-.m-foot{padding:14px 22px;background:var(--tint);display:flex;flex-wrap:wrap;gap:6px 24px;font-size:.85rem;color:var(--muted)}
+.m-row li{list-style:none;display:flex;gap:10px;font-size:.92rem;padding:6px 0;border-bottom:1px solid var(--hsk-line);color:var(--hsk-ink)}
+.m-row li span{font:.78rem var(--mono);color:var(--hsk-red);min-width:44px;font-variant-numeric:tabular-nums}
+.m-spons{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:center;padding:16px 22px;background:#fff;border-top:1px solid var(--hsk-line);font:700 .85rem var(--display);color:#9aa3b8;letter-spacing:.04em}
+.m-foot{padding:16px 22px;background:var(--hsk-blue);display:flex;flex-wrap:wrap;gap:6px 24px;font-size:.85rem;color:#dfe6fb}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.swatches div{border:1px solid var(--line);background:var(--surface);min-width:0}
+.swatches i{display:block;height:54px;border-bottom:1px solid var(--line)}
+.swatches p{margin:0;padding:8px 12px;font-size:.88rem}
+.swatches p span{display:block;font:.75rem var(--mono);color:var(--muted)}
 .caption{font-size:.92rem;color:var(--muted);margin-top:10px}
 
 /* Veftré */
@@ -104,6 +113,7 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   .m-hero{grid-template-columns:1fr}
   .m-row{grid-template-columns:1fr}
   .m-nav a{display:none}
+  .m-logo img{height:44px}
 }
 </style>
 
@@ -162,16 +172,24 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 <section>
   <div class="eyebrow">2 · Útlit</div>
   <h2>Sýnishorn af nýrri forsíðu</h2>
-  <p class="prose">Litirnir byggja á HSK-bláa og dökkbláa litnum af núverandi vef, með rauðum lit til áherslu. Fréttir eru efst, síðan koma næstu viðburðir, nýjustu úrslit og mótaskrá, sem er það sem flestir gestir leita að.</p>
-  <div class="mock" role="img" aria-label="Sýnishorn af forsíðu nýs HSK-vefs">
+  <p class="prose">Vefurinn er með hvítum bakgrunni. Litirnir eru teknir beint úr merki HSK: blár fyrir fyrirsagnir, valmynd og fót, og rauður sparlega til áherslu, t.d. á dagsetningum og virkri valmynd. Fréttir eru efst, síðan koma næstu viðburðir, nýjustu úrslit og flýtileiðir. Styrktaraðilar eru neðst á öllum síðum.</p>
+  <div class="swatches">
+    <div><i style="background:#ffffff"></i><p>Hvítur<span>#FFFFFF · bakgrunnur</span></p></div>
+    <div><i style="background:#01279a"></i><p>HSK-blár<span>#01279A · fyrirsagnir, fótur</span></p></div>
+    <div><i style="background:#e20404"></i><p>HSK-rauður<span>#E20404 · áherslur</span></p></div>
+    <div><i style="background:#16203f"></i><p>Texti<span>#16203F · meginmál</span></p></div>
+    <div><i style="background:#f2f5fb"></i><p>Ljós flötur<span>#F2F5FB · kassar, töflur</span></p></div>
+  </div>
+  <div class="mock" role="img" aria-label="Sýnishorn af forsíðu nýs HSK-vefs með hvítum bakgrunni">
     <div class="bar"><i></i><i></i><i></i>&nbsp; hsk.is</div>
+    <div class="m-top"></div>
     <div class="m-nav">
-      <div class="m-logo"><span>HSK</span>Héraðssambandið Skarphéðinn</div>
-      <a>Fréttir</a><a>Mót og úrslit</a><a>Aðildarfélög</a><a>Um HSK</a><a>Myndir</a><a>Leit</a>
+      <div class="m-logo"><img src="hsk-merki.svg" alt=""><div>Héraðssambandið<br>Skarphéðinn<small>Stofnað 1910</small></div></div>
+      <a class="on">Fréttir</a><a>Mót og úrslit</a><a>Viðburðir</a><a>Aðildarfélög</a><a>Um HSK</a><a>Myndir</a>
     </div>
     <div class="m-hero">
       <div class="img">
-        <small>Frétt · 27. nóvember 2026</small>
+        <small><b>Frétt</b>27. nóvember 2026</small>
         <h3>Íþróttaeldhugi ársins 2026, óskað eftir tilnefningum</h3>
       </div>
       <div class="side">
@@ -194,7 +212,8 @@ a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
         <li><span>→</span>Ársskýrsla HSK</li>
         <li><span>→</span>Verkefnasjóður</li></ul></div>
     </div>
-    <div class="m-foot"><span>Selinu, Engjavegi 48, 800 Selfossi</span><span>Sími 482 1189</span><span>hsk@hsk.is</span><span>Styrktaraðilar: Arion banki · Hótel Örk · Lottó · ÍSÍ · UMFÍ</span></div>
+    <div class="m-spons"><span>ARION BANKI</span><span>HÓTEL ÖRK</span><span>LOTTÓ</span><span>ÍSÍ</span><span>UMFÍ</span></div>
+    <div class="m-foot"><span>Selinu, Engjavegi 48, 800 Selfossi</span><span>Sími 482 1189</span><span>hsk@hsk.is</span></div>
   </div>
   <p class="caption">Efnið í sýnishorninu er tekið af núverandi forsíðu hsk.is í dag. Á farsíma raðast allt í einn dálk og valmyndin fer í hamborgarahnapp.</p>
 </section>
