@@ -507,7 +507,7 @@ app.get('/*', async (c) => {
     crumbs.unshift({ title: par.title, path: '/' + par.path });
     parentId = par.parent_id;
   }
-  const children = await all<PageRow>(c.env.DB, "SELECT title, path, body FROM pages WHERE parent_id = ? AND status = 'published' ORDER BY sort, title", p.id);
+  const children = await all<PageRow>(c.env.DB, "SELECT title, path, body FROM pages WHERE parent_id = ? AND status = 'published' ORDER BY sort, title COLLATE NOCASE", p.id);
   const base = '/' + p.path;
   let moduleView: Child = null;
   switch (p.module) {
@@ -621,6 +621,24 @@ app.get('/*', async (c) => {
           <Pager page={page} hasNext={rows.length > 24} base={base} />
         </>
       );
+      break;
+    }
+    case 'subpages':
+    case 'laws': {
+      // Sjálfvirkur tenglalisti yfir undirsíður. „laws“ flokkar í Lög, Reglugerðir og Aðrar reglur eftir upphafi titils.
+      const list = (items: PageRow[]) => (
+        <ul class="link-list">{items.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul>
+      );
+      if (p.module === 'subpages') {
+        moduleView = <div class="prose">{list(children)}</div>;
+      } else {
+        const groups: [string, PageRow[]][] = [
+          ['Lög', children.filter((ch) => /^lög\b/i.test(ch.title))],
+          ['Reglugerðir', children.filter((ch) => /^reglugerð/i.test(ch.title))],
+        ];
+        groups.push(['Aðrar reglur', children.filter((ch) => !groups.some(([, g]) => g.includes(ch)))]);
+        moduleView = <div class="prose">{groups.filter(([, g]) => g.length).map(([title, g]) => <><h2>{title}</h2>{list(g)}</>)}</div>;
+      }
       break;
     }
     case 'sponsors': {

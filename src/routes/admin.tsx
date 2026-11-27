@@ -300,6 +300,7 @@ type PageRow = { id: number; parent_id: number | null; slug: string; path: strin
 const MODULES: Record<string, string> = {
   '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar', submitted: 'Aðsendar greinar', events: 'Viðburðadagatal', competitions: 'Mótaskrá',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
+  subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (flokkaður listi yfir undirsíður)',
 };
 
 function staffOnly(c: Context<AppEnv>) {

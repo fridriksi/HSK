@@ -73,6 +73,21 @@ try {
   ok(sub.ok, 'Undirsíða birtist á /um-hsk/prufusida-…');
   ok((await (await fetch(BASE + '/')).text()).includes(`Prufusíða ${stamp}`), 'Undirsíða birtist í valmynd');
 
+  // 3b. Ný reglugerð birtist sjálfkrafa í flokkaða listanum á Lög og reglugerðir og hverfur þegar henni er eytt
+  await admin.goto(`${BASE}/stjorn/sidur/nytt`);
+  await admin.fill('#title', `Reglugerð um prufumót ${stamp}`);
+  await admin.selectOption('#parent_id', { label: 'Lög og reglugerðir (/um-hsk/log-og-reglugerdir)' });
+  await admin.uncheck('input[name=in_menu]');
+  await setRte(admin, '<p>1. gr. Prufa.</p>');
+  await admin.click('button[value=published]');
+  await admin.waitForURL(/m=vistad/);
+  const lawsHtml = await (await fetch(`${BASE}/um-hsk/log-og-reglugerdir`)).text();
+  const regSection = lawsHtml.split('<h2>Reglugerðir</h2>')[1]?.split('<h2>')[0] ?? '';
+  ok(regSection.includes(`Reglugerð um prufumót ${stamp}`), 'Ný reglugerð birtist undir Reglugerðir á Lög og reglugerðir');
+  await admin.click('button:has-text("Eyða síðu")');
+  await admin.waitForURL(/m=eytt/);
+  ok(!(await (await fetch(`${BASE}/um-hsk/log-og-reglugerdir`)).text()).includes(`prufumót ${stamp}`), 'Eydd reglugerð hverfur af listanum');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
