@@ -3,22 +3,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "vendor": "node scripts/copy-vendor.mjs",
     "db:migrate": "wrangler d1 migrations apply hsk --local",
     "db:seed": "wrangler d1 execute hsk --local --file=seed/seed.sql && node scripts/seed-media.mjs",
-    "setup": "npm run vendor && npm run db:migrate && npm run db:seed",
-    "dev": "npm run vendor && wrangler dev",
-    "check": "tsc --noEmit",
+    "setup": "npm run db:migrate && npm run db:seed",
+    "dev": "npm run static && wrangler dev",
+    "check": "npm run static && tsc --noEmit",
     "test": "node scripts/smoke-test.mjs",
-    "deploy": "npm run vendor && wrangler deploy"
+    "deploy": "npm run static && wrangler deploy",
+    "static": "node scripts/build-static.mjs"
   },
   "dependencies": {
     "hono": "^4.13.23",
-    "tinymce": "^6.8.5",
     "xss": "^1.0.17"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261127.1",
+    "tinymce": "^6.8.5",
     "typescript": "^7.0.2",
     "wrangler": "^4.169.0"
   }

@@ -3,7 +3,6 @@ import { FilterXSS } from 'xss';
 export type Env = {
   DB: D1Database;
   MEDIA: R2Bucket;
-  ASSETS: Fetcher;
   SITE_URL: string;
   ADMIN_EMAILS: string;
   STAFF_DOMAIN: string;

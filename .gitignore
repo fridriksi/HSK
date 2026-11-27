@@ -4,3 +4,4 @@ public/vendor/
 .dev.vars
 *.log
 .migration/
+src/static-files.ts

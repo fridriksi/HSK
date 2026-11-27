@@ -1,6 +1,7 @@
 // Prófar helstu leiðir í gegnum vef og vefumsjón á staðbundnum þjóni (npm run dev).
 // Krefst ADMIN_EMAILS=stjornandi@hsk.is í .dev.vars og DEV_LOGIN_LINKS=true.
 import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 
@@ -30,6 +31,11 @@ const browser = await chromium.launch();
 async function newPage() {
   const ctx = await browser.newContext();
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  // Ritillinn kemur af jsDelivr; í prófunum er staðbundið afrit notað (sama útgáfa)
+  await ctx.route(/cdn\.jsdelivr\.net\/npm\/tinymce@6\.8\.5\//, (r) => {
+    const file = 'node_modules/tinymce/' + new URL(r.request().url()).pathname.split('/tinymce@6.8.5/')[1];
+    return existsSync(file) ? r.fulfill({ path: file }) : r.fulfill({ status: 404 });
+  });
   return ctx.newPage();
 }
 try {

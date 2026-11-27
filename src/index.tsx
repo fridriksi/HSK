@@ -3,6 +3,7 @@ import type { AppEnv } from './lib';
 import { one } from './lib';
 import admin from './routes/admin';
 import site, { notFound } from './routes/public';
+import { staticFile } from './static';
 
 const app = new Hono<AppEnv>();
 
@@ -22,6 +23,10 @@ app.use('*', async (c, next) => {
     if (hit) c.res = c.redirect(hit.new_path, 301);
   }
 });
+
+app.get('/css/*', (c) => staticFile(new URL(c.req.url).pathname) ?? c.notFound());
+app.get('/js/*', (c) => staticFile(new URL(c.req.url).pathname) ?? c.notFound());
+app.get('/img/*', (c) => staticFile(new URL(c.req.url).pathname) ?? c.notFound());
 
 app.route('/stjorn', admin);
 app.route('/', site);

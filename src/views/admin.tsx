@@ -52,7 +52,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
         ) : (
           <main class="login-main">{children}</main>
         )}
-        <script src="/vendor/tinymce/tinymce.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.5/tinymce.min.js" referrerpolicy="origin"></script>
         <script src="/js/admin.js"></script>
       </body>
     </html>
