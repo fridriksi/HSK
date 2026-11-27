@@ -718,9 +718,12 @@ app.get('/*', async (c) => {
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
         `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
       const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', met: 'Metaskrár', annad: 'Annað' };
+      // Aðeins flokkar sem innihalda skjöl fá hnapp
+      const used = new Set((await all<{ category: string }>(c.env.DB, 'SELECT DISTINCT category FROM documents')).map((r) => r.category));
+      const shown = Object.entries(cats).filter(([k]) => used.has(k));
       moduleView = (
         <>
-          <nav class="year-filter"><a href={base} class={!cat ? 'on' : ''}>Allt</a>{Object.entries(cats).map(([k, v]) => <a href={`${base}?flokkur=${k}`} class={cat === k ? 'on' : ''}>{v}</a>)}</nav>
+          {shown.length > 1 && <nav class="year-filter"><a href={base} class={!cat ? 'on' : ''}>Allt</a>{shown.map(([k, v]) => <a href={`${base}?flokkur=${k}`} class={cat === k ? 'on' : ''}>{v}</a>)}</nav>}
           <ul class="doc-list">
             {rows.map((d) => (
               <li>
