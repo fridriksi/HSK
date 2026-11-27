@@ -10,6 +10,7 @@ import {
   googleEnabled, googleAuthUrl, googleEmailFromCode, randomId,
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
+import { GRANT_FIELDS } from '../grant';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
 import { Icon } from '../views/icons';
@@ -301,7 +302,7 @@ const MODULES: Record<string, string> = {
   '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar', events: 'Mót og viðburðir (dagatal)', competitions: 'Mótaskrá',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
   subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (flokkaður listi yfir undirsíður)',
-  sections: 'Undirsíður á einni síðu, hver í felliglugga', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
+  sections: 'Undirsíður á einni síðu, hver í felliglugga', grant: 'Umsóknarform Verkefnasjóðs', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
 };
 
 function staffOnly(c: Context<AppEnv>) {
@@ -518,6 +519,97 @@ app.post('/stillingar', async (c) => {
   await setSetting(c.env.DB, 'notice', plainText(notice) ? notice : '');
   await logRevision(c.env.DB, 'settings', 0, c.get('user')!.id, 'update', Object.fromEntries(f));
   return c.redirect('/stjorn/stillingar?m=vistad');
+});
+
+
+// ---------- Umsóknir (Verkefnasjóður) ----------
+
+type AppRow = { id: number; kind: string; title: string; data: string; files: string; status: string; note: string; created_at: string };
+
+app.get('/umsoknir', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const rows = await all<AppRow>(c.env.DB, 'SELECT id, title, data, status, created_at FROM applications ORDER BY status, created_at DESC LIMIT 300');
+  return page(c, 'Umsóknir', 'umsoknir', (
+    <>
+      <h1>Umsóknir í Verkefnasjóð</h1>
+      <p class="lead">Umsóknir sem berast í gegnum formið á síðunni Verkefnasjóður. Nýjar umsóknir eru efst.</p>
+      {rows.length === 0 ? <p class="muted">Engar umsóknir hafa borist.</p> : (
+        <table class="tbl">
+          <thead><tr><th>Umsókn</th><th>Upphæð</th><th>Barst</th><th>Staða</th></tr></thead>
+          <tbody>{rows.map((r) => {
+            const d = JSON.parse(r.data) as Record<string, string>;
+            return (
+              <tr>
+                <td><a href={`/stjorn/umsoknir/${r.id}`}><strong>{d.felag}</strong></a><div class="muted small">{d.verkefni}</div></td>
+                <td>{Number(d.upphaed || 0).toLocaleString('is-IS')} kr.</td>
+                <td>{dateShort(r.created_at)}</td>
+                <td>{r.status === 'ny' ? <span class="pill pending">Ný</span> : <span class="pill published">Afgreidd</span>}</td>
+              </tr>
+            );
+          })}</tbody>
+        </table>
+      )}
+    </>
+  ));
+});
+
+app.get('/umsoknir/:id{[0-9]+}', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const r = await one<AppRow>(c.env.DB, 'SELECT * FROM applications WHERE id = ?', c.req.param('id'));
+  if (!r) return c.notFound();
+  const d = JSON.parse(r.data) as Record<string, string>;
+  const files = JSON.parse(r.files) as { key: string; name: string; label: string }[];
+  return page(c, r.title, 'umsoknir', (
+    <>
+      <p><a href="/stjorn/umsoknir">← Allar umsóknir</a></p>
+      <h1>{d.verkefni}</h1>
+      <p class="lead">{d.felag} · barst {dateShort(r.created_at)} · {r.status === 'ny' ? 'Ný' : 'Afgreidd'}</p>
+      <dl class="app-data">
+        {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${Number(d[f.name] || 0).toLocaleString('is-IS')} kr.` : d[f.name] || '—'}</dd></>)}
+        <dt>Fylgiskjöl</dt>
+        <dd>{files.length ? files.map((f, i) => <div><a href={`/stjorn/umsoknir/${r.id}/skra/${i}`}>{f.name}</a> <span class="muted small">({f.label})</span></div>) : '—'}</dd>
+      </dl>
+      <form method="post" action={`/stjorn/umsoknir/${r.id}/stada`} class="edit-form">
+        <div class="field wide"><label for="note">Athugasemd starfsfólks (sést ekki opinberlega)</label><textarea id="note" name="note" rows={3}>{r.note}</textarea></div>
+        <div class="form-actions">
+          <button class="btn" name="status" value={r.status === 'ny' ? 'afgreidd' : 'ny'}>{r.status === 'ny' ? 'Merkja afgreidda' : 'Merkja sem nýja'}</button>
+          <button class="btn ghost" name="status" value={r.status}>Vista athugasemd</button>
+        </div>
+      </form>
+      <form method="post" action={`/stjorn/umsoknir/${r.id}/eyda`} class="danger-zone" data-confirm="Eyða umsókninni og fylgiskjölum hennar fyrir fullt og allt?">
+        <button class="btn danger">Eyða umsókn</button>
+      </form>
+    </>
+  ));
+});
+
+app.get('/umsoknir/:id{[0-9]+}/skra/:n{[0-9]+}', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const r = await one<AppRow>(c.env.DB, 'SELECT files FROM applications WHERE id = ?', c.req.param('id'));
+  const f = r ? (JSON.parse(r.files) as { key: string; name: string; type: string }[])[Number(c.req.param('n'))] : undefined;
+  const obj = f && await c.env.MEDIA.get(f.key);
+  if (!f || !obj) return c.notFound();
+  return new Response(obj.body, { headers: {
+    'content-type': f.type || 'application/octet-stream',
+    'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(f.name)}`,
+    'cache-control': 'private, no-store',
+  } });
+});
+
+app.post('/umsoknir/:id{[0-9]+}/stada', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const f = await c.req.formData();
+  const status = f.get('status') === 'afgreidd' ? 'afgreidd' : 'ny';
+  await run(c.env.DB, 'UPDATE applications SET status = ?, note = ? WHERE id = ?', status, String(f.get('note') ?? '').slice(0, 5000), c.req.param('id'));
+  return c.redirect(`/stjorn/umsoknir/${c.req.param('id')}?m=vistad`);
+});
+
+app.post('/umsoknir/:id{[0-9]+}/eyda', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const r = await one<AppRow>(c.env.DB, 'SELECT files FROM applications WHERE id = ?', c.req.param('id'));
+  if (r) for (const f of JSON.parse(r.files) as { key: string }[]) await c.env.MEDIA.delete(f.key);
+  await run(c.env.DB, 'DELETE FROM applications WHERE id = ?', c.req.param('id'));
+  return c.redirect('/stjorn/umsoknir?m=eytt');
 });
 
 // ---------- Notendur ----------

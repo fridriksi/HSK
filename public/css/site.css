@@ -400,3 +400,20 @@ details.record[open] { padding-bottom: 12px; }
 .doc-desc p { margin: 0 0 4px; }
 .cat-intro { max-width: 760px; margin: 8px 0 24px; padding: 18px 20px; background: var(--tint); border-radius: var(--radius); }
 .cat-intro .prose > :last-child { margin-bottom: 0; }
+/* Umsóknarform Verkefnasjóðs */
+.grant { max-width: 760px; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.grant h2 { font-size: 1.45rem; margin: 0 0 6px; }
+.grant-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; margin-top: 18px; align-items: start; }
+.gf { grid-column: 1 / -1; display: grid; gap: 5px; min-width: 0; }
+.gf.half { grid-column: span 1; }
+.gf label { font-weight: 600; }
+.gf small { color: var(--muted); font-size: .88rem; }
+.gf input, .gf textarea { font: inherit; padding: 10px 12px; border: 1px solid #c9d2e6; border-radius: var(--radius); background: #fff; color: var(--ink); width: 100%; }
+.gf input[type=file] { padding: 8px; background: var(--tint); }
+.gf input:focus, .gf textarea:focus { outline: 3px solid var(--blue-2); outline-offset: 1px; border-color: var(--blue); }
+.gf.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.btn-hero.solid { background: var(--blue); color: #fff; justify-self: start; }
+.btn-hero.solid:hover { background: var(--blue-dark); color: #fff; }
+.form-error { background: #fdecec; color: #8a1c1c; padding: 12px 14px; border-radius: var(--radius); }
+.form-ok { background: #e6f5ec; color: #1f5f3b; padding: 14px 16px; border-radius: var(--radius); font-weight: 600; }
+@media (max-width: 720px) { .grant-form { grid-template-columns: 1fr; } .gf.half { grid-column: 1 / -1; } }

@@ -33,6 +33,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                   {staff && link('/stjorn/sidur', 'Síður og valmynd', 'sidur')}
                   {contentTypes.filter((t) => staff || t.clubSubmit || t.clubOwnRecord).map((t) =>
                     link(t.clubOwnRecord && !staff ? `/stjorn/${t.key}/${user.club_id ?? 0}` : `/stjorn/${t.key}`, !staff && t.clubOwnRecord ? 'Mitt félag' : t.label, t.key))}
+                  {staff && link('/stjorn/umsoknir', 'Umsóknir', 'umsoknir')}
                   {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
                   {staff && link('/stjorn/stillingar', 'Forsíða og stillingar', 'stillingar')}
                   {user.role === 'admin' && link('/stjorn/notendur', 'Notendur', 'notendur')}

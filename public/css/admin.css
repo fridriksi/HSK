@@ -142,3 +142,7 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
   .tbl { display: block; overflow-x: auto; }
 }
 .sub-h { font-size: 1.1rem; margin: 12px 0 0; }
+.app-data { display: grid; grid-template-columns: minmax(160px, 240px) 1fr; gap: 8px 20px; margin: 20px 0 28px; max-width: 900px; }
+.app-data dt { font-weight: 700; color: var(--muted); }
+.app-data dd { margin: 0; }
+@media (max-width: 700px) { .app-data { grid-template-columns: 1fr; } .app-data dd { margin-bottom: 8px; } }

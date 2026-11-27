@@ -8,6 +8,7 @@ import {
   type MenuItem, type SiteChrome, type NewsRow, type EventRow,
 } from '../views/site';
 import { Icon } from '../views/icons';
+import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 
 const app = new Hono<AppEnv>();
 const PER_PAGE = 12;
@@ -159,7 +160,7 @@ app.get('/', async (c) => {
       )}
 
       <section class="wrap h2-block h2-tiles">
-        <a href="/um-hsk/fundargerdir?flokkur=verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
+        <a href="/um-hsk/verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
         <a href="/um-hsk/log-og-reglugerdir"><strong>Fyrir félögin</strong><span>Lög, reglugerðir, eyðublöð og innskráning formanna</span></a>
         <a href="/um-hsk"><strong>Um HSK</strong><span>Saga, stjórn, nefndir og starfsfólk</span></a>
       </section>
@@ -500,6 +501,7 @@ app.get('/rss.xml', async (c) => {
 
 app.get('/media/*', async (c) => {
   const key = decodeURIComponent(new URL(c.req.url).pathname.slice('/media/'.length));
+  if (key.startsWith('private/')) return c.text('Skrá fannst ekki', 404);
   const obj = await c.env.MEDIA.get(key);
   if (!obj) return c.text('Skrá fannst ekki', 404);
   const headers = new Headers();
@@ -507,6 +509,52 @@ app.get('/media/*', async (c) => {
   headers.set('etag', obj.httpEtag);
   headers.set('cache-control', 'public, max-age=31536000, immutable');
   return new Response(obj.body, { headers });
+});
+
+// ---------- Umsókn í Verkefnasjóð ----------
+
+const GrantForm = ({ values = {}, error }: { values?: Record<string, string>; error?: string }) => (
+  <section class="grant" id="umsokn">
+    <h2>Sækja um styrk</h2>
+    <p class="muted">Reitir merktir * eru nauðsynlegir. Umsóknin berst skrifstofu HSK.</p>
+    {error && <p class="form-error" role="alert">{error}</p>}
+    <form method="post" action="/umsokn/verkefnasjodur" enctype="multipart/form-data" class="grant-form">
+      {GRANT_FIELDS.map((f) => (
+        <div class={'gf' + (f.half ? ' half' : '')}>
+          <label for={'g-' + f.name}>{f.label}{f.required && ' *'}</label>
+          {f.type === 'textarea'
+            ? <textarea id={'g-' + f.name} name={f.name} rows={6} required={f.required}>{values[f.name] ?? ''}</textarea>
+            : <input id={'g-' + f.name} name={f.name} type={f.type === 'number' ? 'text' : (f.type ?? 'text')} inputmode={f.type === 'number' || f.name === 'kennitala' ? 'numeric' : undefined} value={values[f.name] ?? ''} required={f.required} />}
+          {f.help && <small>{f.help}</small>}
+        </div>
+      ))}
+      {GRANT_FILES.map((f) => (
+        <div class="gf">
+          <label for={'g-' + f.name}>{f.label}</label>
+          <input id={'g-' + f.name} name={f.name} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.jpg,.jpeg,.png" />
+        </div>
+      ))}
+      <div class="gf hp" aria-hidden="true"><label for="g-vefsida">Vefsíða</label><input id="g-vefsida" name="vefsida" tabindex={-1} autocomplete="off" /></div>
+      <div class="gf half">
+        <label for="g-daemi">Hver er summan af tveimur og þremur? *</label>
+        <input id="g-daemi" name="daemi" inputmode="numeric" required autocomplete="off" />
+        <small>Svaraðu með tölustöfum. Þetta ver formið gegn ruslpósti.</small>
+      </div>
+      <div class="gf"><button class="btn-hero solid">Senda umsókn</button></div>
+    </form>
+  </section>
+);
+
+app.post('/umsokn/verkefnasjodur', async (c) => {
+  const form = await c.req.formData();
+  const r = await saveGrant(c.env, form);
+  if (!r.error) return c.redirect('/um-hsk/verkefnasjodur?umsokn=send#umsokn', 303);
+  return render(c, 'Umsókn í Verkefnasjóð', (
+    <>
+      <PageHead title="Umsókn í Verkefnasjóð" />
+      <div class="wrap block"><GrantForm values={r.values} error={r.error} /></div>
+    </>
+  ), { status: 400 });
 });
 
 // ---------- Gamlar slóðir af hsk.is ----------
@@ -526,7 +574,7 @@ app.get('/web/*', async (c) => {
   const sections: Record<string, string> = {
     frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
     log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/dagskra?tegund=mot', vidburdir_l: '/mot/dagskra',
-    myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk', verkefnasjodur: '/um-hsk/fundargerdir?flokkur=verkefnasjodur',
+    myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk', verkefnasjodur: '/um-hsk/verkefnasjodur',
   };
   return c.redirect(sections[page] ?? '/', 301);
 });
@@ -664,6 +712,12 @@ app.get('/*', async (c) => {
       );
       break;
     }
+    case 'grant': {
+      moduleView = c.req.query('umsokn') === 'send'
+        ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
+        : <GrantForm />;
+      break;
+    }
     case 'sections':
     case 'archive': {
       // Undirsíður birtar á einni síðu: „sections“ með efnisyfirliti, „archive“ með nýjasta opið og eldra í felligluggum
@@ -725,7 +779,7 @@ app.get('/*', async (c) => {
       const cat = c.req.query('flokkur') || '';
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
         `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
-      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', verkefnasjodur: 'Verkefnasjóður', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
+      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
       // Inngangstexti flokks: undirsíða skjalasafnsins með sama slóðarheiti og flokkurinn
       const intro = cat ? children.find((ch) => ch.slug === cat) : undefined;
       // Aðeins flokkar sem innihalda skjöl fá hnapp
@@ -738,7 +792,7 @@ app.get('/*', async (c) => {
           <ul class="doc-list">
             {rows.map((d) => (
               <li>
-                <time>{d.category === 'verkefnasjodur' ? d.date.slice(0, 4) : dateShort(d.date)}</time>
+                <time>{dateShort(d.date)}</time>
                 {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
                 <span class="muted small">{cats[d.category] ?? d.category}</span>
               </li>

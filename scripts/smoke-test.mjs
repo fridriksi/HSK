@@ -88,6 +88,33 @@ try {
   await admin.waitForURL(/m=eytt/);
   ok(!(await (await fetch(`${BASE}/um-hsk/log-og-reglugerdir`)).text()).includes(`prufumót ${stamp}`), 'Eydd reglugerð hverfur af listanum');
 
+  // 3c. Umsókn í Verkefnasjóð: send af opinbera vefnum, berst í vefumsjón, fylgiskjal er ekki opinbert
+  const gp = await newPage();
+  await gp.goto(`${BASE}/um-hsk/verkefnasjodur`);
+  const fill = async (vals) => { for (const [k, v] of Object.entries(vals)) await gp.fill(`#g-${k}`, v); };
+  const grant = { felag: `Umf. Prufa ${stamp}`, kennitala: '470169-1234', banki: '0152-26-1234', heimili: 'Engjavegi 1', postnumer: '800 Selfoss',
+    abyrgdarmadur: 'Jón Jónsson', simi: '8991234', netfang: 'prufa@example.com', verkefni: `Leikjanámskeið ${stamp}`, lysing: 'Námskeið fyrir börn.', fjarhagsaaetlun: 'Kostnaður 200.000 kr.', upphaed: '150000' };
+  await fill({ ...grant, daemi: '4' });
+  await gp.click('button:has-text("Senda umsókn")');
+  ok(await gp.locator('.form-error:has-text("reikningsdæminu")').count() > 0, 'Rangt svar við reikningsdæmi stöðvar umsókn og innsláttur helst');
+  ok((await gp.inputValue('#g-felag')) === grant.felag, 'Útfylltir reitir haldast eftir villu');
+  await gp.fill('#g-daemi', '5');
+  await gp.setInputFiles('#g-skjal1', { name: 'lysing.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 prufa') });
+  await gp.click('button:has-text("Senda umsókn")');
+  await gp.waitForURL(/umsokn=send/);
+  ok(await gp.locator('.form-ok').count() > 0, 'Umsókn í Verkefnasjóð send af vefnum');
+  await admin.goto(`${BASE}/stjorn/umsoknir`);
+  ok(await admin.locator(`text=Umf. Prufa ${stamp}`).count() > 0, 'Umsóknin birtist í vefumsjón');
+  await admin.click(`text=Umf. Prufa ${stamp}`);
+  ok(await admin.locator('dd:has-text("4701691234")').count() > 0, 'Kennitala vistuð án bandstriks');
+  const fileHref = await admin.locator('a:has-text("lysing.pdf")').getAttribute('href');
+  const dl = await admin.request.get(`${BASE}${fileHref}`);
+  ok(dl.ok() && (await dl.text()).includes('%PDF'), 'Starfsfólk getur sótt fylgiskjal');
+  ok((await (await fetch(`${BASE}${fileHref}`, { redirect: 'manual' })).status) !== 200, 'Fylgiskjal er ekki aðgengilegt án innskráningar');
+  await admin.click('button:has-text("Eyða umsókn")');
+  await admin.waitForURL(/m=eytt/);
+  ok(await admin.locator(`text=Umf. Prufa ${stamp}`).count() === 0, 'Umsókn eytt');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
