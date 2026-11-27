@@ -666,11 +666,11 @@ app.get('/*', async (c) => {
     case 'archive': {
       // Undirsíður birtar á einni síðu: „sections“ með efnisyfirliti, „archive“ með nýjasta opið og eldra í felligluggum
       if (p.module === 'sections') {
+        // Hver kafli opnast í felliglugga þegar smellt er á hann
         moduleView = (
-          <>
-            <nav class="toc" aria-label="Efnisyfirlit"><h2>Efni</h2><div class="prose"><ul class="link-list">{children.map((ch) => <li><a href={'#' + ch.slug}>{ch.title}</a></li>)}</ul></div></nav>
-            {children.map((ch) => <section class="merged" id={ch.slug}><h2>{ch.title}</h2><Prose html={ch.body} /></section>)}
-          </>
+          <div class="accordion">
+            {children.map((ch) => <details class="acc" id={ch.slug}><summary>{ch.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={ch.body} /></div></details>)}
+          </div>
         );
       } else {
         const [latest, ...older] = children;
@@ -678,7 +678,7 @@ app.get('/*', async (c) => {
           <>
             <section class="merged" id={latest.slug}><h2>{latest.title}</h2><Prose html={latest.body} /></section>
             {older.length > 0 && <h2 class="older-h">Eldri þing</h2>}
-            {older.map((ch) => <details class="record" id={ch.slug}><summary><strong>{ch.title}</strong></summary><Prose html={ch.body} /></details>)}
+            <div class="accordion">{older.map((ch) => <details class="acc" id={ch.slug}><summary>{ch.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={ch.body} /></div></details>)}</div>
           </>
         ) : null;
       }

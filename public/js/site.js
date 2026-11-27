@@ -39,6 +39,11 @@
   // Opna fellikafla sem vísað er á með # (t.d. eldra héraðsþing)
   const openHash = () => { const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); } };
   openHash(); window.addEventListener('hashchange', openHash);
+  // Opinn felligluggi fær eigin slóð (#kafli) svo hægt sé að deila honum
+  document.querySelectorAll('details.acc[id]').forEach((d) => d.addEventListener('toggle', () => {
+    if (d.open) history.replaceState(null, '', '#' + d.id);
+    else if (location.hash === '#' + d.id) history.replaceState(null, '', location.pathname + location.search);
+  }));
 
   const gallery = document.querySelector('[data-gallery]');
   if (gallery) {

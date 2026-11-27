@@ -301,7 +301,7 @@ const MODULES: Record<string, string> = {
   '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar', events: 'Mót og viðburðir (dagatal)', competitions: 'Mótaskrá',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
   subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (flokkaður listi yfir undirsíður)',
-  sections: 'Undirsíður á einni síðu með efnisyfirliti', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
+  sections: 'Undirsíður á einni síðu, hver í felliglugga', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
 };
 
 function staffOnly(c: Context<AppEnv>) {

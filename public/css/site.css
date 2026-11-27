@@ -381,3 +381,14 @@ details.record { max-width: 760px; scroll-margin-top: 90px; }
 details.record[open] { padding-bottom: 12px; }
 
 .section-tabs ul::-webkit-scrollbar { display: none; }
+/* Felligluggar (Saga, eldri þing) */
+.accordion { max-width: 760px; border-top: 1px solid var(--line); margin-top: 8px; }
+.acc { border-bottom: 1px solid var(--line); scroll-margin-top: 90px; }
+.acc summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 2px; cursor: pointer; font-weight: 600; list-style: none; }
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary:hover { color: var(--blue); }
+.acc summary .icon { transition: transform .15s; }
+.acc[open] summary { color: var(--blue); }
+.acc[open] summary .icon { transform: rotate(180deg); }
+.acc-body { padding: 0 2px 18px; }
+@media (prefers-reduced-motion: reduce) { .acc summary .icon { transition: none; } }
