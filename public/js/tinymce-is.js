@@ -17,5 +17,5 @@ tinymce.addI18n('is_IS', {
   'Row': 'Röð', 'Column': 'Dálkur', 'Cell': 'Reitur', 'Insert row before': 'Ný röð fyrir ofan', 'Insert row after': 'Ný röð fyrir neðan',
   'Delete row': 'Eyða röð', 'Insert column before': 'Nýr dálkur vinstra megin', 'Insert column after': 'Nýr dálkur hægra megin',
   'Delete column': 'Eyða dálki', 'Merge cells': 'Sameina reiti', 'Split cell': 'Skipta reit', 'Header row': 'Fyrirsagnaröð',
-  'Words': 'Orð', '{0} words': '{0} orð', 'Rich Text Area': 'Ritill', 'Find and replace': 'Finna og skipta út',
+  'Words': 'Orð', 'Formats': 'Snið', '{0} words': '{0} orð', 'Rich Text Area': 'Ritill', 'Find and replace': 'Finna og skipta út',
 });

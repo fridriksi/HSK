@@ -471,14 +471,20 @@ def main():
             law_parts.append((lid, title, body))
     if law_parts:
         # Hver lög/reglugerð fær sína undirsíðu (allt saman færi yfir hámarksstærð í D1)
-        items = []
+        typos = {'Relgugerð': 'Reglugerð', 'hérðaðsmót': 'héraðsmót'}
+        groups: dict[str, list[str]] = {'Lög': [], 'Reglugerðir': [], 'Aðrar reglur': []}
         for i, (lid, t, b) in enumerate(law_parts):
+            for wrong, right in typos.items():
+                t = t.replace(wrong, right)
             slug = slugify(t)
             path = f'um-hsk/log-og-reglugerdir/{slug}'
             sql.append(f"INSERT INTO pages (parent_id,slug,path,title,body,sort,in_menu) VALUES ((SELECT id FROM pages WHERE path='um-hsk/log-og-reglugerdir'),{q(slug)},{q(path)},{q(t)},{q(b)},{(i + 1) * 10},0);")
             redirects[f'login:{lid}'] = '/' + path
-            items.append(f'<li><a href="/{path}">{html.escape(t)}</a></li>')
-        sql.append(f"UPDATE pages SET body={q('<p>Lög Héraðssambandsins Skarphéðins og reglugerðir sambandsins.</p><ul>' + ''.join(items) + '</ul>')} WHERE path='um-hsk/log-og-reglugerdir';")
+            group = 'Lög' if t.startswith('Lög') else 'Reglugerðir' if t.startswith('Reglugerð') else 'Aðrar reglur'
+            groups[group].append(f'<li><a href="/{path}">{html.escape(t)}</a></li>')
+        body = '<p>Lög Héraðssambandsins Skarphéðins og reglugerðir sambandsins.</p>' + ''.join(
+            f'<h2>{g}</h2><ul class="link-list">{"".join(items)}</ul>' for g, items in groups.items() if items)
+        sql.append(f"UPDATE pages SET body={q(body)} WHERE path='um-hsk/log-og-reglugerdir';")
     report.append(f'Lög og reglugerðir (kaflar): {len(law_parts)}')
 
     # ---- Fundargerðir og skjöl ----

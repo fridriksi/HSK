@@ -148,6 +148,12 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .prose th, .prose td, .list-table th, .list-table td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .prose th, .list-table th { background: var(--tint); color: var(--ink); font-weight: 700; }
 .prose tr:nth-child(even) td { background: #fafbfe; }
+.prose ul.link-list { list-style: none; padding: 0; margin: .5em 0 2em; border-top: 1px solid var(--line); }
+.prose ul.link-list li { margin: 0; border-bottom: 1px solid var(--line); }
+.prose ul.link-list a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 2px; color: var(--ink); text-decoration: none; font-weight: 600; }
+.prose ul.link-list a::after { content: ""; flex: none; width: 1.1em; height: 1.1em; background: var(--blue); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat; }
+.prose ul.link-list a:hover { color: var(--blue); }
+.prose h2:first-child, .prose p:first-child + h2 { margin-top: 1em; }
 .prose iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; width: 100%; border: 0; }
 .table-wrap { overflow-x: auto; }
 .num { font-variant-numeric: tabular-nums; white-space: nowrap; }

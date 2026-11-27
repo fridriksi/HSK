@@ -42,7 +42,7 @@
       license_key: 'gpl',
       language: 'is_IS',
       language_url: document.querySelector('script[data-tinymce-is]')?.dataset.tinymceIs || '/js/tinymce-is.js',
-      content_style: 'body{font-family:"Source Sans 3",system-ui,sans-serif;font-size:17px;line-height:1.6;color:#16203f;max-width:760px;margin:16px auto} table{border-collapse:collapse} td,th{border:1px solid #e3e8f2;padding:6px 8px} img{max-width:100%;height:auto}',
+      content_style: 'ul.link-list{list-style:none;padding:0;border-top:1px solid #e3e8f2} ul.link-list li{border-bottom:1px solid #e3e8f2;padding:8px 0;font-weight:600} body{font-family:"Source Sans 3",system-ui,sans-serif;font-size:17px;line-height:1.6;color:#16203f;max-width:760px;margin:16px auto} table{border-collapse:collapse} td,th{border:1px solid #e3e8f2;padding:6px 8px} img{max-width:100%;height:auto}',
       convert_urls: false,
       entity_encoding: 'raw',
       relative_urls: false,
@@ -64,13 +64,16 @@
       table_default_attributes: {},
       table_default_styles: { width: '100%' },
       block_formats: 'Málsgrein=p; Fyrirsögn=h2; Undirfyrirsögn=h3; Smáfyrirsögn=h4',
+      // Listi af tenglum birtist sem snyrtilegur tenglalisti á vefnum (eins og á Lög og reglugerðir)
+      style_formats: [{ title: 'Tenglalisti', selector: 'ul', classes: 'link-list' }],
+      style_formats_autohide: true,
     };
     tinymce.init({
       ...base,
       selector: 'textarea.rte:not(.rte-small)',
       height: 520,
       plugins: 'lists link image table autolink media code wordcount',
-      toolbar: 'blocks | bold italic | bullist numlist | link image media table | blockquote alignleft aligncenter | removeformat code',
+      toolbar: 'blocks styles | bold italic | bullist numlist | link image media table | blockquote alignleft aligncenter | removeformat code',
     });
     tinymce.init({ ...base, selector: 'textarea.rte-small', height: 160, plugins: 'link autolink', toolbar: 'bold italic link | removeformat' });
   }
