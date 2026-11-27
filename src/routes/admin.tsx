@@ -39,6 +39,16 @@ async function page(c: Context<AppEnv>, title: string, active: string, body: Chi
   ).toString(), (opts.status ?? 200) as 200);
 }
 
+// Innflutningur af gamla vefnum: tekur við skrám í R2. Virkar aðeins ef IMPORT_TOKEN er stillt.
+app.put('/innflutningur/*', async (c) => {
+  const token = c.env.IMPORT_TOKEN;
+  if (!token || c.req.header('authorization') !== `Bearer ${token}`) return c.text('Óheimilt', 401);
+  const key = decodeURIComponent(new URL(c.req.url).pathname.slice('/stjorn/innflutningur/'.length));
+  if (!key.startsWith('old/') || key.includes('..')) return c.text('Ógildur lykill', 400);
+  await c.env.MEDIA.put(key, c.req.raw.body, { httpMetadata: { contentType: c.req.header('content-type') || 'application/octet-stream' } });
+  return c.text('ok');
+});
+
 app.use('*', loadUser);
 
 // ---------- Innskráning ----------

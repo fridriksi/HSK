@@ -540,13 +540,19 @@ app.get('/*', async (c) => {
     }
     case 'records': {
       const rows = await all<{ id: number; title: string; sport: string; body: string; updated_at: string }>(c.env.DB, 'SELECT * FROM records ORDER BY sort, title');
-      moduleView = rows.map((r) => (
+      const metDocs = await all<{ title: string; date: string; file: string }>(c.env.DB, "SELECT title, date, file FROM documents WHERE category = 'met' ORDER BY date DESC, title");
+      moduleView = [...rows.map((r) => (
         <details class="record">
           <summary><strong>{r.title}</strong>{r.sport && <span class="muted"> · {r.sport}</span>}</summary>
           <div class="table-wrap"><Prose html={r.body} /></div>
           <p class="muted small">Síðast uppfært {dateLong(r.updated_at)}</p>
         </details>
-      ));
+      )), metDocs.length > 0 && (
+        <section>
+          <h2>Metaskrár</h2>
+          <ul class="doc-list">{metDocs.map((d) => <li><a href={d.file}><Icon name="file" />{d.title}</a></li>)}</ul>
+        </section>
+      )];
       break;
     }
     case 'clubs': {
@@ -575,7 +581,7 @@ app.get('/*', async (c) => {
       const cat = c.req.query('flokkur') || '';
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
         `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
-      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', annad: 'Annað' };
+      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', met: 'Metaskrár', annad: 'Annað' };
       moduleView = (
         <>
           <nav class="year-filter"><a href={base} class={!cat ? 'on' : ''}>Allt</a>{Object.entries(cats).map(([k, v]) => <a href={`${base}?flokkur=${k}`} class={cat === k ? 'on' : ''}>{v}</a>)}</nav>

@@ -95,9 +95,11 @@ def main():
     }
     html = {k: get(k, v) for k, v in lists.items()}
 
-    max_news = int(sys.argv[1]) if len(sys.argv) > 1 else 8800
-    jobs = [(f'frett/{i}', f'{q}&page=frettirnar&frett_id={i}') for i in range(1, max_news + 1)]
-    print(f'Fréttir 1–{max_news}…', flush=True)
+    # Fréttir á gamla vefnum eru með númer frá 5001 (eldri númer eru tóm)
+    min_news = int(sys.argv[1]) if len(sys.argv) > 1 else 5001
+    max_news = int(sys.argv[2]) if len(sys.argv) > 2 else 8800
+    jobs = [(f'frett/{i}', f'{q}&page=frettirnar&frett_id={i}') for i in range(min_news, max_news + 1)]
+    print(f'Fréttir {min_news}–{max_news}…', flush=True)
     many(jobs, 'fréttir')
 
     greinar = ids(html['list/adsgr'] + html['list/frettir'], r'frett_id=(\d+)&brid=0&lang=1&page=greinarnar')

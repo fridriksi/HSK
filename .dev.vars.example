@@ -3,3 +3,4 @@ ADMIN_EMAILS=stjornandi@hsk.is
 # Fyrir „Skrá inn með Google“ (valkvætt)
 # GOOGLE_CLIENT_ID=
 # GOOGLE_CLIENT_SECRET=
+# IMPORT_TOKEN=  (aðeins meðan efni er flutt inn)

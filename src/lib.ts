@@ -12,6 +12,7 @@ export type Env = {
   GOOGLE_CLIENT_SECRET?: string;
   EMAIL?: SendEmail;
   EMAIL_FROM?: string;
+  IMPORT_TOKEN?: string;
 };
 
 export type Role = 'admin' | 'editor' | 'club';
