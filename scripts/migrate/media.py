@@ -68,6 +68,10 @@ def main():
     done = set(open(DONE_LOG).read().split()) if os.path.exists(DONE_LOG) else set()
     # Nýjustu skrárnar (neðst í listanum) fyrst svo forsíðan fyllist strax
     todo = [(u, k) for u, k in reversed(rows) if k not in done]
+    # Valfrjálst: PRIORITY=skrá með lyklum (einn í línu) sem eru sendir fyrst/eingöngu
+    if os.environ.get('PRIORITY'):
+        want = set(open(os.environ['PRIORITY']).read().split())
+        todo = [t for t in todo if t[1] in want]
     print(f'{len(rows)} skrár, {len(todo)} eftir', flush=True)
     missing = []
     log = open(DONE_LOG, 'a')
