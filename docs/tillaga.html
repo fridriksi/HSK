@@ -1,0 +1,274 @@
+<title>Nýr vefur HSK</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: ein lesdálkur með breiðari köflum fyrir sýnishorn og töflur; HSK-blár sem grunnur, rauður sparlega */
+:root{
+  --bg:#f6f8fb; --surface:#ffffff; --fg:#14213a; --muted:#56627a; --line:#d9e0ea;
+  --blue:#0166b3; --navy:#25336e; --red:#d9232a; --tint:#e8f1fa;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1424; --surface:#152038; --fg:#e7ecf5; --muted:#9aa6bd; --line:#2a3754;
+  --blue:#5aa8ec; --navy:#a9b8f0; --red:#ff6b6f; --tint:#1a2c4a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1424; --surface:#152038; --fg:#e7ecf5; --muted:#9aa6bd; --line:#2a3754;
+  --blue:#5aa8ec; --navy:#a9b8f0; --red:#ff6b6f; --tint:#1a2c4a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:17px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;padding-block:48px 80px;display:grid;gap:56px}
+.prose{max-width:68ch}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5vw,3.2rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.65rem;font-weight:800;margin-bottom:14px}
+h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+p{margin:0 0 12px}
+.eyebrow{font:600 .78rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.lead{font-size:1.2rem;color:var(--muted);margin-top:14px}
+header.top{border-bottom:3px solid var(--blue);padding-bottom:28px}
+.stripe{display:flex;height:6px;width:120px;margin-bottom:22px}
+.stripe i{flex:1}.stripe i:nth-child(1){background:var(--blue)}.stripe i:nth-child(2){background:var(--navy)}.stripe i:nth-child(3){background:var(--red)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:18px}
+.facts div{background:var(--surface);padding:16px 18px;min-width:0}
+.facts b{display:block;font:800 1.5rem var(--display);color:var(--navy);font-variant-numeric:tabular-nums}
+.facts span{color:var(--muted);font-size:.95rem}
+table{border-collapse:collapse;width:100%;font-size:.95rem;background:var(--surface)}
+.tbl{overflow-x:auto;border:1px solid var(--line)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .78rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--tint)}
+td code,.mono{font:.82rem var(--mono);color:var(--muted);word-break:break-all}
+tr:last-child td{border-bottom:0}
+ul.plain{margin:0;padding-left:1.1em}ul.plain li{margin-bottom:6px}
+.issues{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.issues div{border-top:2px solid var(--red);padding-top:12px;min-width:0}
+.issues p{color:var(--muted);font-size:.97rem}
+
+/* Sýnishorn af forsíðu */
+.mock{border:1px solid var(--line);background:var(--surface);overflow:hidden;box-shadow:0 18px 40px -24px rgba(1,40,90,.35)}
+.mock .bar{display:flex;gap:6px;align-items:center;padding:8px 12px;background:var(--tint);border-bottom:1px solid var(--line);font:.75rem var(--mono);color:var(--muted)}
+.mock .bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.m-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;padding:14px 22px;background:var(--navy);color:#fff}
+:root[data-theme="dark"] .m-nav{background:#1c2a55}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .m-nav{background:#1c2a55}}
+.m-logo{display:flex;align-items:center;gap:10px;font:800 1.05rem var(--display);margin-right:auto}
+.m-logo span{display:grid;place-items:center;width:34px;height:34px;background:#fff;color:#25336e;font-size:.8rem;border-radius:50%}
+.m-nav a{color:#dfe6ff;font-size:.92rem;text-decoration:none}
+.m-hero{display:grid;grid-template-columns:1.4fr 1fr;min-height:250px}
+.m-hero .img{background:linear-gradient(160deg,#0166b3 0%,#25336e 70%);color:#fff;padding:28px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+.m-hero .img::before{content:"";position:absolute;inset:auto -40px -60px auto;width:260px;height:260px;border:28px solid rgba(255,255,255,.08);border-radius:50%}
+.m-hero .img small{font:600 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.m-hero .img h3{font-size:1.55rem;color:#fff;margin-top:6px;max-width:22ch}
+.m-hero .side{padding:20px 22px;display:grid;gap:14px;align-content:start;min-width:0}
+.m-item{display:grid;gap:2px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.m-item:last-child{border:0}
+.m-item time{font:.75rem var(--mono);color:var(--muted)}
+.m-item b{font:700 .98rem/1.3 var(--display)}
+.m-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.m-row>div{background:var(--surface);padding:18px 22px;min-width:0}
+.m-row h4{margin:0 0 10px;font:700 .75rem var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+.m-row li{list-style:none;display:flex;gap:10px;font-size:.92rem;padding:5px 0;border-bottom:1px dashed var(--line)}
+.m-row ul{margin:0;padding:0}
+.m-row li span{font:.78rem var(--mono);color:var(--red);min-width:44px;font-variant-numeric:tabular-nums}
+.m-foot{padding:14px 22px;background:var(--tint);display:flex;flex-wrap:wrap;gap:6px 24px;font-size:.85rem;color:var(--muted)}
+.caption{font-size:.92rem;color:var(--muted);margin-top:10px}
+
+/* Veftré */
+.tree{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+.tree div{background:var(--surface);border:1px solid var(--line);padding:16px 18px;min-width:0}
+.tree h3{color:var(--navy)}
+.tree ul{margin:0;padding-left:1em;color:var(--muted);font-size:.95rem}
+
+/* Arkitektúr */
+.arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;counter-reset:none}
+.arch div{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--blue);padding:14px 16px;min-width:0}
+.arch div.r{border-left-color:var(--red)}
+.arch p{font-size:.94rem;color:var(--muted);margin:0}
+
+.phases{display:grid;gap:0;border-left:2px solid var(--line);margin-left:8px}
+.phase{position:relative;padding:0 0 26px 26px}
+.phase::before{content:"";position:absolute;left:-8px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--blue)}
+.phase:last-child{padding-bottom:0}
+.phase .when{font:.78rem var(--mono);color:var(--muted)}
+.phase p{color:var(--muted);margin:4px 0 0}
+
+.q{display:grid;gap:12px}
+.q div{background:var(--tint);padding:14px 18px;border-left:4px solid var(--navy)}
+.q b{font-family:var(--display)}
+.q p{margin:4px 0 0;color:var(--muted);font-size:.97rem}
+a{color:var(--blue)}
+a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+@media (max-width:720px){
+  .m-hero{grid-template-columns:1fr}
+  .m-row{grid-template-columns:1fr}
+  .m-nav a{display:none}
+}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="stripe"><i></i><i></i><i></i></div>
+  <div class="eyebrow">Tillaga · 27. nóvember 2026</div>
+  <h1>Nýr vefur Héraðssambandsins Skarphéðins</h1>
+  <p class="lead prose">Nútímalegur og farsímavænn vefur fyrir hsk.is með eigin vefumsjónarkerfi. Starfsfólk HSK getur sett inn fréttir, uppfært síður og búið til nýjar undirsíður án aðstoðar. Allt efni núverandi vefs flyst yfir og gamlar slóðir halda áfram að virka.</p>
+</header>
+
+<section>
+  <div class="eyebrow">1 · Staðan í dag</div>
+  <h2>Hvað er á núverandi vef</h2>
+  <div class="prose">
+    <p>Núverandi vefur keyrir á gömlu sérsmíðuðu ColdFusion-kerfi (<span class="mono">web/default.cfm?page=…</span>) á Apache-þjóni. Forsíðan er bara tilvísunarsíða sem sendir gesti áfram eftir eina sekúndu. Textinn er vistaður með gamla stafasettinu ISO-8859-1. Þar sem enginn aðgangur er að bakendanum verður allt efnið sótt beint af vefnum, síðu fyrir síðu.</p>
+  </div>
+  <div class="facts">
+    <div><b>~8.660</b><span>hæsta fréttanúmer (frett_id). Fréttir ná að minnsta kosti aftur til 2009</span></div>
+    <div><b>~30+</b><span>aðildarfélög, hvert með sína upplýsingasíðu</span></div>
+    <div><b>~25</b><span>nefndir og ráð</span></div>
+    <div><b>~25</b><span>kaflar í lögum og reglugerðum</span></div>
+    <div><b>715+</b><span>myndaflokkar (nýjasti er nr. 715)</span></div>
+  </div>
+  <p class="caption">Tölurnar eru áætlaðar út frá því hvernig efnið er númerað. Nákvæmur fjöldi kemur í ljós þegar efnið hefur verið sótt.</p>
+
+  <h3 style="margin-top:28px">Efnistegundir sem þarf að flytja</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Efni</th><th>Núverandi slóð</th><th>Í nýju kerfi</th></tr></thead>
+    <tbody>
+      <tr><td>Fréttir og eldri fréttir</td><td><code>page=frettirnar&amp;frett_id=</code></td><td>Fréttir með dagsetningu, mynd og flokkum</td></tr>
+      <tr><td>Greinar og aðsendar greinar</td><td><code>page=greinarnar</code>, <code>page=adsgr</code></td><td>Fréttir af tegundinni „grein“ með höfundi</td></tr>
+      <tr><td>Stakar síður</td><td><code>page=sidur&amp;id=</code>, <code>page=hsk_uppl</code></td><td>Síður í veftré með undirsíðum</td></tr>
+      <tr><td>Stjórn, nefndir og ráð</td><td><code>page=nefndirnar&amp;id=</code></td><td>Nefndir með fólki og hlutverkum</td></tr>
+      <tr><td>Aðildarfélög</td><td><code>page=felogin&amp;id=</code></td><td>Skrá yfir félög með tengiliðum og vefslóð</td></tr>
+      <tr><td>Lög og reglugerðir</td><td><code>page=login&amp;id=</code></td><td>Síður undir „Lög og reglugerðir“</td></tr>
+      <tr><td>Fundargerðir</td><td><code>page=fundargerd&amp;grein=</code></td><td>Fundargerðir eftir flokki og ári, með PDF-skjölum</td></tr>
+      <tr><td>Úrslit héraðsmóta</td><td><code>page=urslitin</code></td><td>Úrslit eftir íþróttagrein og ári</td></tr>
+      <tr><td>Mótaskrá og viðburðir</td><td><code>page=motaskra</code>, <code>page=vidburdir</code></td><td>Sameiginlegt dagatal fyrir mót og viðburði</td></tr>
+      <tr><td>HSK met og sögulegur fróðleikur</td><td><code>page=hsk_met1</code></td><td>Metaskrár sem töflur sem hægt er að uppfæra</td></tr>
+      <tr><td>Myndasöfn</td><td><code>myndir_yfirl.cfm?flokkur=</code></td><td>Myndaalbúm geymd í Cloudflare R2</td></tr>
+      <tr><td>Skjöl og myndir í efni</td><td><code>web/img/…</code>, <code>myndir/…</code></td><td>Skráasafn í R2. Allar vísanir uppfærðar</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 style="margin-top:28px">Helstu vandamál við núverandi vef</h3>
+  <div class="issues">
+    <div><h3>Enginn aðgangur að bakenda</h3><p>Ekki er hægt að breyta efni eða flytja það út með venjulegum hætti. Vefurinn er háður gömlum þjóni.</p></div>
+    <div><h3>Úrelt tækni</h3><p>ColdFusion, jQuery-sleði og sprettigluggar. Gamalt stafasett veldur villum í íslenskum stöfum í sumum útdráttum.</p></div>
+    <div><h3>Erfitt að rata</h3><p>Efni er dreift á margar síðugerðir og leit vantar. Sumar myndir í myndasafni eru brotnar, t.d. smámynd sem vísar á <span class="mono">.lnk</span>-skrá.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">2 · Útlit</div>
+  <h2>Sýnishorn af nýrri forsíðu</h2>
+  <p class="prose">Litirnir byggja á HSK-bláa og dökkbláa litnum af núverandi vef, með rauðum lit til áherslu. Fréttir eru efst, síðan koma næstu viðburðir, nýjustu úrslit og mótaskrá, sem er það sem flestir gestir leita að.</p>
+  <div class="mock" role="img" aria-label="Sýnishorn af forsíðu nýs HSK-vefs">
+    <div class="bar"><i></i><i></i><i></i>&nbsp; hsk.is</div>
+    <div class="m-nav">
+      <div class="m-logo"><span>HSK</span>Héraðssambandið Skarphéðinn</div>
+      <a>Fréttir</a><a>Mót og úrslit</a><a>Aðildarfélög</a><a>Um HSK</a><a>Myndir</a><a>Leit</a>
+    </div>
+    <div class="m-hero">
+      <div class="img">
+        <small>Frétt · 27. nóvember 2026</small>
+        <h3>Íþróttaeldhugi ársins 2026, óskað eftir tilnefningum</h3>
+      </div>
+      <div class="side">
+        <div class="m-item"><time>26.11.2026</time><b>Ólympíufari fær starfslaun afreksíþróttafólks</b></div>
+        <div class="m-item"><time>24.11.2026</time><b>Dagur sjálfboðaliðans framundan, óskað er eftir tilnefningum</b></div>
+        <div class="m-item"><time>26.03.2026</time><b>Ávarp formanns HSK á héraðsþingi 2026</b></div>
+      </div>
+    </div>
+    <div class="m-row">
+      <div><h4>Viðburðir</h4><ul>
+        <li><span>03.12</span>Stemningssamtal ungmennaráða</li>
+        <li><span>07.12</span>Sveitakeppni HSK í skák</li>
+        <li><span>12.12</span>Opið fyrir umsóknir í Hvatasjóð</li></ul></div>
+      <div><h4>Nýjustu úrslit</h4><ul>
+        <li><span>21.10</span>Glíma, héraðsmót 2026</li>
+        <li><span>21.05</span>Frjálsar, Vormót HSK</li>
+        <li><span>24.04</span>Blak, héraðsmót unglinga</li></ul></div>
+      <div><h4>Flýtileiðir</h4><ul>
+        <li><span>→</span>HSK met</li>
+        <li><span>→</span>Ársskýrsla HSK</li>
+        <li><span>→</span>Verkefnasjóður</li></ul></div>
+    </div>
+    <div class="m-foot"><span>Selinu, Engjavegi 48, 800 Selfossi</span><span>Sími 482 1189</span><span>hsk@hsk.is</span><span>ÍSÍ · UMFÍ · Lottó</span></div>
+  </div>
+  <p class="caption">Efnið í sýnishorninu er tekið af núverandi forsíðu hsk.is í dag. Á farsíma raðast allt í einn dálk og valmyndin fer í hamborgarahnapp.</p>
+</section>
+
+<section>
+  <div class="eyebrow">3 · Skipulag</div>
+  <h2>Nýtt veftré</h2>
+  <p class="prose">Sex aðalflokkar í stað margra ótengdra síðugerða. Allar síður eru í einu veftré í vefumsjónarkerfinu, svo hægt er að færa þær til, endurraða þeim og bæta við undirsíðum að vild.</p>
+  <div class="tree">
+    <div><h3>Fréttir</h3><ul><li>Fréttir</li><li>Greinar</li><li>Aðsendar greinar</li><li>Fréttasafn eftir árum</li></ul></div>
+    <div><h3>Mót og úrslit</h3><ul><li>Mótaskrá og dagatal</li><li>Úrslit héraðsmóta</li><li>HSK met</li><li>Sögulegur fróðleikur</li></ul></div>
+    <div><h3>Aðildarfélög</h3><ul><li>Félagaskrá með leit</li><li>Síða hvers félags</li></ul></div>
+    <div><h3>Um HSK</h3><ul><li>Stjórn, nefndir og ráð</li><li>Lög og reglugerðir</li><li>Fundargerðir</li><li>Ársskýrslur</li><li>Viðbragðsáætlun</li></ul></div>
+    <div><h3>Sjóðir og verkefni</h3><ul><li>Verkefnasjóður</li><li>Hvatasjóður</li><li>Ungmennaráð</li></ul></div>
+    <div><h3>Myndir</h3><ul><li>Myndaalbúm eftir árum</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">4 · Tækni</div>
+  <h2>Allt keyrt á Cloudflare</h2>
+  <p class="prose">Vefurinn og vefumsjónarkerfið verða eitt verkefni á Cloudflare, með kóðann í GitHub-safninu <span class="mono">fridriksi/hsk</span>. Engan þjón þarf að reka og kostnaður við hýsingu verður lítill sem enginn fyrir vef af þessari stærð.</p>
+  <div class="arch">
+    <div><h3>Cloudflare Workers</h3><p>Keyrir vefinn með Astro. Síður eru búnar til á netþjóni og vistaðar í skyndiminni svo þær hlaðast hratt.</p></div>
+    <div><h3>D1 gagnagrunnur</h3><p>Geymir fréttir, síður, viðburði, úrslit, félög, nefndir og notendur.</p></div>
+    <div><h3>R2 geymsla</h3><p>Geymir myndir, PDF-skjöl og myndaalbúm. Myndum er breytt í rétta stærð sjálfkrafa.</p></div>
+    <div class="r"><h3>Vefumsjón á /stjorn</h3><p>Innskráning fyrir starfsfólk, ritill fyrir texta og myndir, drög og útgáfa, og breytingasaga.</p></div>
+  </div>
+
+  <h3 style="margin-top:28px">Hvað vefumsjónarkerfið gerir</h3>
+  <ul class="plain prose">
+    <li><b>Fréttir:</b> skrifa, setja inn forsíðumynd, vista drög, tímasetja birtingu og birta.</li>
+    <li><b>Síður:</b> breyta hvaða síðu sem er og búa til nýjar undirsíður. Síðum er raðað í veftré með því að draga þær til, og valmyndin uppfærist sjálfkrafa.</li>
+    <li><b>Viðburðir og mót:</b> skrá dagsetningu, staðsetningu og íþróttagrein. Viðburðir birtast á forsíðu og í dagatali.</li>
+    <li><b>Úrslit, met og fundargerðir:</b> einföld innsláttarform eða upphleðsla á PDF-skjölum.</li>
+    <li><b>Félög og nefndir:</b> halda utan um tengiliði á einum stað.</li>
+    <li><b>Myndir og skjöl:</b> skráasafn með upphleðslu með því að draga skrár inn.</li>
+    <li><b>Notendur:</b> stjórnandi og ritstjóri. Hægt er að veita hverjum og einum aðgang.</li>
+    <li><b>Leit</b> í öllu efni, líka gömlum fréttum.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow">5 · Flutningur efnis</div>
+  <h2>Allt gamla efnið fylgir með</h2>
+  <ul class="plain prose">
+    <li>Sjálfvirkt forrit fer í gegnum allar síðugerðir og öll númer á núverandi vef og sækir hverja frétt, síðu, fundargerð, úrslit, félag og myndaalbúm.</li>
+    <li>Textanum er breytt úr ISO-8859-1 í UTF-8 og HTML-kóðinn er hreinsaður. Úrelt snið eins og leturgerðir og töflur fyrir uppsetningu eru fjarlægð en innihaldið helst óbreytt.</li>
+    <li>Allar myndir og skjöl eru sótt í R2 og vísanir í efninu uppfærðar.</li>
+    <li>Allar gamlar slóðir, t.d. <span class="mono">default.cfm?frett_id=8661&amp;page=frettirnar</span>, vísa sjálfkrafa (301) á nýju síðuna. Tenglar á Facebook og hjá leitarvélum halda því áfram að virka.</li>
+    <li>Í lokin fæst skýrsla sem ber saman fjölda atriða á gamla og nýja vefnum, svo hægt sé að staðfesta að ekkert hafi glatast.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow">6 · Verkáætlun</div>
+  <h2>Áfangar</h2>
+  <div class="phases">
+    <div class="phase"><div class="when">Áfangi 1</div><h3>Grunnur og útlit</h3><p>Astro-verkefni á Cloudflare Workers, D1 og R2 sett upp, og forsíða og síðusnið smíðuð. Prufuvefur á <span class="mono">*.workers.dev</span>.</p></div>
+    <div class="phase"><div class="when">Áfangi 2</div><h3>Vefumsjónarkerfi</h3><p>Innskráning, ritill, fréttir, síður með veftré og skráasafn.</p></div>
+    <div class="phase"><div class="when">Áfangi 3</div><h3>Flutningur alls efnis</h3><p>Forritið sem sækir efnið keyrt, efnið hreinsað og flutt inn, og samanburðarskýrsla gerð.</p></div>
+    <div class="phase"><div class="when">Áfangi 4</div><h3>Sértækt efni</h3><p>Mótaskrá, úrslit, met, félagaskrá, nefndir, fundargerðir og myndaalbúm.</p></div>
+    <div class="phase"><div class="when">Áfangi 5</div><h3>Prófun og opnun</h3><p>Starfsfólk HSK prófar vefinn, tilvísanir eru settar upp og lénið hsk.is er tengt við Cloudflare.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">7 · Ákvarðanir</div>
+  <h2>Það sem HSK þarf að ákveða</h2>
+  <div class="q">
+    <div><b>Lénið hsk.is</b><p>Hver stjórnar DNS fyrir hsk.is í dag? Til að opna nýja vefinn þarf að færa lénið í Cloudflare eða breyta DNS-færslum. Netfangið hsk@hsk.is þarf að halda áfram að virka.</p></div>
+    <div><b>Innskráning</b><p>Á starfsfólk að skrá sig inn með netfangi og kóða sem sendur er í tölvupósti, eða með Google- eða Microsoft-reikningi?</p></div>
+    <div><b>Merki og myndir</b><p>Er til merki HSK í góðri upplausn (SVG eða PNG) og myndir sem má nota á forsíðu?</p></div>
+    <div><b>Enska</b><p>Núverandi vefur hefur stillingu fyrir tungumál (lang=1). Er þörf á enskri útgáfu eða dugar íslenska?</p></div>
+  </div>
+</section>
+
+</div>
