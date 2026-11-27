@@ -538,6 +538,15 @@ app.get('/*', async (c) => {
   if (!path || path.includes('.')) return notFound(c);
   const p = await one<PageRow>(c.env.DB, "SELECT * FROM pages WHERE path = ? AND status = 'published'", path);
   if (!p) return notFound(c);
+  if (p.parent_id) {
+    // Undirsíður sem birtast á yfirsíðunni sjálfri vísa á sinn kafla þar
+    const par = await one<{ path: string; module: string }>(c.env.DB, 'SELECT path, module FROM pages WHERE id = ?', p.parent_id);
+    if (par && (par.module === 'sections' || par.module === 'archive')) return c.redirect(`/${par.path}#${p.slug}`, 301);
+  }
+  if (p.module === 'first') {
+    const first = await one<{ path: string }>(c.env.DB, "SELECT path FROM pages WHERE parent_id = ? AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE LIMIT 1", p.id);
+    if (first) return c.redirect('/' + first.path, 302);
+  }
   const crumbs: { title: string; path: string }[] = [];
   let parentId = p.parent_id;
   while (parentId) {
@@ -546,7 +555,7 @@ app.get('/*', async (c) => {
     crumbs.unshift({ title: par.title, path: '/' + par.path });
     parentId = par.parent_id;
   }
-  const children = await all<PageRow>(c.env.DB, "SELECT title, path, body FROM pages WHERE parent_id = ? AND status = 'published' ORDER BY sort, title COLLATE NOCASE", p.id);
+  const children = await all<PageRow>(c.env.DB, "SELECT title, slug, path, body FROM pages WHERE parent_id = ? AND status = 'published' ORDER BY sort, title COLLATE NOCASE", p.id);
   const base = '/' + p.path;
   let moduleView: Child = null;
   switch (p.module) {
@@ -593,20 +602,86 @@ app.get('/*', async (c) => {
       break;
     }
     case 'records': {
+      // Metaskrár flokkaðar eftir tegund; nýjasta skráin efst og eldri ár sem tenglar
       const rows = await all<{ id: number; title: string; sport: string; body: string; updated_at: string }>(c.env.DB, 'SELECT * FROM records ORDER BY sort, title');
       const metDocs = await all<{ title: string; date: string; file: string }>(c.env.DB, "SELECT title, date, file FROM documents WHERE category = 'met' ORDER BY date DESC, title");
-      moduleView = [...rows.map((r) => (
-        <details class="record">
-          <summary><strong>{r.title}</strong>{r.sport && <span class="muted"> · {r.sport}</span>}</summary>
-          <div class="table-wrap"><Prose html={r.body} /></div>
-          <p class="muted small">Síðast uppfært {dateLong(r.updated_at)}</p>
-        </details>
-      )), metDocs.length > 0 && (
-        <section>
-          <h2>Metaskrár</h2>
-          <ul class="doc-list">{metDocs.map((d) => <li><a href={d.file}><Icon name="file" />{d.title}</a></li>)}</ul>
-        </section>
-      )];
+      const kindOf = (t: string) => {
+        const x = t.toLowerCase();
+        if (/fatla/.test(x)) return 'Fatlaðir';
+        if (/öldung/.test(x)) return /innanh/.test(x) ? 'Öldungar innanhúss' : 'Öldungar utanhúss';
+        if (/innanh/.test(x)) return 'Innanhúss';
+        if (/utanh/.test(x)) return 'Utanhúss';
+        return 'Önnur met';
+      };
+      const ORDER = ['Utanhúss', 'Innanhúss', 'Öldungar utanhúss', 'Öldungar innanhúss', 'Fatlaðir', 'Önnur met'];
+      const groups = new Map<string, { title: string; year: string; file: string }[]>();
+      const rules: typeof rows = [];
+      for (const r of rows) {
+        const files = [...r.body.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+        const year = r.title.match(/\b(19|20)\d\d\b/)?.[0] ?? '';
+        if (files.length !== 1) { rules.push(r); continue; }
+        const k = kindOf(r.title);
+        groups.set(k, [...(groups.get(k) ?? []), { title: r.title, year, file: files[0] }]);
+      }
+      moduleView = (
+        <>
+          {rules.map((r) => (
+            <details class="record">
+              <summary><strong>{r.title}</strong></summary>
+              <div class="table-wrap"><Prose html={r.body} /></div>
+            </details>
+          ))}
+          <div class="record-grid">
+            {ORDER.filter((k) => groups.get(k)?.length).map((k) => {
+              const list = groups.get(k)!.sort((x, y) => y.year.localeCompare(x.year));
+              if (k === 'Önnur met') {
+                return (
+                  <section class="record-card">
+                    <h2>{k}</h2>
+                    <div class="prose"><ul class="link-list">{list.map((d) => <li><a href={d.file}>{d.title}</a></li>)}</ul></div>
+                  </section>
+                );
+              }
+              const [latest, ...older] = list;
+              return (
+                <section class="record-card">
+                  <h2>{k}</h2>
+                  <a class="record-latest" href={latest.file}><Icon name="file" />Metaskrá {latest.year}</a>
+                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={d.file}>{d.year}</a></>)}</p>}
+                </section>
+              );
+            })}
+          </div>
+          {metDocs.length > 0 && (
+            <section>
+              <h2>Aðrar metaskrár</h2>
+              <ul class="doc-list">{metDocs.map((d) => <li><a href={d.file}><Icon name="file" />{d.title}</a></li>)}</ul>
+            </section>
+          )}
+        </>
+      );
+      break;
+    }
+    case 'sections':
+    case 'archive': {
+      // Undirsíður birtar á einni síðu: „sections“ með efnisyfirliti, „archive“ með nýjasta opið og eldra í felligluggum
+      if (p.module === 'sections') {
+        moduleView = (
+          <>
+            <nav class="toc" aria-label="Efnisyfirlit"><h2>Efni</h2><div class="prose"><ul class="link-list">{children.map((ch) => <li><a href={'#' + ch.slug}>{ch.title}</a></li>)}</ul></div></nav>
+            {children.map((ch) => <section class="merged" id={ch.slug}><h2>{ch.title}</h2><Prose html={ch.body} /></section>)}
+          </>
+        );
+      } else {
+        const [latest, ...older] = children;
+        moduleView = latest ? (
+          <>
+            <section class="merged" id={latest.slug}><h2>{latest.title}</h2><Prose html={latest.body} /></section>
+            {older.length > 0 && <h2 class="older-h">Eldri þing</h2>}
+            {older.map((ch) => <details class="record" id={ch.slug}><summary><strong>{ch.title}</strong></summary><Prose html={ch.body} /></details>)}
+          </>
+        ) : null;
+      }
       break;
     }
     case 'clubs': {
@@ -714,6 +789,7 @@ app.get('/*', async (c) => {
   const sectionPath = top.path.slice(1);
   const section = await all<{ title: string; path: string }>(c.env.DB,
     "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", sectionPath);
+  const topModule = p.parent_id ? (await one<{ module: string }>(c.env.DB, 'SELECT module FROM pages WHERE path = ?', sectionPath))?.module : p.module;
   const showNav = section.length > 0;
   const isOn = (sp: string) => p.path === sp || p.path.startsWith(sp + '/');
   // Undirsíður sem eru hvorki í valmynd né tengdar í textanum birtast sem listi neðst
@@ -727,7 +803,7 @@ app.get('/*', async (c) => {
         <nav class="section-tabs" aria-label={top.title}>
           <div class="wrap">
             <ul>
-              <li><a href={top.path} class={p.path === sectionPath ? 'on' : ''} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a></li>
+              {topModule !== 'first' && <li><a href={top.path} class={p.path === sectionPath ? 'on' : ''} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a></li>}
               {section.map((x) => <li><a href={'/' + x.path} class={isOn(x.path) ? 'on' : ''} aria-current={p.path === x.path ? 'page' : undefined}>{x.title}</a></li>)}
             </ul>
           </div>

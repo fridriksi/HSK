@@ -36,6 +36,10 @@
   // Síur sem uppfærast strax þegar valið er
   document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
 
+  // Opna fellikafla sem vísað er á með # (t.d. eldra héraðsþing)
+  const openHash = () => { const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); } };
+  openHash(); window.addEventListener('hashchange', openHash);
+
   const gallery = document.querySelector('[data-gallery]');
   if (gallery) {
     const links = [...gallery.querySelectorAll('a')];
