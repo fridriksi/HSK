@@ -55,7 +55,11 @@ seed/                   Upphafsgögn til prófunar
    npx wrangler r2 bucket create hsk-media
    npx wrangler d1 migrations apply hsk --remote
    ```
-2. Stilla í `wrangler.jsonc`: `SITE_URL`, `ADMIN_EMAILS` og `DEV_LOGIN_LINKS: "false"`.
+2. Stilla `SITE_URL` í `wrangler.jsonc` og setja leyndarmál:
+   ```bash
+   npx wrangler secret put ADMIN_EMAILS   # netföng stjórnenda, komma á milli
+   npx wrangler secret put LOGIN_KEY      # langur slembilykill; <SITE_URL>/stjorn/lykill?k=… skráir fyrsta stjórnanda inn
+   ```
 3. Póstur: virkja Cloudflare Email Sending fyrir lénið og bæta við
    `"send_email": [{ "name": "EMAIL" }]` og `EMAIL_FROM` (t.d. `vefur@hsk.is`).
 4. Google-innskráning (valkvætt): `npx wrangler secret put GOOGLE_CLIENT_ID` og `GOOGLE_CLIENT_SECRET`.

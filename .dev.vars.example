@@ -1,3 +1,5 @@
+SITE_URL=http://localhost:8787
+DEV_LOGIN_LINKS=true
 # Afritaðu í .dev.vars fyrir staðbundna þróun
 ADMIN_EMAILS=stjornandi@hsk.is
 # Fyrir „Skrá inn með Google“ (valkvætt)
