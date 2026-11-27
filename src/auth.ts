@@ -144,3 +144,49 @@ export async function googleEmailFromCode(env: Env, code: string): Promise<{ ema
 }
 
 export { randomId };
+
+// ---------- Lykilorð ----------
+// PBKDF2-SHA256 með salti; geymt sem pbkdf2$<umferðir>$<salt>$<hash> (base64)
+const PBKDF2_ITER = 100_000;
+const b64 = (b: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...new Uint8Array(b)));
+const unb64 = (s: string) => Uint8Array.from(atob(s), (ch) => ch.charCodeAt(0));
+
+async function pbkdf2(password: string, salt: Uint8Array, iter: number): Promise<ArrayBuffer> {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  return crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, key, 256);
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  return ['pbkdf2', PBKDF2_ITER, b64(salt), b64(await pbkdf2(password, salt, PBKDF2_ITER))].join('$');
+}
+
+export async function verifyPassword(password: string, stored: string | null): Promise<boolean> {
+  const [alg, iter, salt, hash] = (stored ?? '').split('$');
+  if (alg !== 'pbkdf2' || !hash) return false;
+  const got = new Uint8Array(await pbkdf2(password, unb64(salt), Number(iter)));
+  const want = unb64(hash);
+  if (got.length !== want.length) return false;
+  let diff = 0;
+  for (let i = 0; i < got.length; i++) diff |= got[i] ^ want[i];
+  return diff === 0;
+}
+
+const DUMMY_HASH = ['pbkdf2', PBKDF2_ITER, 'AAAAAAAAAAAAAAAAAAAAAA==', 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='].join('$');
+
+/** Skilar notanda ef netfang og lykilorð passa. Fimm rangar tilraunir í röð læsa aðganginum í 15 mínútur. */
+export async function passwordLogin(env: Env, rawEmail: string, password: string): Promise<{ user?: User; locked?: boolean }> {
+  const email = rawEmail.trim().toLowerCase();
+  const u = await one<User & { active: number; password_hash: string | null; failed_logins: number; locked_until: string | null }>(env.DB,
+    'SELECT id, email, name, role, club_id, active, password_hash, failed_logins, locked_until FROM users WHERE email = ?', email);
+  // Sama vinna hvort sem notandinn er til eða ekki, svo tíminn komi ekki upp um netföng
+  if (!u || !u.active || !u.password_hash) { await verifyPassword(password, DUMMY_HASH); return {}; }
+  if (u.locked_until && u.locked_until > nowIso()) return { locked: true };
+  if (!(await verifyPassword(password, u.password_hash))) {
+    const fails = u.failed_logins + 1;
+    await run(env.DB, 'UPDATE users SET failed_logins = ?, locked_until = ? WHERE id = ?', fails >= 5 ? 0 : fails, fails >= 5 ? isoIn(15) : null, u.id);
+    return { locked: fails >= 5 };
+  }
+  await run(env.DB, 'UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = ?', u.id);
+  return { user: { id: u.id, email: u.email, name: u.name, role: u.role, club_id: u.club_id } };
+}

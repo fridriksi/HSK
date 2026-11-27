@@ -7,7 +7,7 @@ import {
 } from '../lib';
 import {
   loadUser, requireUser, resolveLoginUser, createLoginToken, consumeLoginToken, startSession, endSession, can,
-  googleEnabled, googleAuthUrl, googleEmailFromCode, randomId,
+  googleEnabled, googleAuthUrl, googleEmailFromCode, randomId, passwordLogin, hashPassword, verifyPassword,
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
 import { GRANT_FIELDS } from '../grant';
@@ -66,21 +66,39 @@ app.get('/innskraning', async (c) => {
     <div class="login-box">
       <img src="/img/hsk-merki.svg" alt="" width="64" />
       <h1>Vefumsjón HSK</h1>
-      {err && <p class="flash err">{err === 'tengill' ? 'Innskráningartengillinn er útrunninn eða hefur þegar verið notaður. Biddu um nýjan.' : 'Þetta netfang hefur ekki aðgang að vefumsjón. Hafðu samband við skrifstofu HSK.'}</p>}
-      {googleEnabled(c.env) && (
-        <>
-          <a class="btn google" href="/stjorn/google">Skrá inn með Google</a>
-          <p class="or"><span>eða</span></p>
-        </>
-      )}
+      {err && <p class="flash err">{LOGIN_ERRORS[err] ?? LOGIN_ERRORS.adgangur}</p>}
+      <form method="post" action="/stjorn/innskraning/lykilord">
+        <label for="pw-email">Netfang</label>
+        <input id="pw-email" name="email" type="email" required autocomplete="username" />
+        <label for="pw">Lykilorð</label>
+        <input id="pw" name="password" type="password" required autocomplete="current-password" />
+        <button class="btn">Skrá inn</button>
+      </form>
+      <p class="or"><span>eða</span></p>
+      {googleEnabled(c.env) && <a class="btn google" href="/stjorn/google">Skrá inn með Google</a>}
       <form method="post" action="/stjorn/innskraning">
-        <label for="email">Netfang</label>
+        <label for="email">Fá innskráningartengil í tölvupósti</label>
         <input id="email" name="email" type="email" required autocomplete="email" placeholder="nafn@hsk.is" />
         <button class="btn">Senda innskráningartengil</button>
       </form>
       <p class="muted small">Starfsfólk HSK notar @hsk.is-netfang. Formenn aðildarfélaga nota netfangið sem þeim var boðið með.</p>
     </div>
   ));
+});
+
+const LOGIN_ERRORS: Record<string, string> = {
+  tengill: 'Innskráningartengillinn er útrunninn eða hefur þegar verið notaður. Biddu um nýjan.',
+  adgangur: 'Þetta netfang hefur ekki aðgang að vefumsjón. Hafðu samband við skrifstofu HSK.',
+  lykilord: 'Netfang eða lykilorð er rangt.',
+  laest: 'Of margar rangar tilraunir. Reyndu aftur eftir 15 mínútur eða fáðu tengil í tölvupósti.',
+};
+
+app.post('/innskraning/lykilord', async (c) => {
+  const form = await c.req.formData();
+  const r = await passwordLogin(c.env, String(form.get('email') || ''), String(form.get('password') || ''));
+  if (!r.user) return c.redirect('/stjorn/innskraning?villa=' + (r.locked ? 'laest' : 'lykilord'));
+  await startSession(c, r.user);
+  return c.redirect('/stjorn');
 });
 
 app.post('/innskraning', async (c) => {
@@ -537,6 +555,44 @@ app.post('/stillingar', async (c) => {
   return c.redirect('/stjorn/stillingar?m=vistad');
 });
 
+
+
+// ---------- Minn aðgangur: lykilorð ----------
+
+app.get('/adgangur', async (c) => {
+  const user = c.get('user')!;
+  const row = await one<{ password_hash: string | null }>(c.env.DB, 'SELECT password_hash FROM users WHERE id = ?', user.id);
+  const has = !!row?.password_hash;
+  const err = c.req.query('villa');
+  return page(c, 'Minn aðgangur', 'adgangur', (
+    <>
+      <h1>Minn aðgangur</h1>
+      <p class="lead">{user.email}</p>
+      <section class="panel">
+        <h2>{has ? 'Breyta lykilorði' : 'Setja lykilorð'}</h2>
+        {err && <p class="flash err">{err === 'rangt' ? 'Núverandi lykilorð er rangt.' : err === 'stutt' ? 'Nýja lykilorðið þarf að vera að minnsta kosti 10 stafir.' : 'Lykilorðin tvö eru ekki eins.'}</p>}
+        <form method="post" action="/stjorn/adgangur" class="form-grid">
+          {has && <div class="field wide"><label for="current">Núverandi lykilorð</label><input id="current" name="current" type="password" required autocomplete="current-password" /></div>}
+          <div class="field"><label for="new">Nýtt lykilorð</label><input id="new" name="new" type="password" required minlength={10} autocomplete="new-password" /><small class="help">Að minnsta kosti 10 stafir.</small></div>
+          <div class="field"><label for="again">Nýtt lykilorð aftur</label><input id="again" name="again" type="password" required minlength={10} autocomplete="new-password" /></div>
+          <div class="form-actions wide"><button class="btn">Vista lykilorð</button></div>
+        </form>
+      </section>
+    </>
+  ));
+});
+
+app.post('/adgangur', async (c) => {
+  const user = c.get('user')!;
+  const f = await c.req.formData();
+  const row = await one<{ password_hash: string | null }>(c.env.DB, 'SELECT password_hash FROM users WHERE id = ?', user.id);
+  if (row?.password_hash && !(await verifyPassword(String(f.get('current') || ''), row.password_hash))) return c.redirect('/stjorn/adgangur?villa=rangt');
+  const pw = String(f.get('new') || '');
+  if (pw.length < 10) return c.redirect('/stjorn/adgangur?villa=stutt');
+  if (pw !== String(f.get('again') || '')) return c.redirect('/stjorn/adgangur?villa=ekki-eins');
+  await run(c.env.DB, 'UPDATE users SET password_hash = ?, failed_logins = 0, locked_until = NULL WHERE id = ?', await hashPassword(pw), user.id);
+  return c.redirect('/stjorn/adgangur?m=vistad');
+});
 
 // ---------- Umsóknir (Verkefnasjóður) ----------
 

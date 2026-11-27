@@ -45,6 +45,26 @@ try {
   ok(await login(admin, 'stjornandi@hsk.is'), 'Stjórnandi skráir sig inn með tengli');
   ok(await admin.locator('a:has-text("Notendur")').count() > 0, 'Stjórnandi sér notendastjórnun');
 
+  // 1b. Lykilorð: stjórnandi setur lykilorð og skráir sig inn með því
+  const pw = "Prufa-lykilord-2026";  // fast lykilorð svo prófið virki aftur og aftur á sama gagnagrunni
+  await admin.goto(`${BASE}/stjorn/adgangur`);
+  if (await admin.locator('#current').count()) await admin.fill('#current', pw);
+  await admin.fill('#new', pw);
+  await admin.fill('#again', pw);
+  await admin.click('button:has-text("Vista lykilorð")');
+  const pwPage = await newPage();
+  await pwPage.goto(`${BASE}/stjorn/innskraning`);
+  await pwPage.fill('#pw-email', 'stjornandi@hsk.is');
+  await pwPage.fill('#pw', 'rangt-lykilord-123');
+  await pwPage.click('button:has-text("Skrá inn")');
+  ok(await pwPage.locator('.flash.err').count() > 0, 'Rangt lykilorð er hafnað');
+  await pwPage.fill('#pw-email', 'stjornandi@hsk.is');
+  await pwPage.fill('#pw', pw);
+  await pwPage.click('button:has-text("Skrá inn")');
+  await pwPage.waitForURL(`${BASE}/stjorn`);
+  ok(await pwPage.locator('h1:has-text("Yfirlit")').count() > 0, 'Stjórnandi skráir sig inn með lykilorði');
+
+
   // 2. Ný frétt með mynd
   await admin.goto(`${BASE}/stjorn/frettir/nytt`);
   await admin.fill('#f_title', `Prófunarfrétt ${stamp}`);

@@ -76,7 +76,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
               <div class="side-user">
                 <span>{user.name || user.email}</span>
                 <small>{ROLE_LABEL[user.role]}</small>
-                <div><a href="/" target="_blank">Skoða vef</a> · <form method="post" action="/stjorn/utskra" class="inline"><button class="linklike">Skrá út</button></form></div>
+                <div><a href="/stjorn/adgangur">Lykilorð</a> · <a href="/" target="_blank">Skoða vef</a> · <form method="post" action="/stjorn/utskra" class="inline"><button class="linklike">Skrá út</button></form></div>
               </div>
             </aside>
             <main class="main">
