@@ -392,3 +392,6 @@ details.record[open] { padding-bottom: 12px; }
 .acc[open] summary .icon { transform: rotate(180deg); }
 .acc-body { padding: 0 2px 18px; }
 @media (prefers-reduced-motion: reduce) { .acc summary .icon { transition: none; } }
+.acc-group { max-width: 760px; margin-bottom: 28px; }
+.acc-group > h2 { font-size: 1.3rem; margin: 8px 0 10px; }
+.acc-body h3 { font-size: 1.05rem; margin: 18px 0 6px; }

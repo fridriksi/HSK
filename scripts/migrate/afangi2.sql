@@ -18,3 +18,5 @@ UPDATE pages SET body = '<ul class="link-list"><li><a href="/media/old/skjol/Dag
 -- Tilvísanir beint á kafla (án millilendingar)
 UPDATE redirects SET new_path = '/um-hsk/saga#' || substr(new_path, 14) WHERE new_path LIKE '/um-hsk/saga/%';
 UPDATE redirects SET new_path = '/um-hsk/heradsthing#' || substr(new_path, 21) WHERE new_path LIKE '/um-hsk/heradsthing/%';
+-- Lög og reglugerðir: gamlar slóðir á einstakar reglur opna réttan felliglugga
+UPDATE redirects SET new_path = '/um-hsk/log-og-reglugerdir#' || substr(new_path, 28) WHERE new_path LIKE '/um-hsk/log-og-reglugerdir/%';

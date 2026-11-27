@@ -541,7 +541,7 @@ app.get('/*', async (c) => {
   if (p.parent_id) {
     // Undirsíður sem birtast á yfirsíðunni sjálfri vísa á sinn kafla þar
     const par = await one<{ path: string; module: string }>(c.env.DB, 'SELECT path, module FROM pages WHERE id = ?', p.parent_id);
-    if (par && (par.module === 'sections' || par.module === 'archive')) return c.redirect(`/${par.path}#${p.slug}`, 301);
+    if (par && ['sections', 'archive', 'laws'].includes(par.module)) return c.redirect(`/${par.path}#${p.slug}`, 301);
   }
   if (p.module === 'first') {
     const first = await one<{ path: string }>(c.env.DB, "SELECT path FROM pages WHERE parent_id = ? AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE LIMIT 1", p.id);
@@ -766,7 +766,13 @@ app.get('/*', async (c) => {
           ['Reglugerðir', children.filter((ch) => /^reglugerð/i.test(ch.title))],
         ];
         groups.push(['Aðrar reglur', children.filter((ch) => !groups.some(([, g]) => g.includes(ch)))]);
-        moduleView = <div class="prose">{groups.filter(([, g]) => g.length).map(([title, g]) => <><h2>{title}</h2>{list(g)}</>)}</div>;
+        // Hver regla opnast í felliglugga innan síns flokks
+        moduleView = groups.filter(([, g]) => g.length).map(([title, g]) => (
+          <section class="acc-group">
+            <h2>{title}</h2>
+            <div class="accordion">{g.map((ch) => <details class="acc" id={ch.slug}><summary>{ch.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={ch.body} /></div></details>)}</div>
+          </section>
+        ));
       }
       break;
     }
