@@ -159,7 +159,7 @@ app.get('/', async (c) => {
       )}
 
       <section class="wrap h2-block h2-tiles">
-        <a href="/um-hsk/verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
+        <a href="/um-hsk/fundargerdir?flokkur=verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
         <a href="/um-hsk/log-og-reglugerdir"><strong>Fyrir félögin</strong><span>Lög, reglugerðir, eyðublöð og innskráning formanna</span></a>
         <a href="/um-hsk"><strong>Um HSK</strong><span>Saga, stjórn, nefndir og starfsfólk</span></a>
       </section>
@@ -526,7 +526,7 @@ app.get('/web/*', async (c) => {
   const sections: Record<string, string> = {
     frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
     log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/dagskra?tegund=mot', vidburdir_l: '/mot/dagskra',
-    myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk',
+    myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk', verkefnasjodur: '/um-hsk/fundargerdir?flokkur=verkefnasjodur',
   };
   return c.redirect(sections[page] ?? '/', 301);
 });
@@ -542,6 +542,8 @@ app.get('/*', async (c) => {
     // Undirsíður sem birtast á yfirsíðunni sjálfri vísa á sinn kafla þar
     const par = await one<{ path: string; module: string }>(c.env.DB, 'SELECT path, module FROM pages WHERE id = ?', p.parent_id);
     if (par && ['sections', 'archive', 'laws'].includes(par.module)) return c.redirect(`/${par.path}#${p.slug}`, 301);
+    // Undirsíða skjalasafns er inngangur að samnefndum flokki (t.d. Verkefnasjóður)
+    if (par && par.module === 'documents') return c.redirect(`/${par.path}?flokkur=${p.slug}`, 301);
   }
   if (p.module === 'first') {
     const first = await one<{ path: string }>(c.env.DB, "SELECT path FROM pages WHERE parent_id = ? AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE LIMIT 1", p.id);
@@ -723,17 +725,20 @@ app.get('/*', async (c) => {
       const cat = c.req.query('flokkur') || '';
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
         `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
-      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
+      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', verkefnasjodur: 'Verkefnasjóður', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
+      // Inngangstexti flokks: undirsíða skjalasafnsins með sama slóðarheiti og flokkurinn
+      const intro = cat ? children.find((ch) => ch.slug === cat) : undefined;
       // Aðeins flokkar sem innihalda skjöl fá hnapp
       const used = new Set((await all<{ category: string }>(c.env.DB, 'SELECT DISTINCT category FROM documents')).map((r) => r.category));
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
       moduleView = (
         <>
           {shown.length > 1 && <nav class="year-filter"><a href={base} class={!cat ? 'on' : ''}>Allt</a>{shown.map(([k, v]) => <a href={`${base}?flokkur=${k}`} class={cat === k ? 'on' : ''}>{v}</a>)}</nav>}
+          {intro && <div class="cat-intro"><Prose html={intro.body} /></div>}
           <ul class="doc-list">
             {rows.map((d) => (
               <li>
-                <time>{dateShort(d.date)}</time>
+                <time>{d.category === 'verkefnasjodur' ? d.date.slice(0, 4) : dateShort(d.date)}</time>
                 {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
                 <span class="muted small">{cats[d.category] ?? d.category}</span>
               </li>

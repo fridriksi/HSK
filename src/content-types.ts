@@ -145,7 +145,7 @@ export const contentTypes: ContentType[] = [
     key: 'skjol', table: 'documents', label: 'Fundargerðir og skjöl', singular: 'skjal', titleField: 'title', dateField: 'date', order: 'date DESC',
     fields: [
       { name: 'title', label: 'Heiti', type: 'text', required: true, wide: true },
-      { name: 'category', label: 'Flokkur', type: 'select', options: { fundargerd: 'Fundargerð', arsskyrsla: 'Ársskýrsla', log: 'Lög og reglugerðir', eydublad: 'Eyðublað', aaetlun: 'Stefna eða áætlun', met: 'Metaskrá (HSK met)', annad: 'Annað' } },
+      { name: 'category', label: 'Flokkur', type: 'select', options: { fundargerd: 'Fundargerð', arsskyrsla: 'Ársskýrsla', verkefnasjodur: 'Úthlutun úr Verkefnasjóði', log: 'Lög og reglugerðir', eydublad: 'Eyðublað', aaetlun: 'Stefna eða áætlun', met: 'Metaskrá (HSK met)', annad: 'Annað' } },
       { name: 'date', label: 'Dagsetning', type: 'date', required: true },
       { name: 'file', label: 'Skjal (PDF)', type: 'file' },
       { name: 'body', label: 'Texti (ef ekkert skjal)', type: 'richtext', wide: true },
