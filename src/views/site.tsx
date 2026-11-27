@@ -23,7 +23,10 @@ export const Layout: FC<{
   children?: Child;
 }> = ({ title, chrome, path, description, image, lang, children }) => {
   const fullTitle = title === 'Forsíða' ? 'Héraðssambandið Skarphéðinn – HSK' : `${title} – HSK`;
-  const active = (p: string) => path === '/' + p || path.startsWith('/' + p + '/');
+  // Stakar færslur (frétt, viðburður …) merkja sinn hluta í valmyndinni
+  const SECTION: Record<string, string> = { frett: 'frettir', album: 'frettir', vidburdur: 'mot', urslit: 'mot', felag: 'adildarfelog' };
+  const sec = SECTION[path.split('/')[1]];
+  const active = (p: string) => path === '/' + p || path.startsWith('/' + p + '/') || sec === p;
   return (
     <html lang={lang ?? 'is'}>
       <head>
@@ -117,15 +120,10 @@ export const Layout: FC<{
   );
 };
 
-export const PageHead: FC<{ title: string; crumbs?: { title: string; path: string }[]; lead?: string }> = ({ title, crumbs, lead }) => (
+// Brauðmolar eru ekki sýndir: aðalvalmyndin og fliparöðin sýna hvar maður er
+export const PageHead: FC<{ title: string; crumbs?: { title: string; path: string }[]; lead?: string }> = ({ title, lead }) => (
   <div class="page-head">
     <div class="wrap">
-      {crumbs && crumbs.length > 0 && (
-        <nav class="crumbs" aria-label="Brauðmolar">
-          <a href="/">Forsíða</a>
-          {crumbs.map((c) => <> <span aria-hidden="true">/</span> <a href={c.path}>{c.title}</a></>)}
-        </nav>
-      )}
       <h1>{title}</h1>
       {lead && <p class="lead">{lead}</p>}
     </div>
