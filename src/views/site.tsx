@@ -139,7 +139,7 @@ export const NewsCard: FC<{ n: NewsRow; big?: boolean }> = ({ n, big }) => (
     <a href={'/frett/' + n.slug}>
       <div class="thumb">{n.image ? <img src={n.image} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
       <div class="txt">
-        <time datetime={n.published_at}>{dateLong(n.published_at)}</time>
+        <time datetime={n.published_at}>{dateLong(n.published_at)}{n.kind === 'adsend' && <span class="card-kind"> · Aðsend grein</span>}{n.kind === 'adsend' && n.author && <span class="card-kind"> · {n.author}</span>}</time>
         <h3>{n.title}</h3>
         {big && <p>{n.excerpt || plainText(n.body, 180)}</p>}
       </div>

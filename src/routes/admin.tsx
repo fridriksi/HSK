@@ -298,7 +298,7 @@ app.get('/skrar', async (c) => {
 type PageRow = { id: number; parent_id: number | null; slug: string; path: string; title: string; body: string; module: string; sort: number; in_menu: number; status: string; updated_at: string };
 
 const MODULES: Record<string, string> = {
-  '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar', submitted: 'Aðsendar greinar', events: 'Viðburðadagatal', competitions: 'Mótaskrá',
+  '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar', events: 'Mót og viðburðir (dagatal)', competitions: 'Mótaskrá',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
   subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (flokkaður listi yfir undirsíður)',
 };

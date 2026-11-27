@@ -174,10 +174,10 @@ app.get('/frett/:slug', async (c) => {
     `SELECT n.*, cl.name AS club_name, a.slug AS album_slug FROM news n LEFT JOIN clubs cl ON cl.id = n.club_id LEFT JOIN albums a ON a.id = n.album_id
      WHERE n.slug = ? AND n.status = 'published'`, c.req.param('slug'));
   if (!n) return notFound(c);
-  const label = n.kind === 'frett' ? 'Fréttir' : n.kind === 'grein' ? 'Greinar' : 'Aðsendar greinar';
+  const crumb = n.kind === 'frett' ? { title: 'Fréttir', path: '/frettir' } : { title: 'Greinar', path: '/frettir/greinar' };
   return render(c, n.title, (
     <article class="article">
-      <PageHead title={n.title} crumbs={[{ title: label, path: '/frettir' }]} />
+      <PageHead title={n.title} crumbs={[crumb]} />
       <div class="wrap article-body">
         <p class="meta">
           <time datetime={n.published_at}>{dateLong(n.published_at)}</time>
@@ -193,15 +193,16 @@ app.get('/frett/:slug', async (c) => {
   ), { description: n.excerpt || plainText(n.body, 160), image: n.image || undefined });
 });
 
-async function newsList(c: Context<AppEnv>, kind?: string) {
+async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
+  const kinds = kind ? ([] as string[]).concat(kind) : [];
   const page = pageNum(c);
   const year = c.req.query('ar');
   const where = ["status = 'published'", "published_at <= datetime('now')"];
   const params: unknown[] = [];
-  if (kind) { where.push('kind = ?'); params.push(kind); }
+  if (kinds.length) { where.push(`kind IN (${kinds.map(() => '?').join(',')})`); params.push(...kinds); }
   if (year && /^\d{4}$/.test(year)) { where.push("substr(published_at, 1, 4) = ?"); params.push(year); }
   const rows = await all<NewsRow>(c.env.DB, `SELECT slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE ${where.join(' AND ')} ORDER BY published_at DESC LIMIT ? OFFSET ?`, ...params, PER_PAGE + 1, (page - 1) * PER_PAGE);
-  const years = await all<{ y: string }>(c.env.DB, `SELECT DISTINCT substr(published_at, 1, 4) AS y FROM news WHERE status = 'published' ${kind ? 'AND kind = ?' : ''} ORDER BY y DESC`, ...(kind ? [kind] : []));
+  const years = await all<{ y: string }>(c.env.DB, `SELECT DISTINCT substr(published_at, 1, 4) AS y FROM news WHERE status = 'published' ${kinds.length ? `AND kind IN (${kinds.map(() => '?').join(',')})` : ''} ORDER BY y DESC`, ...kinds);
   return { rows: rows.slice(0, PER_PAGE), hasNext: rows.length > PER_PAGE, page, years: years.map((y) => y.y).filter(Boolean), year };
 }
 
@@ -232,7 +233,7 @@ app.get('/vidburdur/:id{[0-9]+}', async (c) => {
     : `${weekday(e.starts_at)} ${dateLong(e.starts_at)} ${timeOf(e.starts_at)}`;
   return render(c, e.title, (
     <article class="article">
-      <PageHead title={e.title} crumbs={[{ title: 'Mót og úrslit', path: '/mot' }, { title: 'Dagskrá', path: '/mot/dagskra' }]} />
+      <PageHead title={e.title} crumbs={[{ title: 'Mót og úrslit', path: '/mot' }, { title: 'Mót og viðburðir', path: '/mot/dagskra' }]} />
       <div class="wrap article-body">
         <dl class="facts-list">
           <div><dt>Hvenær</dt><dd>{when}</dd></div>
@@ -523,7 +524,7 @@ app.get('/web/*', async (c) => {
     if (n) return c.redirect('/frett/' + n.slug, 301);
   }
   const sections: Record<string, string> = {
-    frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/adsendar-greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
+    frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
     log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/dagskra?tegund=mot', vidburdir_l: '/mot/dagskra',
     myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk',
   };
@@ -550,7 +551,7 @@ app.get('/*', async (c) => {
   let moduleView: Child = null;
   switch (p.module) {
     case 'news': moduleView = <NewsListing data={await newsList(c)} base={base} />; break;
-    case 'articles': moduleView = <NewsListing data={await newsList(c, 'grein')} base={base} />; break;
+    case 'articles': moduleView = <NewsListing data={await newsList(c, ['grein', 'adsend'])} base={base} />; break;
     case 'submitted': moduleView = <NewsListing data={await newsList(c, 'adsend')} base={base} />; break;
     case 'events': moduleView = <EventListing data={await eventList(c, null)} base={base} />; break;
     case 'competitions': moduleView = <EventListing data={await eventList(c, 'mot')} base={base} />; break;
