@@ -359,3 +359,4 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .h2-dates a.is-mot { border-top: 3px solid var(--blue); }
 .kind-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #c9d2e6; margin-right: 6px; vertical-align: 1px; }
 .kind-dot.mot { background: var(--blue); }
+.filters select { max-width: 260px; }
