@@ -23,11 +23,19 @@ DONE_LOG = f'.migration/media-uploaded-{urllib.parse.urlparse(TARGET).netloc.rep
 UA = 'Mozilla/5.0 (HSK vefflutningur)'
 
 
+def fix_url(url: str) -> str:
+    """Gamli vefurinn vísar í skrár með bilum og íslenskum stöfum; þær þarf að kóða. http verður https."""
+    u = urllib.parse.urlsplit(url.replace('http://', 'https://', 1))
+    path = urllib.parse.quote(urllib.parse.unquote(u.path), safe='/')
+    return urllib.parse.urlunsplit((u.scheme, u.netloc, path, u.query, ''))
+
+
 def download(url: str, path: str) -> bool:
     if os.path.exists(path) and os.path.getsize(path) > 0:
         return True
     if url.startswith('inline:'):
         return False
+    url = fix_url(url)
     for i in range(3):
         try:
             req = urllib.request.Request(url, headers={'User-Agent': UA})
@@ -69,6 +77,9 @@ def main():
     # Nýjustu skrárnar (neðst í listanum) fyrst svo forsíðan fyllist strax
     todo = [(u, k) for u, k in reversed(rows) if k not in done]
     # Valfrjálst: PRIORITY=skrá með lyklum (einn í línu) sem eru sendir fyrst/eingöngu
+    if os.environ.get('ONLY_MISSING'):  # reyna aftur aðeins við skrár sem tókst ekki að sækja síðast
+        want = set(open('.migration/media-missing.txt').read().split())
+        todo = [t for t in todo if t[1] in want]
     if os.environ.get('PRIORITY'):
         want = set(open(os.environ['PRIORITY']).read().split())
         todo = [t for t in todo if t[1] in want]
