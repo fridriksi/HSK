@@ -134,6 +134,22 @@ app.get('/google/callback', async (c) => {
   return c.redirect('/stjorn');
 });
 
+// Bráðabirgðainnskráning fyrir eiganda á meðan póstur og Google eru ekki komin upp.
+// Virkar aðeins ef leyndarmálið LOGIN_KEY er stillt; skráir inn fyrsta netfangið í ADMIN_EMAILS.
+app.get('/lykill', async (c) => {
+  const key = c.env.LOGIN_KEY;
+  const given = c.req.query('k') || '';
+  if (!key || key.length < 24 || given.length !== key.length) return c.redirect('/stjorn/innskraning');
+  let diff = 0;
+  for (let i = 0; i < key.length; i++) diff |= key.charCodeAt(i) ^ given.charCodeAt(i);
+  if (diff) return c.redirect('/stjorn/innskraning');
+  const email = (c.env.ADMIN_EMAILS || '').split(',')[0]?.trim();
+  const user = email ? await resolveLoginUser(c.env, email, true) : null;
+  if (!user) return c.redirect('/stjorn/innskraning?villa=adgangur');
+  await startSession(c, user);
+  return c.redirect('/stjorn');
+});
+
 app.post('/utskra', async (c) => {
   await endSession(c);
   return c.redirect('/stjorn/innskraning');

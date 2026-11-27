@@ -130,7 +130,7 @@ app.get('/', async (c) => {
               <a class="album-card" href={'/album/' + a.slug}>
                 <div class="thumb">{a.cover ? <img src={a.cover} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
                 <strong>{a.title}</strong>
-                <small>{dateLong(a.date)}</small>
+                <small>{a.date.slice(0, 4)}</small>
               </a>
             ))}
           </div>
@@ -381,7 +381,7 @@ app.get('/album/:slug', async (c) => {
   const photos = await all<{ src: string; caption: string }>(c.env.DB, 'SELECT src, caption FROM photos WHERE album_id = ? ORDER BY sort, id', a.id);
   return render(c, a.title, (
     <>
-      <PageHead title={a.title} crumbs={[{ title: 'Myndir', path: '/myndir' }]} lead={dateLong(a.date)} />
+      <PageHead title={a.title} crumbs={[{ title: 'Myndir', path: '/myndir' }]} lead={a.date.slice(0, 4)} />
       <div class="wrap block">
         {a.description && <Prose html={a.description} />}
         <div class="gallery" data-gallery>
@@ -607,7 +607,7 @@ app.get('/*', async (c) => {
             {rows.slice(0, 24).map((a) => (
               <a class="album-card" href={'/album/' + a.slug}>
                 <div class="thumb">{a.cover ? <img src={a.cover} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
-                <strong>{a.title}</strong><small>{dateLong(a.date)}</small>
+                <strong>{a.title}</strong><small>{a.date.slice(0, 4)}</small>
               </a>
             ))}
           </div>

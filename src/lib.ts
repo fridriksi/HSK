@@ -13,6 +13,7 @@ export type Env = {
   EMAIL?: SendEmail;
   EMAIL_FROM?: string;
   IMPORT_TOKEN?: string;
+  LOGIN_KEY?: string;
 };
 
 export type Role = 'admin' | 'editor' | 'club';
@@ -98,7 +99,8 @@ export function nowIso(): string {
 export function plainText(html: string, max = 0): string {
   const t = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
   if (!max || t.length <= max) return t;
-  return t.slice(0, t.lastIndexOf(' ', max) > max * 0.6 ? t.lastIndexOf(' ', max) : max) + '…';
+  const cut = t.slice(0, t.lastIndexOf(' ', max) > max * 0.6 ? t.lastIndexOf(' ', max) : max);
+  return cut.replace(/[\s.,;:–-]+$/, '') + '…';
 }
 
 // ---------- Hreinsun á HTML úr ritli ----------
