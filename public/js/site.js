@@ -28,6 +28,11 @@
     if (input.value) filter();
   });
 
+  // Finndu félag: val á íþróttagrein leitar strax
+  document.querySelectorAll('select[data-fill-q]').forEach((sel) => {
+    sel.addEventListener('change', () => { if (sel.value) { sel.form.q.value = sel.value; sel.form.submit(); } });
+  });
+
   const gallery = document.querySelector('[data-gallery]');
   if (gallery) {
     const links = [...gallery.querySelectorAll('a')];

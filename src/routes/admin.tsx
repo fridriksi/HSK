@@ -475,6 +475,22 @@ app.get('/stillingar', async (c) => {
               {news.map((n) => <option value={String(n.id)} selected={String(n.id) === featured}>{dateShort(n.published_at)} – {n.title}</option>)}
             </select>
           </div>
+          <div class="field wide"><h2 class="sub-h">Stóra myndin efst (nýja forsíðan)</h2><small class="help">Skildu fyrirsögn eftir tóma til að sýna nýjustu fréttina sjálfkrafa.</small></div>
+          <div class="field"><label for="hero_title">Fyrirsögn</label><input id="hero_title" name="hero_title" value={await s('hero_title')} placeholder="T.d. Unglingalandsmót UMFÍ 2027" /></div>
+          <div class="field"><label for="hero_button">Texti á hnappi</label><input id="hero_button" name="hero_button" value={await s('hero_button')} placeholder="Nánar" /></div>
+          <div class="field wide"><label for="hero_text">Stuttur texti</label><textarea id="hero_text" name="hero_text" rows={2}>{await s('hero_text')}</textarea></div>
+          <div class="field"><label for="hero_link">Slóð hnapps</label><input id="hero_link" name="hero_link" value={await s('hero_link')} placeholder="/vidburdur/123 eða https://…" /></div>
+          <div class="field wide"><label for="hero_image">Mynd</label>
+            <div class="upload-field" data-kind="image">
+              <img class="preview" src={(await s('hero_image')) || undefined} alt="" hidden={!(await s('hero_image'))} />
+              <div class="upload-row">
+                <input id="hero_image" name="hero_image" type="text" value={await s('hero_image')} placeholder="Slóð á mynd" />
+                <label class="btn small ghost">Hlaða upp<input type="file" accept="image/*" hidden /></label>
+                <button type="button" class="btn small ghost" data-clear>Fjarlægja</button>
+              </div>
+            </div>
+            <small class="help">Breið ljósmynd (helst 2000 px á breidd). Texti birtist neðst á myndinni.</small>
+          </div>
           <div class="field wide"><label for="notice">Tilkynningaborði efst á öllum síðum</label>
             <textarea id="notice" name="notice" class="rte rte-small" rows={3}>{await s('notice')}</textarea>
             <small class="help">Skildu eftir tómt til að fela borðann. T.d. „Opið fyrir umsóknir í Hvatasjóð til 12. desember“.</small>
@@ -496,7 +512,7 @@ app.get('/stillingar', async (c) => {
 app.post('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const f = await c.req.formData();
-  for (const k of ['featured_news_id', 'quick_links', 'contact_address', 'contact_phone', 'contact_email']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
+  for (const k of ['featured_news_id', 'hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'quick_links', 'contact_address', 'contact_phone', 'contact_email']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
   const notice = sanitizeHtml(String(f.get('notice') ?? '')).trim();
   await setSetting(c.env.DB, 'notice', plainText(notice) ? notice : '');
   await logRevision(c.env.DB, 'settings', 0, c.get('user')!.id, 'update', Object.fromEntries(f));

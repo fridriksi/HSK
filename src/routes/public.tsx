@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import {
-  type AppEnv, all, one, getSetting, dateLong, dateShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
+  type AppEnv, all, one, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
   Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
@@ -131,6 +131,115 @@ app.get('/', async (c) => {
         </section>
       )}
     </>
+  ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
+});
+
+// ---------- Ný forsíða (prufa) ----------
+
+app.get('/forsida-ny', async (c) => {
+  const db = c.env.DB;
+  const s = (k: string) => getSetting(db, k, '');
+  const news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 4");
+  // Stóra myndin: stillt í vefumsjón, annars nýjasta fréttin með mynd
+  let hero = { title: await s('hero_title'), text: await s('hero_text'), image: await s('hero_image'), link: await s('hero_link'), button: await s('hero_button') };
+  if (!hero.title) {
+    const n = news.find((x) => x.image) ?? news[0];
+    if (n) hero = { title: n.title, text: n.excerpt || plainText(n.body, 160), image: n.image, link: '/frett/' + n.slug, button: 'Lesa frétt' };
+  }
+  const cards = news.filter((n) => '/frett/' + n.slug !== hero.link).slice(0, 3);
+  const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
+  const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 5");
+  let records = await all<{ title: string; file: string }>(db, "SELECT title, file FROM documents WHERE category = 'met' ORDER BY date DESC, id DESC LIMIT 5");
+  if (!records.length) records = (await all<{ title: string }>(db, 'SELECT title FROM records ORDER BY updated_at DESC, sort LIMIT 5')).map((r) => ({ title: r.title, file: '' }));
+  const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
+  const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
+  // Ein mynd úr hverju af nýjustu myndasöfnunum
+  const photos = await all<{ src: string; slug: string; title: string }>(db, "SELECT coalesce(nullif(a.cover, ''), (SELECT src FROM photos p WHERE p.album_id = a.id ORDER BY sort LIMIT 1)) AS src, a.slug, a.title FROM albums a ORDER BY a.date DESC, a.id DESC LIMIT 6").then((r) => r.filter((x) => x.src));
+
+  return render(c, 'Forsíða', (
+    <div class="home2">
+      {hero.title && (
+        <section class="h2-hero">
+          {hero.image && <img src={hero.image} alt="" />}
+          <div class="wrap h2-hero-txt">
+            <div>
+              <h1>{hero.title}</h1>
+              {hero.text && <p>{hero.text}</p>}
+              {hero.link && <a class="btn-hero" href={hero.link}>{hero.button || 'Nánar'}<Icon name="chevronRight" /></a>}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section class="wrap h2-block">
+        <div class="h2-head"><h2>Framundan</h2><a href="/vidburdir">Viðburðadagatal</a></div>
+        {events.length ? (
+          <ol class="h2-dates">
+            {events.map((e) => (
+              <li><a href={'/vidburdur/' + e.id}>
+                <span class="d"><b>{dayNum(e.starts_at)}</b>{monthShort(e.starts_at)}</span>
+                <strong>{e.title}</strong>
+                <small>{[e.kind === 'mot' ? 'Mót' : '', e.sport, e.location].filter(Boolean).join(' · ') || weekday(e.starts_at)}</small>
+              </a></li>
+            ))}
+          </ol>
+        ) : <p class="muted">Engir viðburðir skráðir á næstunni.</p>}
+      </section>
+
+      {cards.length > 0 && (
+        <section class="wrap h2-block">
+          <div class="h2-head"><h2>Fréttir</h2><a href="/frettir">Allar fréttir</a></div>
+          <div class="h2-news">{cards.map((n) => <NewsCard n={n} />)}</div>
+        </section>
+      )}
+
+      <section class="h2-band">
+        <div class="wrap h2-two">
+          <div>
+            <div class="h2-head"><h2>Nýjustu úrslit</h2><a href="/mot/urslit">Öll úrslit</a></div>
+            <ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul>
+          </div>
+          <div>
+            <div class="h2-head"><h2>HSK met</h2><a href="/mot/hsk-met">Allar metaskrár</a></div>
+            <ul class="h2-links">
+              {records.map((r) => <li><a href={r.file || '/mot/hsk-met'}>{r.title}</a></li>)}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap h2-block h2-finder">
+        <div>
+          <h2>Finndu félag</h2>
+          <p>{clubCount} íþrótta- og ungmennafélög á Suðurlandi eru aðilar að HSK. Leitaðu eftir nafni, íþróttagrein eða heimabyggð.</p>
+        </div>
+        <form action="/adildarfelog" method="get" class="h2-find" role="search">
+          <label class="sr" for="ff-q">Leitarorð</label>
+          <input id="ff-q" name="q" type="search" placeholder="T.d. Hamar, sund eða Hella" />
+          <label class="sr" for="ff-g">Íþróttagrein</label>
+          <select id="ff-g" data-fill-q>
+            <option value="">Velja íþróttagrein</option>
+            {sports.map((sp) => <option value={sp}>{sp}</option>)}
+          </select>
+          <button class="btn-hero">Leita</button>
+        </form>
+      </section>
+
+      {photos.length > 0 && (
+        <section class="wrap h2-block">
+          <div class="h2-head"><h2>Myndir</h2><a href="/myndir">Öll myndasöfn</a></div>
+          <div class="h2-photos">
+            {photos.map((p) => <a href={'/album/' + p.slug} title={p.title}><img src={p.src} alt="" loading="lazy" /></a>)}
+          </div>
+        </section>
+      )}
+
+      <section class="wrap h2-block h2-tiles">
+        <a href="/um-hsk/verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
+        <a href="/um-hsk/log-og-reglugerdir"><strong>Fyrir félögin</strong><span>Lög, reglugerðir, eyðublöð og innskráning formanna</span></a>
+        <a href="/um-hsk"><strong>Um HSK</strong><span>Saga, stjórn, nefndir og starfsfólk</span></a>
+      </section>
+    </div>
   ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
 });
 
@@ -553,7 +662,7 @@ app.get('/*', async (c) => {
       const rows = await all<{ slug: string; name: string; logo: string; sports: string; area: string }>(c.env.DB, 'SELECT slug, name, logo, sports, area FROM clubs ORDER BY name');
       moduleView = (
         <>
-          <div class="club-filter"><label class="sr" for="felag-leit">Leita að félagi</label><input id="felag-leit" type="search" placeholder="Leita að félagi, íþróttagrein eða svæði" data-filter=".club-grid > a" data-empty="#felag-tomt" /></div>
+          <div class="club-filter"><label class="sr" for="felag-leit">Leita að félagi</label><input id="felag-leit" type="search" placeholder="Leita að félagi, íþróttagrein eða svæði" value={c.req.query('q') ?? ''} data-filter=".club-grid > a" data-empty="#felag-tomt" /></div>
           <p id="felag-tomt" class="filter-empty" hidden>Ekkert félag fannst.</p>
           <div class="club-grid">
             {rows.map((f) => (

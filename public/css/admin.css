@@ -141,3 +141,4 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
   .form-grid { grid-template-columns: 1fr; }
   .tbl { display: block; overflow-x: auto; }
 }
+.sub-h { font-size: 1.1rem; margin: 12px 0 0; }
