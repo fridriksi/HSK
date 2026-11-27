@@ -52,16 +52,9 @@ export function dateLong(d: string | null | undefined): string {
   const x = parse(d);
   return x ? `${x.getUTCDate()}. ${MONTHS[x.getUTCMonth()]} ${x.getUTCFullYear()}` : '';
 }
-/** 27.11.2026 */
-export function dateShort(d: string | null | undefined): string {
-  const x = parse(d);
-  if (!x) return '';
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${p(x.getUTCDate())}.${p(x.getUTCMonth() + 1)}.${x.getUTCFullYear()}`;
-}
-/** 27.11 */
-export function dayMonth(d: string | null | undefined): string {
-  return dateShort(d).slice(0, 5);
+/** 27. nóvember 2026 kl. 13:00 (tíma sleppt ef hann er enginn). Allar dagsetningar á vef og í vefumsjón nota þetta snið. */
+export function dateTime(d: string | null | undefined): string {
+  return [dateLong(d), timeOf(d)].filter(Boolean).join(' ');
 }
 export function monthShort(d: string | null | undefined): string {
   const x = parse(d);

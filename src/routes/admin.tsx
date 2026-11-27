@@ -3,7 +3,7 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { Child } from 'hono/jsx';
 import {
   type AppEnv, type User, all, one, run, sanitizeHtml, uniqueSlug, slugify, logRevision, getSetting, setSetting,
-  dateShort, nowIso, plainText,
+  dateLong, dateTime, nowIso, plainText,
 } from '../lib';
 import {
   loadUser, requireUser, resolveLoginUser, createLoginToken, consumeLoginToken, startSession, endSession, can,
@@ -189,7 +189,7 @@ app.get('/', async (c) => {
           <table class="tbl">
             <thead><tr><th>Heiti</th><th>Sent</th><th>Staða</th><th>Athugasemd</th></tr></thead>
             <tbody>{mine.map((r) => (
-              <tr><td><a href={`/stjorn/${r.t}/${r.id}`}>{r.title}</a></td><td>{dateShort(r.created_at)}</td><td><StatusPill status={r.status} /></td><td>{r.review_note}</td></tr>
+              <tr><td><a href={`/stjorn/${r.t}/${r.id}`}>{r.title}</a></td><td>{dateLong(r.created_at)}</td><td><StatusPill status={r.status} /></td><td>{r.review_note}</td></tr>
             ))}</tbody>
           </table>
         )}
@@ -224,7 +224,7 @@ app.get('/', async (c) => {
           <table class="tbl">
             <thead><tr><th>Heiti</th><th>Tegund</th><th>Frá</th><th>Sent</th></tr></thead>
             <tbody>{pending.map((p) => (
-              <tr><td><a href={`/stjorn/${p.t}/${p.id}`}>{p.title}</a></td><td>{p.t === 'frettir' ? 'Frétt' : 'Mót eða viðburður'}</td><td>{p.club ?? '—'}</td><td>{dateShort(p.created_at)}</td></tr>
+              <tr><td><a href={`/stjorn/${p.t}/${p.id}`}>{p.title}</a></td><td>{p.t === 'frettir' ? 'Frétt' : 'Mót eða viðburður'}</td><td>{p.club ?? '—'}</td><td>{dateLong(p.created_at)}</td></tr>
             ))}</tbody>
           </table>
           {user.role !== 'admin' && <p class="muted small">Aðeins stjórnendur geta samþykkt innsent efni.</p>}
@@ -235,7 +235,7 @@ app.get('/', async (c) => {
           <h2>Nýjar umsóknir í Verkefnasjóð ({newApps.length})</h2>
           <table class="tbl">
             <thead><tr><th>Umsókn</th><th>Barst</th></tr></thead>
-            <tbody>{newApps.map((a) => <tr><td><a href={`/stjorn/umsoknir/${a.id}`}>{a.title}</a></td><td>{dateShort(a.created_at)}</td></tr>)}</tbody>
+            <tbody>{newApps.map((a) => <tr><td><a href={`/stjorn/umsoknir/${a.id}`}>{a.title}</a></td><td>{dateLong(a.created_at)}</td></tr>)}</tbody>
           </table>
         </section>
       )}
@@ -252,7 +252,7 @@ app.get('/', async (c) => {
           let title = '';
           try { const d = JSON.parse(r.data); title = d.title || d.name || ''; } catch { /* tómt */ }
           const href = r.entity === 'pages' ? `/stjorn/sidur/${r.entity_id}` : t ? `/stjorn/${t.key}/${r.entity_id}` : '#';
-          return <tr><td>{r.created_at.slice(0, 16)}</td><td>{r.who ?? '—'}</td><td>{actionLabel(r.action)} <a href={href}>{title || `#${r.entity_id}`}</a></td></tr>;
+          return <tr><td>{dateTime(r.created_at)}</td><td>{r.who ?? '—'}</td><td>{actionLabel(r.action)} <a href={href}>{title || `#${r.entity_id}`}</a></td></tr>;
         })}</tbody>
       </table>
     </>
@@ -558,7 +558,7 @@ app.get('/umsoknir', async (c) => {
               <tr>
                 <td><a href={`/stjorn/umsoknir/${r.id}`}><strong>{d.felag}</strong></a><div class="muted small">{d.verkefni}</div></td>
                 <td>{Number(d.upphaed || 0).toLocaleString('is-IS')} kr.</td>
-                <td>{dateShort(r.created_at)}</td>
+                <td>{dateLong(r.created_at)}</td>
                 <td>{r.status === 'ny' ? <span class="pill pending">Ný</span> : <span class="pill published">Afgreidd</span>}</td>
               </tr>
             );
@@ -579,7 +579,7 @@ app.get('/umsoknir/:id{[0-9]+}', async (c) => {
     <>
       <p><a href="/stjorn/umsoknir">← Allar umsóknir</a></p>
       <h1>{d.verkefni}</h1>
-      <p class="lead">{d.felag} · barst {dateShort(r.created_at)} · {r.status === 'ny' ? 'Ný' : 'Afgreidd'}</p>
+      <p class="lead">{d.felag} · barst {dateLong(r.created_at)} · {r.status === 'ny' ? 'Ný' : 'Afgreidd'}</p>
       <dl class="app-data">
         {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${Number(d[f.name] || 0).toLocaleString('is-IS')} kr.` : d[f.name] || '—'}</dd></>)}
         <dt>Fylgiskjöl</dt>
@@ -661,7 +661,7 @@ app.get('/notendur', async (c) => {
             <td><strong>{u.name || '—'}</strong><div class="muted small">{u.email}</div></td>
             <td>{roles[u.role]}</td>
             <td>{u.club ?? '—'}</td>
-            <td>{u.last_login_at ? dateShort(u.last_login_at) : <span class="muted">Aldrei</span>}</td>
+            <td>{u.last_login_at ? dateLong(u.last_login_at) : <span class="muted">Aldrei</span>}</td>
             <td class="row-actions">
               <form method="post" action={`/stjorn/notendur/${u.id}`} class="inline user-edit">
                 <select name="role" aria-label="Hlutverk">{Object.entries(roles).map(([k, l]) => <option value={k} selected={k === u.role}>{l}</option>)}</select>
@@ -728,7 +728,7 @@ app.get('/saga/:table/:id{[0-9]+}', async (c) => {
           try { d = JSON.parse(r.data); } catch { /* tómt */ }
           return (
             <tr>
-              <td>{r.created_at.slice(0, 16)}</td><td>{r.who ?? '—'}</td><td>{actionLabel(r.action)}</td>
+              <td>{dateTime(r.created_at)}</td><td>{r.who ?? '—'}</td><td>{actionLabel(r.action)}</td>
               <td><details><summary>{String(d.title ?? d.name ?? 'Skoða')}</summary><div class="rev-preview">{plainText(String(d.body ?? d.description ?? ''), 600)}</div></details></td>
               <td>{i > 0 && r.action !== 'delete' && (
                 <form method="post" action={`/stjorn/saga/${r.id}/endurheimta`} data-confirm="Endurheimta þessa útgáfu? Núverandi útgáfa geymist í sögunni.">
@@ -767,8 +767,8 @@ async function refOptions(c: Context<AppEnv>, t: ContentType) {
   const need = new Set(t.fields.map((f) => f.type));
   return {
     club: need.has('club') ? (await all<{ id: number; name: string }>(db, 'SELECT id, name FROM clubs ORDER BY name')).map((r) => ({ id: r.id, label: r.name })) : [],
-    event: need.has('event') ? (await all<{ id: number; title: string; starts_at: string }>(db, 'SELECT id, title, starts_at FROM events ORDER BY starts_at DESC LIMIT 400')).map((r) => ({ id: r.id, label: `${dateShort(r.starts_at)} – ${r.title}` })) : [],
-    album: need.has('album') ? (await all<{ id: number; title: string; date: string }>(db, 'SELECT id, title, date FROM albums ORDER BY date DESC LIMIT 300')).map((r) => ({ id: r.id, label: `${dateShort(r.date)} – ${r.title}` })) : [],
+    event: need.has('event') ? (await all<{ id: number; title: string; starts_at: string }>(db, 'SELECT id, title, starts_at FROM events ORDER BY starts_at DESC LIMIT 400')).map((r) => ({ id: r.id, label: `${dateLong(r.starts_at)} – ${r.title}` })) : [],
+    album: need.has('album') ? (await all<{ id: number; title: string; date: string }>(db, 'SELECT id, title, date FROM albums ORDER BY date DESC LIMIT 300')).map((r) => ({ id: r.id, label: `${dateLong(r.date)} – ${r.title}` })) : [],
   };
 }
 
@@ -810,8 +810,8 @@ app.get('/:type', async (c) => {
   const fmt = (col: ContentType['listColumns'][number], r: Row): Child => {
     const v = r[col.field];
     if (col.format === 'status') return <StatusPill status={String(v)} />;
-    if (col.format === 'date') return v ? dateShort(String(v)) : '—';
-    if (col.format === 'datetime') return v ? String(v).slice(0, 16).replace('T', ' ') : '—';
+    if (col.format === 'date') return v ? dateLong(String(v)) : '—';
+    if (col.format === 'datetime') return v ? dateTime(String(v)) : '—';
     if (col.format === 'option') return t.fields.find((f) => f.name === col.field)?.options?.[String(v)] ?? String(v ?? '');
     return String(v ?? '');
   };

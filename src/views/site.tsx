@@ -2,7 +2,7 @@ import { asset } from '../static';
 import type { Child, FC } from 'hono/jsx';
 import { raw } from 'hono/html';
 import { Icon } from './icons';
-import { dateLong, dayMonth, dayNum, monthShort, timeOf, plainText } from '../lib';
+import { dateLong, dayNum, monthShort, timeOf, plainText } from '../lib';
 
 export type MenuItem = { id: number; title: string; path: string; children: MenuItem[] };
 export type Sponsor = { name: string; logo: string; url: string; tier: string };
@@ -163,7 +163,7 @@ export const EventItem: FC<{ e: EventRow }> = ({ e }) => (
 export const ResultItem: FC<{ r: { id: number; title: string; date: string; sport: string } }> = ({ r }) => (
   <li class="result-item">
     <a href={'/urslit/' + r.id}>
-      <span class="d">{dayMonth(r.date)}</span>
+      <time class="d" datetime={r.date}>{dateLong(r.date)}</time>
       <span>{r.title}</span>
     </a>
   </li>

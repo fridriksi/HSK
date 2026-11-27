@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import {
-  type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
+  type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
   Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
@@ -74,8 +74,12 @@ app.get('/', async (c) => {
   const cards = news.filter((n) => '/frett/' + n.slug !== hero.link).slice(0, 3);
   const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
   const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 5");
-  let records = await all<{ title: string; file: string }>(db, "SELECT title, file FROM documents WHERE category = 'met' ORDER BY date DESC, id DESC LIMIT 5");
-  if (!records.length) records = (await all<{ title: string }>(db, 'SELECT title FROM records ORDER BY updated_at DESC, sort LIMIT 5')).map((r) => ({ title: r.title, file: '' }));
+  // Nýjasta metaskrá í hverjum flokki, t.d. „Utanhúss 2026“
+  const recRows = await all<{ category: string; year: number | null; file: string }>(db, "SELECT category, year, file FROM records WHERE file <> '' AND category NOT IN ('annad', 'reglur') ORDER BY year DESC");
+  const records = Object.entries(RECORD_CATEGORIES).map(([k, label]) => {
+    const r = recRows.find((x) => x.category === k);
+    return r ? { title: `${label}${r.year ? ' ' + r.year : ''}`, file: r.file } : null;
+  }).filter((x): x is { title: string; file: string } => !!x);
   const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
   const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
   // Ein mynd úr hverju af nýjustu myndasöfnunum
@@ -761,7 +765,7 @@ app.get('/*', async (c) => {
           <ul class="doc-list">
             {rows.map((d) => (
               <li>
-                <time>{dateShort(d.date)}</time>
+                <time>{dateLong(d.date)}</time>
                 {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
                 <span class="muted small">{cats[d.category] ?? d.category}</span>
               </li>
