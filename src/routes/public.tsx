@@ -60,10 +60,10 @@ function pageNum(c: Context<AppEnv>) {
 app.get('/', async (c) => {
   const db = c.env.DB;
   const featuredId = parseInt(await getSetting(db, 'featured_news_id', '0'), 10);
-  let news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 9");
+  let news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 6");
   let featured = featuredId ? await one<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE id = ? AND status = 'published'", featuredId) : null;
   featured = featured ?? news[0] ?? null;
-  news = news.filter((n) => n.id !== featured?.id).slice(0, 8);
+  news = news.filter((n) => n.id !== featured?.id).slice(0, 5);
   const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
   const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 6");
   const quick = (await getSetting(db, 'quick_links', '')).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[1]);
@@ -96,12 +96,6 @@ app.get('/', async (c) => {
           </div>
         </div>
       </section>
-
-      {news.length > 5 && (
-        <section class="wrap block">
-          <div class="news-grid">{news.slice(5).map((n) => <NewsCard n={n} />)}</div>
-        </section>
-      )}
 
       <section class="wrap block three-col">
         <div>
