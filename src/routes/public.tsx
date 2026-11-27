@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import {
-  type AppEnv, all, one, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
+  type AppEnv, all, one, slugify, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
   Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
@@ -706,9 +706,15 @@ app.get('/*', async (c) => {
       const rows = await all<{ name: string; body: string }>(c.env.DB, 'SELECT name, body FROM committees ORDER BY sort, name');
       moduleView = (
         <>
-          <div class="club-filter"><label class="sr" for="nefnd-leit">Leita í stjórn, nefndum og ráðum</label><input id="nefnd-leit" type="search" placeholder="Leita að nefnd eða nafni" data-filter=".committee-grid > section" data-empty="#nefnd-tomt" /></div>
+          <div class="club-filter"><label class="sr" for="nefnd-leit">Leita í stjórn, nefndum og ráðum</label><input id="nefnd-leit" type="search" placeholder="Leita að nefnd eða nafni" data-filter=".committee-list > details" data-empty="#nefnd-tomt" /></div>
           <p id="nefnd-tomt" class="filter-empty" hidden>Engin nefnd eða manneskja fannst.</p>
-          <div class="committee-grid">{rows.map((r) => <section class="committee" data-text={`${r.name} ${plainText(r.body)}`.toLowerCase()}><h2>{r.name}</h2><Prose html={r.body} /></section>)}</div>
+          {/* Hver nefnd opnast í felliglugga; leit opnar þær sem passa */}
+          <div class="accordion committee-list">{rows.map((r) => (
+            <details class="acc" id={slugify(r.name)} data-text={`${r.name} ${plainText(r.body)}`.toLowerCase()}>
+              <summary>{r.name}<Icon name="chevronDown" /></summary>
+              <div class="acc-body"><Prose html={r.body} /></div>
+            </details>
+          ))}</div>
         </>
       );
       break;

@@ -21,6 +21,11 @@
         const text = norm(el.dataset.text || el.textContent);
         el.hidden = !words.every((w) => text.includes(w));
         if (!el.hidden) shown++;
+        // Felligluggar sem passa við leit opnast; þeir lokast aftur þegar leitin er hreinsuð
+        if (el.tagName === 'DETAILS') {
+          if (words.length && !el.hidden && !el.open) { el.open = true; el.dataset.autoOpened = '1'; }
+          if (!words.length && el.dataset.autoOpened) { el.open = false; delete el.dataset.autoOpened; }
+        }
       });
       if (empty) empty.hidden = shown > 0;
     };
