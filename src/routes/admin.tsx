@@ -11,6 +11,7 @@ import {
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
 import { GRANT_FIELDS } from '../grant';
+import { DEFAULT_TILES } from '../lib';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
 import { Icon } from '../views/icons';
@@ -29,6 +30,10 @@ function isStaff(u: User) { return u.role === 'admin' || u.role === 'editor'; }
 async function page(c: Context<AppEnv>, title: string, active: string, body: Child, opts: { error?: string; status?: number } = {}) {
   const user = c.get('user');
   let pending = 0;
+  let applications = 0;
+  if (user && (user.role === 'admin' || user.role === 'editor')) {
+    applications = (await one<{ n: number }>(c.env.DB, "SELECT count(*) AS n FROM applications WHERE status = 'ny'"))?.n ?? 0;
+  }
   if (user?.role === 'admin') {
     const r = await one<{ n: number }>(c.env.DB, "SELECT (SELECT count(*) FROM news WHERE status = 'pending') + (SELECT count(*) FROM events WHERE status = 'pending') AS n");
     pending = r?.n ?? 0;
@@ -36,7 +41,7 @@ async function page(c: Context<AppEnv>, title: string, active: string, body: Chi
   const flash = MESSAGES[c.req.query('m') || ''];
   c.header('Cache-Control', 'no-store');
   return c.html('<!doctype html>' + (
-    <AdminLayout title={title} user={user} active={active} flash={flash} error={opts.error} pending={pending}>{body}</AdminLayout>
+    <AdminLayout title={title} user={user} active={active} flash={flash} error={opts.error} pending={pending} applications={applications}>{body}</AdminLayout>
   ).toString(), (opts.status ?? 200) as 200);
 }
 
@@ -200,6 +205,7 @@ app.get('/', async (c) => {
     (SELECT count(*) FROM events WHERE status = 'published' AND starts_at >= date('now')) AS upcoming,
     (SELECT count(*) FROM results) AS results, (SELECT count(*) FROM pages) AS pages,
     (SELECT count(*) FROM clubs) AS clubs, (SELECT count(*) FROM photos) AS photos`);
+  const newApps = await all<{ id: number; title: string; created_at: string }>(db, "SELECT id, title, created_at FROM applications WHERE status = 'ny' ORDER BY created_at");
   const recent = await all<{ entity: string; entity_id: number; action: string; created_at: string; who: string | null; data: string }>(db,
     'SELECT r.entity, r.entity_id, r.action, r.created_at, u.email AS who, r.data FROM revisions r LEFT JOIN users u ON u.id = r.user_id ORDER BY r.id DESC LIMIT 12');
   return page(c, 'Yfirlit', 'home', (
@@ -207,7 +213,7 @@ app.get('/', async (c) => {
       <h1>Yfirlit</h1>
       <div class="actions">
         <a class="btn" href="/stjorn/frettir/nytt">Ný frétt</a>
-        <a class="btn" href="/stjorn/vidburdir/nytt">Nýr viðburður eða mót</a>
+        <a class="btn" href="/stjorn/vidburdir/nytt">Nýtt mót eða viðburður</a>
         <a class="btn ghost" href="/stjorn/urslit/nytt">Skrá úrslit</a>
         <a class="btn ghost" href="/stjorn/myndasofn/nytt">Nýtt myndaalbúm</a>
         <a class="btn ghost" href="/stjorn/sidur/nytt">Ný síða</a>
@@ -218,14 +224,23 @@ app.get('/', async (c) => {
           <table class="tbl">
             <thead><tr><th>Heiti</th><th>Tegund</th><th>Frá</th><th>Sent</th></tr></thead>
             <tbody>{pending.map((p) => (
-              <tr><td><a href={`/stjorn/${p.t}/${p.id}`}>{p.title}</a></td><td>{p.t === 'frettir' ? 'Frétt' : 'Viðburður'}</td><td>{p.club ?? '—'}</td><td>{dateShort(p.created_at)}</td></tr>
+              <tr><td><a href={`/stjorn/${p.t}/${p.id}`}>{p.title}</a></td><td>{p.t === 'frettir' ? 'Frétt' : 'Mót eða viðburður'}</td><td>{p.club ?? '—'}</td><td>{dateShort(p.created_at)}</td></tr>
             ))}</tbody>
           </table>
           {user.role !== 'admin' && <p class="muted small">Aðeins stjórnendur geta samþykkt innsent efni.</p>}
         </section>
       )}
+      {newApps.length > 0 && (
+        <section class="panel attention">
+          <h2>Nýjar umsóknir í Verkefnasjóð ({newApps.length})</h2>
+          <table class="tbl">
+            <thead><tr><th>Umsókn</th><th>Barst</th></tr></thead>
+            <tbody>{newApps.map((a) => <tr><td><a href={`/stjorn/umsoknir/${a.id}`}>{a.title}</a></td><td>{dateShort(a.created_at)}</td></tr>)}</tbody>
+          </table>
+        </section>
+      )}
       <div class="stats">
-        {[['news', 'birtar fréttir', '/stjorn/frettir'], ['upcoming', 'viðburðir framundan', '/stjorn/vidburdir'], ['results', 'úrslit', '/stjorn/urslit'], ['pages', 'síður', '/stjorn/sidur'], ['clubs', 'aðildarfélög', '/stjorn/felog'], ['photos', 'myndir í söfnum', '/stjorn/myndasofn']].map(([k, l, h]) => (
+        {[['news', 'birtar fréttir', '/stjorn/frettir'], ['upcoming', 'mót og viðburðir framundan', '/stjorn/vidburdir'], ['results', 'úrslit', '/stjorn/urslit'], ['pages', 'síður', '/stjorn/sidur'], ['clubs', 'aðildarfélög', '/stjorn/felog'], ['photos', 'myndir í söfnum', '/stjorn/myndasofn']].map(([k, l, h]) => (
           <a href={h}><b>{counts?.[k] ?? 0}</b><span>{l}</span></a>
         ))}
       </div>
@@ -298,10 +313,12 @@ app.get('/skrar', async (c) => {
 
 type PageRow = { id: number; parent_id: number | null; slug: string; path: string; title: string; body: string; module: string; sort: number; in_menu: number; status: string; updated_at: string };
 
+// Efnislistar sem eru ekki lengur notaðir á vefnum (sameinaðir öðrum); birtast ekki í vali fyrir nýjar síður
+const RETIRED_MODULES = ['competitions', 'submitted'];
 const MODULES: Record<string, string> = {
-  '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar', events: 'Mót og viðburðir (dagatal)', competitions: 'Mótaskrá',
+  '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar (eingöngu)', events: 'Mót og viðburðir', competitions: 'Mótaskrá (eingöngu mót)',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
-  subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (flokkaður listi yfir undirsíður)',
+  subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (undirsíður í felligluggum, flokkaðar)',
   sections: 'Undirsíður á einni síðu, hver í felliglugga', grant: 'Umsóknarform Verkefnasjóðs', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
 };
 
@@ -312,29 +329,36 @@ function staffOnly(c: Context<AppEnv>) {
 app.get('/sidur', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const pages = await all<PageRow>(c.env.DB, 'SELECT id, parent_id, title, path, module, sort, in_menu, status FROM pages ORDER BY sort, title');
-  const tree = (parent: number | null, depth: number): Child[] => pages.filter((p) => p.parent_id === parent).flatMap((p, i, arr) => [
-    <tr>
-      <td style={`padding-left:${0.75 + depth * 1.75}rem`} class={depth ? 'child' : ''}>
-        <a href={`/stjorn/sidur/${p.id}`}><strong>{p.title}</strong></a>
-        <div class="muted small">/{p.path}{p.module && ` · ${MODULES[p.module]}`}</div>
-      </td>
-      <td>{p.in_menu ? 'Í valmynd' : <span class="muted">Falin</span>}</td>
-      <td><StatusPill status={p.status} /></td>
-      <td class="row-actions">
-        <form method="post" action={`/stjorn/sidur/${p.id}/faera`} class="inline">
-          <button name="att" value="upp" class="icon-btn" title="Færa upp" aria-label="Færa upp" disabled={i === 0}><Icon name="chevronUp" /></button>
-          <button name="att" value="nidur" class="icon-btn" title="Færa niður" aria-label="Færa niður" disabled={i === arr.length - 1}><Icon name="chevronDown" /></button>
-        </form>
-        <a class="btn small ghost" href={`/stjorn/sidur/nytt?foreldri=${p.id}`}>Bæta við undirsíðu</a>
-        <a class="btn small ghost" href={'/' + p.path} target="_blank">Skoða</a>
-      </td>
-    </tr>,
-    ...tree(p.id, depth + 1),
-  ]);
+  // Undirsíður sem birtast sem felligluggar á yfirsíðunni eru faldar þar til smellt er á „Sýna kafla“
+  const FOLDED = ['sections', 'archive', 'laws'];
+  const tree = (parent: number | null, depth: number, folded = false): Child[] => pages.filter((p) => p.parent_id === parent).flatMap((p, i, arr) => {
+    const kids = pages.filter((k) => k.parent_id === p.id).length;
+    const folds = FOLDED.includes(p.module) && kids > 0;
+    return [
+      <tr class={folded ? `fold-${parent}` : ''} hidden={folded}>
+        <td style={`padding-left:${0.75 + depth * 1.75}rem`} class={depth ? 'child' : ''}>
+          <a href={`/stjorn/sidur/${p.id}`}><strong>{p.title}</strong></a>
+          <div class="muted small">/{p.path}{p.module && ` · ${MODULES[p.module]}`}</div>
+          {folds && <button type="button" class="linklike small" data-unfold={`fold-${p.id}`} aria-expanded="false">Sýna {kids} kafla</button>}
+        </td>
+        <td>{folded ? <span class="muted">Felligluggi</span> : p.in_menu ? 'Í valmynd' : <span class="muted">Falin</span>}</td>
+        <td><StatusPill status={p.status} /></td>
+        <td class="row-actions">
+          <form method="post" action={`/stjorn/sidur/${p.id}/faera`} class="inline">
+            <button name="att" value="upp" class="icon-btn" title="Færa upp" aria-label="Færa upp" disabled={i === 0}><Icon name="chevronUp" /></button>
+            <button name="att" value="nidur" class="icon-btn" title="Færa niður" aria-label="Færa niður" disabled={i === arr.length - 1}><Icon name="chevronDown" /></button>
+          </form>
+          {!folded && <a class="btn small ghost" href={`/stjorn/sidur/nytt?foreldri=${p.id}`}>{FOLDED.includes(p.module) ? 'Bæta við kafla' : 'Bæta við undirsíðu'}</a>}
+          <a class="btn small ghost" href={'/' + p.path} target="_blank">Skoða</a>
+        </td>
+      </tr>,
+      ...tree(p.id, depth + 1, folds),
+    ];
+  });
   return page(c, 'Síður og valmynd', 'sidur', (
     <>
       <div class="title-row"><h1>Síður og valmynd</h1><a class="btn" href="/stjorn/sidur/nytt">Ný síða</a></div>
-      <p class="lead">Efstu síðurnar sem eru „í valmynd“ mynda aðalvalmynd vefsins og undirsíður þeirra birtast í fellivalmynd. Notaðu örvarnar til að raða.</p>
+      <p class="lead">Efstu síðurnar sem eru „í valmynd“ mynda aðalvalmynd vefsins og undirsíður þeirra birtast sem flipar. Sumar síður, t.d. Lög og reglugerðir og Héraðsþing, sýna undirsíður sínar sem felliglugga; smelltu á „Sýna kafla“ til að sjá þær. Notaðu örvarnar til að raða.</p>
       <table class="tbl tree">
         <thead><tr><th>Síða</th><th>Valmynd</th><th>Staða</th><th></th></tr></thead>
         <tbody>{tree(null, 0)}</tbody>
@@ -363,8 +387,8 @@ async function pageForm(c: Context<AppEnv>, p: Partial<PageRow>, error?: string)
             </select>
           </div>
           <div class="field"><label for="module">Efnislisti á síðunni</label>
-            <select id="module" name="module">{Object.entries(MODULES).map(([k, l]) => <option value={k} selected={k === (p.module ?? '')}>{l}</option>)}</select>
-            <small class="help">Birtir t.d. fréttir eða mótaskrá fyrir neðan texta síðunnar.</small>
+            <select id="module" name="module">{Object.entries(MODULES).filter(([k]) => !RETIRED_MODULES.includes(k) || k === p.module).map(([k, l]) => <option value={k} selected={k === (p.module ?? '')}>{l}</option>)}</select>
+            <small class="help">Birtir t.d. fréttir eða mót og viðburði fyrir neðan texta síðunnar.</small>
           </div>
           <div class="field"><label class="check"><input type="checkbox" name="in_menu" value="1" checked={p.in_menu !== 0} /> Sýna í valmynd</label></div>
           <div class="field wide"><label for="body">Texti</label><textarea id="body" name="body" class="rte" rows={16}>{p.body ?? ''}</textarea></div>
@@ -463,21 +487,13 @@ app.post('/sidur/:id{[0-9]+}/eyda', async (c) => {
 app.get('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const db = c.env.DB;
-  const news = await all<{ id: number; title: string; published_at: string }>(db, "SELECT id, title, published_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT 40");
   const s = async (k: string, d = '') => getSetting(db, k, d);
-  const featured = await s('featured_news_id', '0');
   return page(c, 'Forsíða og stillingar', 'stillingar', (
     <>
       <h1>Forsíða og stillingar</h1>
       <form method="post" class="edit-form">
         <div class="form-grid">
-          <div class="field wide"><label for="featured_news_id">Aðalfrétt á forsíðu</label>
-            <select id="featured_news_id" name="featured_news_id">
-              <option value="0">Nýjasta fréttin (sjálfvirkt)</option>
-              {news.map((n) => <option value={String(n.id)} selected={String(n.id) === featured}>{dateShort(n.published_at)} – {n.title}</option>)}
-            </select>
-          </div>
-          <div class="field wide"><h2 class="sub-h">Stóra myndin efst (nýja forsíðan)</h2><small class="help">Skildu fyrirsögn eftir tóma til að sýna nýjustu fréttina sjálfkrafa.</small></div>
+          <div class="field wide"><h2 class="sub-h">Stóra myndin efst á forsíðu</h2><small class="help">Skildu fyrirsögn eftir tóma til að sýna nýjustu fréttina sjálfkrafa.</small></div>
           <div class="field"><label for="hero_title">Fyrirsögn</label><input id="hero_title" name="hero_title" value={await s('hero_title')} placeholder="T.d. Unglingalandsmót UMFÍ 2027" /></div>
           <div class="field"><label for="hero_button">Texti á hnappi</label><input id="hero_button" name="hero_button" value={await s('hero_button')} placeholder="Nánar" /></div>
           <div class="field wide"><label for="hero_text">Stuttur texti</label><textarea id="hero_text" name="hero_text" rows={2}>{await s('hero_text')}</textarea></div>
@@ -497,9 +513,9 @@ app.get('/stillingar', async (c) => {
             <textarea id="notice" name="notice" class="rte rte-small" rows={3}>{await s('notice')}</textarea>
             <small class="help">Skildu eftir tómt til að fela borðann. T.d. „Opið fyrir umsóknir í Hvatasjóð til 12. desember“.</small>
           </div>
-          <div class="field wide"><label for="quick_links">Flýtileiðir á forsíðu</label>
-            <textarea id="quick_links" name="quick_links" rows={6}>{await s('quick_links')}</textarea>
-            <small class="help">Ein lína fyrir hverja leið: Texti | slóð. T.d. „HSK met | /mot/hsk-met“</small>
+          <div class="field wide"><label for="home_tiles">Reitir neðst á forsíðu</label>
+            <textarea id="home_tiles" name="home_tiles" rows={4}>{await s('home_tiles', DEFAULT_TILES)}</textarea>
+            <small class="help">Ein lína fyrir hvern reit: Fyrirsögn | stuttur texti | slóð. T.d. „Styrkir og sjóðir | Verkefnasjóður HSK | /um-hsk/verkefnasjodur“</small>
           </div>
           <div class="field"><label for="contact_address">Heimilisfang</label><input id="contact_address" name="contact_address" value={await s('contact_address', 'Selinu, Engjavegi 48, 800 Selfossi')} /></div>
           <div class="field"><label for="contact_phone">Sími</label><input id="contact_phone" name="contact_phone" value={await s('contact_phone', '482 1189')} /></div>
@@ -514,7 +530,7 @@ app.get('/stillingar', async (c) => {
 app.post('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const f = await c.req.formData();
-  for (const k of ['featured_news_id', 'hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'quick_links', 'contact_address', 'contact_phone', 'contact_email']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
+  for (const k of ['hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'home_tiles', 'contact_address', 'contact_phone', 'contact_email']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
   const notice = sanitizeHtml(String(f.get('notice') ?? '')).trim();
   await setSetting(c.env.DB, 'notice', plainText(notice) ? notice : '');
   await logRevision(c.env.DB, 'settings', 0, c.get('user')!.id, 'update', Object.fromEntries(f));
@@ -783,7 +799,11 @@ app.get('/:type', async (c) => {
   const where: string[] = [];
   const params: unknown[] = [];
   if (q) { where.push('(' + t.searchFields.map((f) => `${f} LIKE ?`).join(' OR ') + ')'); t.searchFields.forEach(() => params.push(`%${q}%`)); }
-  if (status && t.status) { where.push('status = ?'); params.push(status); }
+  // Tvítekningar sem voru faldar við flutning af gamla vefnum sjást aðeins ef beðið er um þær
+  const DUP = "(status = 'draft' AND (review_note LIKE 'Tvískráð%' OR review_note LIKE 'Tvítekin%'))";
+  if (status === 'tvitekid' && t.status) where.push(DUP);
+  else if (status && t.status) { where.push('status = ?'); params.push(status); }
+  if (status !== 'tvitekid' && t.status && (t.table === 'events' || t.table === 'news')) where.push('NOT ' + DUP);
   if (!isStaff(user)) { where.push('club_id = ?'); params.push(user.club_id ?? 0); }
   const per = 50;
   const rows = await all<Row>(c.env.DB, `SELECT * FROM ${t.table} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${t.order} LIMIT ? OFFSET ?`, ...params, per + 1, (pageNo - 1) * per);
@@ -805,6 +825,7 @@ app.get('/:type', async (c) => {
           <select name="stada" aria-label="Staða">
             <option value="">Allar stöður</option>
             {Object.entries(STATUS_LABELS).map(([k, l]) => <option value={k} selected={k === status}>{l}</option>)}
+            {(t.table === 'events' || t.table === 'news') && <option value="tvitekid" selected={status === 'tvitekid'}>Tvítekið (falið)</option>}
           </select>
         )}
         <button class="btn small">Sía</button>

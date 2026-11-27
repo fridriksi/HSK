@@ -146,3 +146,6 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 .app-data dt { font-weight: 700; color: var(--muted); }
 .app-data dd { margin: 0; }
 @media (max-width: 700px) { .app-data { grid-template-columns: 1fr; } .app-data dd { margin-bottom: 8px; } }
+.side nav ul + .side-h, .side-h { font: 600 .78rem var(--body); color: var(--muted); margin: 10px 18px 0; letter-spacing: .02em; }
+.side nav ul { padding: 4px 0; }
+@media (max-width: 900px) { .side-h { display: none; } }

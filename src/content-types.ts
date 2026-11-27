@@ -42,6 +42,12 @@ export type ContentType = {
 export const SPORTS = ['Almenningsíþróttir', 'Blak', 'Borðtennis', 'Bogfimi', 'Fimleikar', 'Frjálsíþróttir', 'Glíma', 'Golf', 'Handknattleikur', 'Hestaíþróttir', 'Júdó', 'Knattspyrna', 'Körfuknattleikur', 'Motocross', 'Pílukast', 'Skák', 'Skotíþróttir', 'Starfsíþróttir', 'Sund', 'Taekwondo', 'Annað'];
 const sportOptions = Object.fromEntries(SPORTS.map((s) => [s, s]));
 
+/** Flokkar metaskráa: hver flokkur er eitt spjald á síðunni HSK met */
+export const RECORD_CATEGORIES: Record<string, string> = {
+  utanhuss: 'Utanhúss', innanhuss: 'Innanhúss', oldungar_uti: 'Öldungar utanhúss', oldungar_inni: 'Öldungar innanhúss',
+  fatladir: 'Fatlaðir', annad: 'Önnur met', reglur: 'Reglur og skýringar',
+};
+
 export const STATUS_LABELS: Record<string, string> = {
   draft: 'Drög', pending: 'Bíður samþykktar', published: 'Birt', rejected: 'Hafnað',
 };
@@ -66,12 +72,12 @@ export const contentTypes: ContentType[] = [
     searchFields: ['title', 'body'],
   },
   {
-    key: 'vidburdir', table: 'events', label: 'Viðburðir og mót', singular: 'viðburð', titleField: 'title', dateField: 'starts_at',
+    key: 'vidburdir', table: 'events', label: 'Mót og viðburðir', singular: 'mót eða viðburð', titleField: 'title', dateField: 'starts_at',
     order: 'starts_at DESC', status: true, clubSubmit: true,
     publicUrl: (r) => `/vidburdur/${r.id}`,
     fields: [
       { name: 'title', label: 'Heiti', type: 'text', required: true, wide: true },
-      { name: 'kind', label: 'Tegund', type: 'select', options: { vidburdur: 'Viðburður (í dagatal)', mot: 'Mót (í mótaskrá og dagatal)' } },
+      { name: 'kind', label: 'Tegund', type: 'select', options: { mot: 'Mót', vidburdur: 'Viðburður' }, help: 'Mót eru merkt með bláu í „Mót og viðburðir“ á vefnum.' },
       { name: 'sport', label: 'Íþróttagrein', type: 'select', options: { '': '—', ...sportOptions } },
       { name: 'starts_at', label: 'Hefst', type: 'datetime', required: true },
       { name: 'ends_at', label: 'Lýkur', type: 'datetime' },
@@ -89,13 +95,13 @@ export const contentTypes: ContentType[] = [
     searchFields: ['title', 'location', 'sport'],
   },
   {
-    key: 'urslit', table: 'results', label: 'Úrslit móta', singular: 'úrslit', titleField: 'title', dateField: 'date',
+    key: 'urslit', table: 'results', label: 'Úrslit', singular: 'úrslit', titleField: 'title', dateField: 'date',
     order: 'date DESC', status: true, publicUrl: (r) => `/urslit/${r.id}`,
     fields: [
       { name: 'title', label: 'Heiti móts', type: 'text', required: true, wide: true },
       { name: 'date', label: 'Dagsetning', type: 'date', required: true },
       { name: 'sport', label: 'Íþróttagrein', type: 'select', options: { '': '—', ...sportOptions } },
-      { name: 'event_id', label: 'Tengt mót í mótaskrá', type: 'event' },
+      { name: 'event_id', label: 'Tengt mót', type: 'event' },
       { name: 'body', label: 'Úrslit', type: 'richtext', help: 'Hægt er að líma töflu beint úr Excel inn í ritilinn.', wide: true },
       { name: 'attachment', label: 'Úrslit sem PDF', type: 'file' },
     ],
@@ -103,14 +109,16 @@ export const contentTypes: ContentType[] = [
     searchFields: ['title', 'sport'],
   },
   {
-    key: 'met', table: 'records', label: 'HSK met', singular: 'metaskrá', titleField: 'title', order: 'sort, title',
+    key: 'met', table: 'records', label: 'HSK met', singular: 'metaskrá', titleField: 'title', order: "CASE category WHEN 'reglur' THEN 0 ELSE 1 END, year DESC, category, title",
     fields: [
-      { name: 'title', label: 'Heiti', type: 'text', required: true, help: 'T.d. Frjálsíþróttir – karlar utanhúss', wide: true },
+      { name: 'title', label: 'Heiti', type: 'text', required: true, help: 'T.d. HSK metaskrá öldunga í frjálsum innanhúss 2027', wide: true },
+      { name: 'category', label: 'Flokkur', type: 'select', required: true, options: RECORD_CATEGORIES, help: 'Ræður á hvaða spjaldi skráin birtist á síðunni HSK met.' },
+      { name: 'year', label: 'Ár', type: 'number', help: 'Nýjasta árið birtist efst á spjaldinu.' },
+      { name: 'file', label: 'Metaskrá (skjal)', type: 'file', help: 'Excel- eða PDF-skjal með metunum.' },
       { name: 'sport', label: 'Íþróttagrein', type: 'select', options: { '': '—', ...sportOptions } },
-      { name: 'sort', label: 'Röð', type: 'number' },
-      { name: 'body', label: 'Metaskrá', type: 'richtext', help: 'Tafla með greinum, árangri, nafni, félagi og ártali.', wide: true },
+      { name: 'body', label: 'Texti', type: 'richtext', help: 'Aðeins fyrir flokkinn „Reglur og skýringar“, eða ef metin eru sett inn sem tafla í stað skjals.', wide: true },
     ],
-    listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'sport', label: 'Grein' }, { field: 'updated_at', label: 'Uppfært', format: 'datetime' }],
+    listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'year', label: 'Ár' }],
     searchFields: ['title'],
   },
   {
@@ -145,10 +153,10 @@ export const contentTypes: ContentType[] = [
     key: 'skjol', table: 'documents', label: 'Fundargerðir og skjöl', singular: 'skjal', titleField: 'title', dateField: 'date', order: 'date DESC',
     fields: [
       { name: 'title', label: 'Heiti', type: 'text', required: true, wide: true },
-      { name: 'category', label: 'Flokkur', type: 'select', options: { fundargerd: 'Fundargerð', arsskyrsla: 'Ársskýrsla', log: 'Lög og reglugerðir', eydublad: 'Eyðublað', aaetlun: 'Stefna eða áætlun', met: 'Metaskrá (HSK met)', annad: 'Annað' } },
+      { name: 'category', label: 'Flokkur', type: 'select', options: { fundargerd: 'Fundargerð', arsskyrsla: 'Ársskýrsla', eydublad: 'Eyðublað', aaetlun: 'Stefna eða áætlun', annad: 'Annað' }, help: 'Lög og reglugerðir eru settar inn sem síður, og metaskrár undir HSK met.' },
       { name: 'date', label: 'Dagsetning', type: 'date', required: true },
-      { name: 'file', label: 'Skjal (PDF)', type: 'file' },
-      { name: 'body', label: 'Texti (ef ekkert skjal)', type: 'richtext', wide: true },
+      { name: 'file', label: 'Skjal', type: 'file' },
+      { name: 'body', label: 'Lýsing eða texti', type: 'richtext', help: 'Ef skjal fylgir birtist textinn sem stutt lýsing undir heiti þess.', wide: true },
     ],
     listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'date', label: 'Dags.', format: 'date' }],
     searchFields: ['title'],

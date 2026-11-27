@@ -124,6 +124,18 @@
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); handle(e.dataTransfer.files); });
   });
 
+  // Síðutré: sýna/fela kafla undir yfirsíðu
+  document.querySelectorAll('[data-unfold]').forEach((btn) => {
+    const label = btn.textContent;
+    btn.addEventListener('click', () => {
+      const rows = document.querySelectorAll('tr.' + btn.dataset.unfold);
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      rows.forEach((r) => { r.hidden = !open; });
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Fela kafla' : label;
+    });
+  });
+
   // Afrita slóð
   document.querySelectorAll('[data-copy]').forEach((btn) => {
     btn.addEventListener('click', async () => {

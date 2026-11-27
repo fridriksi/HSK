@@ -115,6 +115,30 @@ try {
   await admin.waitForURL(/m=eytt/);
   ok(await admin.locator(`text=Umf. Prufa ${stamp}`).count() === 0, 'Umsókn eytt');
 
+  // 3d. Ný metaskrá fer á rétt spjald á HSK met eftir flokki og ári
+  await admin.goto(`${BASE}/stjorn/met/nytt`);
+  await admin.fill('#f_title', `HSK metaskrá öldunga innanhúss prufa ${stamp}`);
+  await admin.selectOption('#f_category', 'oldungar_inni');
+  await admin.fill('#f_year', '2099');
+  await admin.fill('#f_file', `/media/prufa-${stamp}.xlsx`);
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+  const metHtml = await (await fetch(`${BASE}/mot/hsk-met`)).text();
+  const oldCard = metHtml.split('<h2>Öldungar innanhúss</h2>')[1]?.split('</section>')[0] ?? '';
+  ok(oldCard.includes(`prufa-${stamp}.xlsx`) && oldCard.includes('Metaskrá 2099'), 'Ný metaskrá birtist efst á spjaldinu Öldungar innanhúss');
+  await admin.click('button:has-text("Eyða")');
+  await admin.waitForURL(/m=eytt/);
+
+  // 3e. Reitir neðst á forsíðu eru stillanlegir
+  await admin.goto(`${BASE}/stjorn/stillingar`);
+  const tilesBefore = await admin.inputValue('#home_tiles');
+  await admin.fill('#home_tiles', `Prufureitur ${stamp} | Texti | /um-hsk`);
+  await admin.click('button:has-text("Vista")');
+  ok((await (await fetch(`${BASE}/`)).text()).includes(`Prufureitur ${stamp}`), 'Reitir á forsíðu breytast í stillingum');
+  await admin.goto(`${BASE}/stjorn/stillingar`);
+  await admin.fill('#home_tiles', tilesBefore);
+  await admin.click('button:has-text("Vista")');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
@@ -124,7 +148,7 @@ try {
   await admin.fill('#f_location', 'Selfoss');
   await admin.click('button[value=published]');
   await admin.waitForURL(/m=birt/);
-  ok((await (await fetch(`${BASE}/mot/dagskra?tegund=mot`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í mótaskrá');
+  ok((await (await fetch(`${BASE}/mot/dagskra?tegund=mot`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í Mót og viðburðir (sía: mót)');
 
   // 5. Albúm með myndum
   await admin.goto(`${BASE}/stjorn/myndasofn/nytt`);

@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import {
-  type AppEnv, all, one, slugify, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
+  type AppEnv, all, one, slugify, DEFAULT_TILES, getSetting, dateLong, dateShort, dayNum, monthShort, today, plainText, weekday, timeOf, monthYear, escapeHtml,
 } from '../lib';
 import {
   Layout, PageHead, NewsCard, EventItem, ResultItem, Pager, Prose,
@@ -9,6 +9,7 @@ import {
 } from '../views/site';
 import { Icon } from '../views/icons';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
+import { RECORD_CATEGORIES } from '../content-types';
 
 const app = new Hono<AppEnv>();
 const PER_PAGE = 12;
@@ -78,6 +79,7 @@ app.get('/', async (c) => {
   const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
   const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
   // Ein mynd úr hverju af nýjustu myndasöfnunum
+  const tiles = (await getSetting(db, 'home_tiles', DEFAULT_TILES)).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[2]);
   const photos = await all<{ src: string; slug: string; title: string }>(db, "SELECT coalesce(nullif(a.cover, ''), (SELECT src FROM photos p WHERE p.album_id = a.id ORDER BY sort LIMIT 1)) AS src, a.slug, a.title FROM albums a ORDER BY a.date DESC, a.id DESC LIMIT 6").then((r) => r.filter((x) => x.src));
 
   return render(c, 'Forsíða', (
@@ -159,11 +161,11 @@ app.get('/', async (c) => {
         </section>
       )}
 
-      <section class="wrap h2-block h2-tiles">
-        <a href="/um-hsk/verkefnasjodur"><strong>Styrkir og sjóðir</strong><span>Verkefnasjóður HSK, umsóknir og úthlutanir</span></a>
-        <a href="/um-hsk/log-og-reglugerdir"><strong>Fyrir félögin</strong><span>Lög, reglugerðir, eyðublöð og innskráning formanna</span></a>
-        <a href="/um-hsk"><strong>Um HSK</strong><span>Saga, stjórn, nefndir og starfsfólk</span></a>
-      </section>
+      {tiles.length > 0 && (
+        <section class="wrap h2-block h2-tiles">
+          {tiles.map(([t, txt, url]) => <a href={url}><strong>{t}</strong><span>{txt}</span></a>)}
+        </section>
+      )}
     </div>
   ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
 });
@@ -652,62 +654,29 @@ app.get('/*', async (c) => {
       break;
     }
     case 'records': {
-      // Metaskrár flokkaðar eftir tegund; nýjasta skráin efst og eldri ár sem tenglar
-      const rows = await all<{ id: number; title: string; sport: string; body: string; updated_at: string }>(c.env.DB, 'SELECT * FROM records ORDER BY sort, title');
-      const metDocs = await all<{ title: string; date: string; file: string }>(c.env.DB, "SELECT title, date, file FROM documents WHERE category = 'met' ORDER BY date DESC, title");
-      const kindOf = (t: string) => {
-        const x = t.toLowerCase();
-        if (/fatla/.test(x)) return 'Fatlaðir';
-        if (/öldung/.test(x)) return /innanh/.test(x) ? 'Öldungar innanhúss' : 'Öldungar utanhúss';
-        if (/innanh/.test(x)) return 'Innanhúss';
-        if (/utanh/.test(x)) return 'Utanhúss';
-        return 'Önnur met';
-      };
-      const ORDER = ['Utanhúss', 'Innanhúss', 'Öldungar utanhúss', 'Öldungar innanhúss', 'Fatlaðir', 'Önnur met'];
-      const groups = new Map<string, { title: string; year: string; file: string }[]>();
-      const rules: typeof rows = [];
-      for (const r of rows) {
-        const files = [...r.body.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-        const year = r.title.match(/\b(19|20)\d\d\b/)?.[0] ?? '';
-        if (files.length !== 1) { rules.push(r); continue; }
-        const k = kindOf(r.title);
-        groups.set(k, [...(groups.get(k) ?? []), { title: r.title, year, file: files[0] }]);
-      }
+      // Metaskrár á spjöldum eftir flokki; nýjasta árið efst og eldri ár sem tenglar
+      const rows = await all<{ title: string; category: string; year: number | null; file: string; body: string }>(c.env.DB, 'SELECT title, category, year, file, body FROM records ORDER BY year DESC, title');
+      const groups = Object.entries(RECORD_CATEGORIES).filter(([k]) => k !== 'reglur')
+        .map(([k, label]) => [label, rows.filter((r) => r.category === k && r.file)] as const).filter(([, l]) => l.length);
+      const rules = rows.filter((r) => r.category === 'reglur' || (!r.file && r.body));
       moduleView = (
         <>
-          {rules.map((r) => (
-            <details class="record">
-              <summary><strong>{r.title}</strong></summary>
-              <div class="table-wrap"><Prose html={r.body} /></div>
-            </details>
-          ))}
+          {rules.length > 0 && <div class="accordion">{rules.map((r) => <details class="acc"><summary>{r.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={r.body} /></div></details>)}</div>}
           <div class="record-grid">
-            {ORDER.filter((k) => groups.get(k)?.length).map((k) => {
-              const list = groups.get(k)!.sort((x, y) => y.year.localeCompare(x.year));
-              if (k === 'Önnur met') {
-                return (
-                  <section class="record-card">
-                    <h2>{k}</h2>
-                    <div class="prose"><ul class="link-list">{list.map((d) => <li><a href={d.file}>{d.title}</a></li>)}</ul></div>
-                  </section>
-                );
+            {groups.map(([label, list]) => {
+              if (label === 'Önnur met') {
+                return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={d.file}>{d.title}</a></li>)}</ul></div></section>;
               }
               const [latest, ...older] = list;
               return (
                 <section class="record-card">
-                  <h2>{k}</h2>
-                  <a class="record-latest" href={latest.file}><Icon name="file" />Metaskrá {latest.year}</a>
-                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={d.file}>{d.year}</a></>)}</p>}
+                  <h2>{label}</h2>
+                  <a class="record-latest" href={latest.file}><Icon name="file" />Metaskrá {latest.year ?? ''}</a>
+                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={d.file}>{d.year ?? d.title}</a></>)}</p>}
                 </section>
               );
             })}
           </div>
-          {metDocs.length > 0 && (
-            <section>
-              <h2>Aðrar metaskrár</h2>
-              <ul class="doc-list">{metDocs.map((d) => <li><a href={d.file}><Icon name="file" />{d.title}</a></li>)}</ul>
-            </section>
-          )}
         </>
       );
       break;

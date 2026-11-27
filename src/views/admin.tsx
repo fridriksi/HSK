@@ -6,7 +6,7 @@ import { contentTypes } from '../content-types';
 
 const ROLE_LABEL: Record<string, string> = { admin: 'Stjórnandi', editor: 'Ritstjóri', club: 'Félagsaðgangur' };
 
-export const AdminLayout: FC<{ title: string; user: User | null; active?: string; flash?: string; error?: string; pending?: number; children?: Child }> = ({ title, user, active, flash, error, pending, children }) => {
+export const AdminLayout: FC<{ title: string; user: User | null; active?: string; flash?: string; error?: string; pending?: number; applications?: number; children?: Child }> = ({ title, user, active, flash, error, pending, applications, children }) => {
   const staff = user && (user.role === 'admin' || user.role === 'editor');
   const link = (href: string, label: string, key: string, badge?: number) => (
     <li><a href={href} class={active === key ? 'on' : ''}>{label}{badge ? <span class="badge">{badge}</span> : null}</a></li>
@@ -28,16 +28,50 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
             <aside class="side">
               <a class="side-brand" href="/stjorn"><img src="/img/hsk-merki.svg" alt="" width="28" />Vefumsjón HSK</a>
               <nav>
-                <ul>
-                  {link('/stjorn', 'Yfirlit', 'home', user.role === 'admin' ? pending : undefined)}
-                  {staff && link('/stjorn/sidur', 'Síður og valmynd', 'sidur')}
-                  {contentTypes.filter((t) => staff || t.clubSubmit || t.clubOwnRecord).map((t) =>
-                    link(t.clubOwnRecord && !staff ? `/stjorn/${t.key}/${user.club_id ?? 0}` : `/stjorn/${t.key}`, !staff && t.clubOwnRecord ? 'Mitt félag' : t.label, t.key))}
-                  {staff && link('/stjorn/umsoknir', 'Umsóknir', 'umsoknir')}
-                  {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
-                  {staff && link('/stjorn/stillingar', 'Forsíða og stillingar', 'stillingar')}
-                  {user.role === 'admin' && link('/stjorn/notendur', 'Notendur', 'notendur')}
-                </ul>
+                {staff ? (
+                  // Raðað eftir sömu fjórum hlutum og aðalvalmynd vefsins
+                  <>
+                    <ul>
+                      {link('/stjorn', 'Yfirlit', 'home', user.role === 'admin' ? pending : undefined)}
+                    </ul>
+                    <h3 class="side-h">Fréttir</h3>
+                    <ul>
+                      {link('/stjorn/frettir', 'Fréttir og greinar', 'frettir')}
+                      {link('/stjorn/myndasofn', 'Myndasöfn', 'myndasofn')}
+                    </ul>
+                    <h3 class="side-h">Mót og úrslit</h3>
+                    <ul>
+                      {link('/stjorn/vidburdir', 'Mót og viðburðir', 'vidburdir')}
+                      {link('/stjorn/urslit', 'Úrslit', 'urslit')}
+                      {link('/stjorn/met', 'HSK met', 'met')}
+                    </ul>
+                    <h3 class="side-h">Aðildarfélög</h3>
+                    <ul>
+                      {link('/stjorn/felog', 'Aðildarfélög', 'felog')}
+                    </ul>
+                    <h3 class="side-h">Um HSK</h3>
+                    <ul>
+                      {link('/stjorn/nefndir', 'Stjórn, nefndir og ráð', 'nefndir')}
+                      {link('/stjorn/skjol', 'Fundargerðir og skjöl', 'skjol')}
+                      {link('/stjorn/umsoknir', 'Umsóknir í Verkefnasjóð', 'umsoknir', applications)}
+                    </ul>
+                    <h3 class="side-h">Vefurinn</h3>
+                    <ul>
+                      {link('/stjorn/sidur', 'Síður og valmynd', 'sidur')}
+                      {link('/stjorn/stillingar', 'Forsíða og stillingar', 'stillingar')}
+                      {link('/stjorn/styrktaradilar', 'Styrktaraðilar', 'styrktaradilar')}
+                      {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
+                      {user.role === 'admin' && link('/stjorn/notendur', 'Notendur', 'notendur')}
+                    </ul>
+                  </>
+                ) : (
+                  <ul>
+                    {link('/stjorn', 'Yfirlit', 'home')}
+                    {contentTypes.filter((t) => t.clubSubmit || t.clubOwnRecord).map((t) =>
+                      link(t.clubOwnRecord ? `/stjorn/${t.key}/${user.club_id ?? 0}` : `/stjorn/${t.key}`, t.clubOwnRecord ? 'Mitt félag' : t.label, t.key))}
+                    {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
+                  </ul>
+                )}
               </nav>
               <div class="side-user">
                 <span>{user.name || user.email}</span>
