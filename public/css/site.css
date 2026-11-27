@@ -241,8 +241,8 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .sponsors .eyebrow { text-align: center; }
 .sponsors ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px 40px; }
 .sponsors a { display: block; color: var(--muted); text-decoration: none; font: 600 1rem var(--body); }
-.sponsors img { max-height: 48px; width: auto; filter: grayscale(1); opacity: .75; transition: filter .2s, opacity .2s; }
-.sponsors a:hover img { filter: none; opacity: 1; }
+.sponsors img { max-height: 64px; max-width: 160px; width: auto; height: auto; display: block; }
+.sponsors a:hover img { opacity: .85; }
 .footer-main { background: var(--blue); color: #dfe6fb; padding-block: 28px; }
 .footer-main a { color: #fff; }
 .footer-main strong { color: #fff; font-family: var(--display); }
@@ -439,3 +439,4 @@ details.record[open] { padding-bottom: 12px; }
 .form-ok { background: #e6f5ec; color: #1f5f3b; padding: 14px 16px; border-radius: var(--radius); font-weight: 600; }
 @media (max-width: 720px) { .grant-form { grid-template-columns: 1fr; } .gf.half { grid-column: 1 / -1; } }
 .h2-band .datebox, .h2-band .kind-tag { background: var(--white); }
+@media (max-width: 720px) { .sponsors ul { gap: 16px 28px; } .sponsors img { max-height: 44px; max-width: 110px; } }

@@ -30,7 +30,7 @@ async function chrome(c: Context<AppEnv>): Promise<SiteChrome> {
   const d = today();
   const sponsors = await all<SiteChrome['sponsors'][number]>(db,
     `SELECT name, logo, url, tier FROM sponsors WHERE (active_from IS NULL OR active_from = '' OR active_from <= ?) AND (active_to IS NULL OR active_to = '' OR active_to >= ?)
-     ORDER BY CASE tier WHEN 'adalstyrktaradili' THEN 0 WHEN 'styrktaradili' THEN 1 ELSE 2 END, sort, name`, d, d);
+     ORDER BY sort, name`, d, d);
   return {
     menu,
     sponsors,
