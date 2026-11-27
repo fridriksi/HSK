@@ -47,6 +47,19 @@ public/                 CSS, JS, merki. TinyMCE er afritað í public/vendor vi�
 seed/                   Upphafsgögn til prófunar
 ```
 
+## Uppfæra metaskrár
+
+Bættu eða uppfærðu færslu í `scripts/record-book-sources.json` og tengdu sömu
+Excel-skrá við metaskrána í vefumsjón. `file` er slóðin úr vefumsjón og `source`
+er opinber slóð á frumskrána. Vefurinn opnar tengilinn sem töflu þegar skráin er
+í innfluttu gögnunum. Keyrðu svo úr rót verkefnisins og vistaðu breytta gagnaskrá
+með kóðanum.
+
+```bash
+python -m pip install xlrd==2.0.2 openpyxl==3.1.5
+python scripts/import-record-books.py
+```
+
 ## Uppsetning á Cloudflare
 
 1. Búa til gagnagrunn og geymslu:

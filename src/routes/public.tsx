@@ -8,6 +8,7 @@ import {
   type MenuItem, type SiteChrome, type NewsRow, type EventRow,
 } from '../views/site';
 import { Icon } from '../views/icons';
+import { RECORDS_PATH, RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 import { RECORD_CATEGORIES } from '../content-types';
 
@@ -133,7 +134,7 @@ app.get('/', async (c) => {
           <div>
             <div class="h2-head"><h2>HSK met</h2><a href="/mot/hsk-met">Allar metaskrár</a></div>
             <ul class="h2-links">
-              {records.map((r) => <li><a href={r.file || '/mot/hsk-met'}>{r.title}</a></li>)}
+              {records.map((r) => <li><a href={recordLink(r.file)}>{r.title}</a></li>)}
             </ul>
           </div>
         </div>
@@ -587,6 +588,17 @@ app.get('/web/*', async (c) => {
 
 // ---------- Síður úr veftré (allar aðrar slóðir) ----------
 
+app.get(`${RECORDS_PATH}/skra/:id`, async (c) => {
+  const book = recordBook(c.req.param('id'));
+  if (!book) return notFound(c);
+  return render(c, book.title, (
+    <>
+      <PageHead title={book.title} crumbs={[{ title: 'Mót og úrslit', path: '/mot' }, { title: 'HSK met', path: RECORDS_PATH }]} />
+      <RecordBookView book={book} sheetParam={c.req.query('blad')} query={c.req.query('q')} />
+    </>
+  ));
+});
+
 app.get('/*', async (c) => {
   const path = decodeURIComponent(new URL(c.req.url).pathname).replace(/^\/+|\/+$/g, '');
   if (!path || path.includes('.')) return notFound(c);
@@ -650,8 +662,11 @@ app.get('/*', async (c) => {
     case 'records': {
       // Metaskrár á spjöldum eftir flokki; nýjasta árið efst og eldri ár sem tenglar
       const rows = await all<{ title: string; category: string; year: number | null; file: string; body: string }>(c.env.DB, 'SELECT title, category, year, file, body FROM records ORDER BY year DESC, title');
+      const hasPublishedBooks = rows.some((r) => r.file);
       const groups = Object.entries(RECORD_CATEGORIES).filter(([k]) => k !== 'reglur')
-        .map(([k, label]) => [label, rows.filter((r) => r.category === k && r.file)] as const).filter(([, l]) => l.length);
+        .map(([k, label]) => [label, hasPublishedBooks
+          ? rows.filter((r) => r.category === k && r.file)
+          : recordEditions.filter((r) => r.category === label)] as const).filter(([, l]) => l.length);
       const rules = rows.filter((r) => r.category === 'reglur' || (!r.file && r.body));
       moduleView = (
         <>
@@ -659,14 +674,14 @@ app.get('/*', async (c) => {
           <div class="record-grid">
             {groups.map(([label, list]) => {
               if (label === 'Önnur met') {
-                return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={d.file}>{d.title}</a></li>)}</ul></div></section>;
+                return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={recordLink(d.file)}>{d.title}</a></li>)}</ul></div></section>;
               }
               const [latest, ...older] = list;
               return (
                 <section class="record-card">
                   <h2>{label}</h2>
-                  <a class="record-latest" href={latest.file}><Icon name="file" />Metaskrá {latest.year ?? ''}</a>
-                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={d.file}>{d.year ?? d.title}</a></>)}</p>}
+                  <a class="record-latest" href={recordLink(latest.file)}><Icon name="chevronRight" />Metaskrá {latest.year ?? ''}</a>
+                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={recordLink(d.file)}>{d.year ?? d.title}</a></>)}</p>}
                 </section>
               );
             })}
