@@ -41,7 +41,7 @@
       promotion: false,
       license_key: 'gpl',
       language: 'is_IS',
-      language_url: '/js/tinymce-is.js',
+      language_url: document.querySelector('script[data-tinymce-is]')?.dataset.tinymceIs || '/js/tinymce-is.js',
       content_style: 'body{font-family:"Source Sans 3",system-ui,sans-serif;font-size:17px;line-height:1.6;color:#16203f;max-width:760px;margin:16px auto} table{border-collapse:collapse} td,th{border:1px solid #e3e8f2;padding:6px 8px} img{max-width:100%;height:auto}',
       convert_urls: false,
       entity_encoding: 'raw',

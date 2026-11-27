@@ -1,3 +1,4 @@
+import { asset } from '../static';
 import type { Child, FC } from 'hono/jsx';
 import { raw } from 'hono/html';
 import { Icon } from './icons';
@@ -36,7 +37,7 @@ export const Layout: FC<{
         <link rel="icon" href="/img/hsk-merki.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" />
-        <link rel="stylesheet" href="/css/site.css" />
+        <link rel="stylesheet" href={asset('/css/site.css')} />
         <link rel="alternate" type="application/rss+xml" title="Fréttir HSK" href="/rss.xml" />
       </head>
       <body>
@@ -110,7 +111,7 @@ export const Layout: FC<{
             </div>
           </div>
         </footer>
-        <script src="/js/site.js" defer></script>
+        <script src={asset('/js/site.js')} defer></script>
       </body>
     </html>
   );

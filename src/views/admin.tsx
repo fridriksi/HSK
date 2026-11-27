@@ -1,3 +1,4 @@
+import { asset } from '../static';
 import type { Child, FC } from 'hono/jsx';
 import type { User } from '../lib';
 import type { Field } from '../content-types';
@@ -19,7 +20,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
         <title>{title} – Vefumsjón HSK</title>
         <link rel="icon" href="/img/hsk-merki.svg" type="image/svg+xml" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" />
-        <link rel="stylesheet" href="/css/admin.css" />
+        <link rel="stylesheet" href={asset('/css/admin.css')} />
       </head>
       <body>
         {user ? (
@@ -53,7 +54,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
           <main class="login-main">{children}</main>
         )}
         <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.5/tinymce.min.js" referrerpolicy="origin"></script>
-        <script src="/js/admin.js"></script>
+        <script src={asset('/js/admin.js')} data-tinymce-is={asset('/js/tinymce-is.js')}></script>
       </body>
     </html>
   );
