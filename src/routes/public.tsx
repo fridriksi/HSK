@@ -171,6 +171,13 @@ app.get('/forsida-ny', async (c) => {
         </section>
       )}
 
+      {cards.length > 0 && (
+        <section class="wrap h2-block">
+          <div class="h2-head"><h2>Fréttir</h2><a href="/frettir">Allar fréttir</a></div>
+          <div class="h2-news">{cards.map((n) => <NewsCard n={n} />)}</div>
+        </section>
+      )}
+
       <section class="wrap h2-block">
         <div class="h2-head"><h2>Framundan</h2><a href="/vidburdir">Viðburðadagatal</a></div>
         {events.length ? (
@@ -185,13 +192,6 @@ app.get('/forsida-ny', async (c) => {
           </ol>
         ) : <p class="muted">Engir viðburðir skráðir á næstunni.</p>}
       </section>
-
-      {cards.length > 0 && (
-        <section class="wrap h2-block">
-          <div class="h2-head"><h2>Fréttir</h2><a href="/frettir">Allar fréttir</a></div>
-          <div class="h2-news">{cards.map((n) => <NewsCard n={n} />)}</div>
-        </section>
-      )}
 
       <section class="h2-band">
         <div class="wrap h2-two">
@@ -758,23 +758,32 @@ app.get('/*', async (c) => {
       break;
     }
   }
-  // Undirsíður sem textinn vísar þegar á eru ekki endurteknar í hliðardálki
+  // Hliðarvalmynd hlutans (t.d. allt undir „Um HSK“): síður sem eru í valmynd, núverandi síða merkt
+  const top = p.parent_id ? crumbs[0] : { title: p.title, path: '/' + p.path };
+  const sectionPath = top.path.slice(1);
+  const section = await all<{ title: string; path: string }>(c.env.DB,
+    "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", sectionPath);
+  const wide = ['committees', 'clubs', 'albums', 'sponsors', 'news', 'events', 'competitions', 'results', 'documents'].includes(p.module);
+  const showNav = section.length > 0 && !wide;
+  const isOn = (sp: string) => p.path === sp || p.path.startsWith(sp + '/');
+  // Undirsíður sem eru hvorki í valmynd né tengdar í textanum birtast sem listi neðst
   const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
-  const unlisted = children.filter((ch) => !linked.has(ch.path));
-  const showChildren = unlisted.length > 0 && !p.module;
+  const inNav = new Set(section.map((x) => x.path));
+  const extra = p.module ? [] : children.filter((ch) => !linked.has(ch.path) && !inNav.has(ch.path));
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />
-      <div class={`wrap block page-layout${showChildren ? ' with-sub' : ''}`}>
+      <div class={`wrap block page-layout${showNav ? ' with-sub' : ''}`}>
         <div class="page-main">
           {p.body && <Prose html={p.body} />}
           {moduleView}
+          {extra.length > 0 && <div class="prose"><ul class="link-list">{extra.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul></div>}
         </div>
-        {showChildren && (
-          <aside class="subpages">
-            <h2 class="col-title">Undirsíður</h2>
-            <ul>{unlisted.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul>
-          </aside>
+        {showNav && (
+          <nav class="section-nav" aria-label={top.title}>
+            <a class={'section-top' + (p.path === sectionPath ? ' on' : '')} href={top.path} aria-current={p.path === sectionPath ? 'page' : undefined}>{top.title}</a>
+            <ul>{section.map((x) => <li><a href={'/' + x.path} class={isOn(x.path) ? 'on' : ''} aria-current={p.path === x.path ? 'page' : undefined}>{x.title}</a></li>)}</ul>
+          </nav>
         )}
       </div>
     </>
