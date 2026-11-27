@@ -1,0 +1,2 @@
+# HSK
+Verur fyrir HSK
