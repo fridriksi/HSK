@@ -57,86 +57,9 @@ function pageNum(c: Context<AppEnv>) {
 
 // ---------- Forsíða ----------
 
+app.get('/forsida-ny', (c) => c.redirect('/', 301));
+
 app.get('/', async (c) => {
-  const db = c.env.DB;
-  const featuredId = parseInt(await getSetting(db, 'featured_news_id', '0'), 10);
-  let news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 6");
-  let featured = featuredId ? await one<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE id = ? AND status = 'published'", featuredId) : null;
-  featured = featured ?? news[0] ?? null;
-  news = news.filter((n) => n.id !== featured?.id).slice(0, 5);
-  const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
-  const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 6");
-  const quick = (await getSetting(db, 'quick_links', '')).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[1]);
-  const albums = await all<{ slug: string; title: string; cover: string; date: string }>(db, 'SELECT slug, title, cover, date FROM albums ORDER BY date DESC LIMIT 4');
-
-  return render(c, 'Forsíða', (
-    <>
-      <section class="home-hero">
-        <div class="wrap hero-grid">
-          {featured && (
-            <article class="hero-main">
-              <a href={'/frett/' + featured.slug}>
-                {featured.image && <img src={featured.image} alt="" />}
-                <div class="hero-txt">
-                  <time>{dateLong(featured.published_at)}</time>
-                  <h2>{featured.title}</h2>
-                  <p>{featured.excerpt || plainText(featured.body, 160)}</p>
-                </div>
-              </a>
-            </article>
-          )}
-          <div class="hero-side">
-            {news.slice(0, 5).map((n) => (
-              <a class="side-item" href={'/frett/' + n.slug}>
-                <time>{dateShort(n.published_at)}</time>
-                <strong>{n.title}</strong>
-              </a>
-            ))}
-            <a class="more" href="/frettir">Allar fréttir<Icon name="chevronRight" /></a>
-          </div>
-        </div>
-      </section>
-
-      <section class="wrap block three-col">
-        <div>
-          <h2 class="col-title">Viðburðir framundan</h2>
-          {events.length ? <ul class="event-list">{events.map((e) => <EventItem e={e} />)}</ul> : <p class="muted">Engir viðburðir skráðir á næstunni.</p>}
-          <a class="more" href="/mot/vidburdir">Viðburðadagatal<Icon name="chevronRight" /></a>
-        </div>
-        <div>
-          <h2 class="col-title">Nýjustu úrslit</h2>
-          {results.length ? <ul class="result-list">{results.map((r) => <ResultItem r={r} />)}</ul> : <p class="muted">Engin úrslit skráð.</p>}
-          <a class="more" href="/mot/urslit">Öll úrslit<Icon name="chevronRight" /></a>
-        </div>
-        <div>
-          <h2 class="col-title">Flýtileiðir</h2>
-          <ul class="quick-list">
-            {quick.map(([label, url]) => <li><a href={url}><Icon name="chevronRight" />{label}</a></li>)}
-          </ul>
-        </div>
-      </section>
-
-      {albums.length > 0 && (
-        <section class="wrap block">
-          <h2 class="col-title">Nýjar myndir</h2>
-          <div class="album-grid">
-            {albums.map((a) => (
-              <a class="album-card" href={'/album/' + a.slug}>
-                <div class="thumb">{a.cover ? <img src={a.cover} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
-                <strong>{a.title}</strong>
-                <small>{a.date.slice(0, 4)}</small>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-    </>
-  ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
-});
-
-// ---------- Ný forsíða (prufa) ----------
-
-app.get('/forsida-ny', async (c) => {
   const db = c.env.DB;
   const s = (k: string) => getSetting(db, k, '');
   const news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 4");
@@ -179,14 +102,15 @@ app.get('/forsida-ny', async (c) => {
       )}
 
       <section class="wrap h2-block">
-        <div class="h2-head"><h2>Framundan</h2><a href="/mot/vidburdir">Viðburðadagatal</a></div>
+        <div class="h2-head"><h2>Framundan</h2><a href="/mot/dagskra">Viðburðadagatal</a></div>
         {events.length ? (
           <ol class="h2-dates">
             {events.map((e) => (
-              <li><a href={'/vidburdur/' + e.id}>
+              <li><a href={'/vidburdur/' + e.id} class={e.kind === 'mot' ? 'is-mot' : ''}>
                 <span class="d"><b>{dayNum(e.starts_at)}</b>{monthShort(e.starts_at)}</span>
+                <span class={'kind-tag' + (e.kind === 'mot' ? ' mot' : '')}>{e.kind === 'mot' ? 'Mót' : 'Viðburður'}</span>
                 <strong>{e.title}</strong>
-                <small>{[e.kind === 'mot' ? 'Mót' : '', e.sport, e.location].filter(Boolean).join(' · ') || weekday(e.starts_at)}</small>
+                <small>{[e.sport, e.location].filter(Boolean).join(' · ') || weekday(e.starts_at)}</small>
               </a></li>
             ))}
           </ol>
@@ -308,7 +232,7 @@ app.get('/vidburdur/:id{[0-9]+}', async (c) => {
     : `${weekday(e.starts_at)} ${dateLong(e.starts_at)} ${timeOf(e.starts_at)}`;
   return render(c, e.title, (
     <article class="article">
-      <PageHead title={e.title} crumbs={[isMot ? { title: 'Mótaskrá', path: '/mot/motaskra' } : { title: 'Viðburðir', path: '/mot/vidburdir' }]} />
+      <PageHead title={e.title} crumbs={[{ title: 'Mót og úrslit', path: '/mot' }, { title: 'Dagskrá', path: '/mot/dagskra' }]} />
       <div class="wrap article-body">
         <dl class="facts-list">
           <div><dt>Hvenær</dt><dd>{when}</dd></div>
@@ -361,7 +285,9 @@ app.get('/dagatal.ics', async (c) => {
   return c.body(ics(rows.flatMap((e) => icsEvent(c.env.SITE_URL, e))), 200, { 'content-type': 'text/calendar; charset=utf-8' });
 });
 
-async function eventList(c: Context<AppEnv>, kind: 'vidburdur' | 'mot' | null) {
+async function eventList(c: Context<AppEnv>, fixed: 'vidburdur' | 'mot' | null) {
+  const t = c.req.query('tegund');
+  const kind = fixed ?? (t === 'mot' || t === 'vidburdur' ? t : null);
   const past = c.req.query('lidid') === '1';
   const sport = c.req.query('grein') || '';
   const where = ["status = 'published'", past ? "substr(coalesce(ends_at, starts_at), 1, 10) < ?" : "substr(coalesce(ends_at, starts_at), 1, 10) >= ?"];
@@ -370,7 +296,7 @@ async function eventList(c: Context<AppEnv>, kind: 'vidburdur' | 'mot' | null) {
   if (sport) { where.push('sport = ?'); params.push(sport); }
   const rows = await all<EventRow>(c.env.DB, `SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE ${where.join(' AND ')} ORDER BY starts_at ${past ? 'DESC' : 'ASC'} LIMIT 200`, ...params);
   const sports = await all<{ sport: string }>(c.env.DB, `SELECT DISTINCT sport FROM events WHERE sport != '' ${kind ? 'AND kind = ?' : ''} ORDER BY sport`, ...(kind ? [kind] : []));
-  return { rows, past, sport, sports: sports.map((s) => s.sport) };
+  return { rows, past, sport, kind, fixed: !!fixed, sports: sports.map((s) => s.sport) };
 }
 
 const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventList>>; base: string }) => {
@@ -380,7 +306,7 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
     groups.set(k, [...(groups.get(k) ?? []), e]);
   }
   const q = (p: Record<string, string>) => {
-    const u = new URLSearchParams({ ...(data.sport ? { grein: data.sport } : {}), ...(data.past ? { lidid: '1' } : {}), ...p });
+    const u = new URLSearchParams({ ...(!data.fixed && data.kind ? { tegund: data.kind } : {}), ...(data.sport ? { grein: data.sport } : {}), ...(data.past ? { lidid: '1' } : {}), ...p });
     for (const [k, v] of [...u]) if (!v) u.delete(k);
     return `${base}${u.toString() ? '?' + u : ''}`;
   };
@@ -391,11 +317,19 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
           <a href={q({ lidid: '' })} class={!data.past ? 'on' : ''}>Framundan</a>
           <a href={q({ lidid: '1' })} class={data.past ? 'on' : ''}>Liðið</a>
         </nav>
+        {!data.fixed && (
+          <nav class="year-filter kind-filter" aria-label="Tegund">
+            <a href={q({ tegund: '' })} class={!data.kind ? 'on' : ''}>Allt</a>
+            <a href={q({ tegund: 'mot' })} class={data.kind === 'mot' ? 'on' : ''}><span class="kind-dot mot"></span>Mót</a>
+            <a href={q({ tegund: 'vidburdur' })} class={data.kind === 'vidburdur' ? 'on' : ''}><span class="kind-dot"></span>Viðburðir</a>
+          </nav>
+        )}
         {data.sports.length > 0 && (
           <form method="get" class="inline-form">
             {data.past && <input type="hidden" name="lidid" value="1" />}
+            {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
             <label for="grein">Íþróttagrein</label>
-            <select id="grein" name="grein" onchange="this.form.submit()">
+            <select id="grein" name="grein" data-autosubmit>
               <option value="">Allar greinar</option>
               {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
             </select>
@@ -433,14 +367,15 @@ app.get('/urslit/:id{[0-9]+}', async (c) => {
 
 async function resultList(c: Context<AppEnv>) {
   const sport = c.req.query('grein') || '';
-  const year = c.req.query('ar') || '';
+  const years = (await all<{ y: string }>(c.env.DB, "SELECT DISTINCT substr(date, 1, 4) AS y FROM results WHERE status = 'published' ORDER BY y DESC")).map((y) => y.y);
+  // Sjálfgefið nýjasta árið; „oll“ sýnir öll ár
+  const year = c.req.query('ar') || (sport ? 'oll' : years[0] || 'oll');
   const where = ["status = 'published'"];
   const params: unknown[] = [];
   if (sport) { where.push('sport = ?'); params.push(sport); }
   if (/^\d{4}$/.test(year)) { where.push('substr(date, 1, 4) = ?'); params.push(year); }
   const rows = await all<{ id: number; title: string; date: string; sport: string }>(c.env.DB, `SELECT id, title, date, sport FROM results WHERE ${where.join(' AND ')} ORDER BY date DESC LIMIT 300`, ...params);
   const sports = (await all<{ sport: string }>(c.env.DB, "SELECT DISTINCT sport FROM results WHERE sport != '' ORDER BY sport")).map((s) => s.sport);
-  const years = (await all<{ y: string }>(c.env.DB, 'SELECT DISTINCT substr(date, 1, 4) AS y FROM results ORDER BY y DESC')).map((y) => y.y);
   return { rows, sport, year, sports, years };
 }
 
@@ -589,7 +524,7 @@ app.get('/web/*', async (c) => {
   }
   const sections: Record<string, string> = {
     frettir: '/frettir', frettir_old: '/frettir', adsgr: '/frettir/adsendar-greinar', felog: '/adildarfelog', nefndir: '/um-hsk/stjorn-nefndir-og-rad',
-    log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/motaskra', vidburdir_l: '/mot/vidburdir',
+    log: '/um-hsk/log-og-reglugerdir', fundarg: '/um-hsk/fundargerdir', urslit: '/mot/urslit', motaskra: '/mot/dagskra?tegund=mot', vidburdir_l: '/mot/dagskra',
     myndir: '/frettir/myndir', hsk_met_b: '/mot/hsk-met', hsk: '/um-hsk',
   };
   return c.redirect(sections[page] ?? '/', 301);
@@ -621,22 +556,37 @@ app.get('/*', async (c) => {
     case 'competitions': moduleView = <EventListing data={await eventList(c, 'mot')} base={base} />; break;
     case 'results': {
       const d = await resultList(c);
+      const groups = new Map<string, typeof d.rows>();
+      for (const r of d.rows) { const k = monthYear(r.date); groups.set(k, [...(groups.get(k) ?? []), r]); }
       moduleView = (
         <>
           <form method="get" class="filters inline-form">
-            <label for="grein">Íþróttagrein</label>
-            <select id="grein" name="grein"><option value="">Allar</option>{d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}</select>
             <label for="ar">Ár</label>
-            <select id="ar" name="ar"><option value="">Öll ár</option>{d.years.map((y) => <option selected={y === d.year}>{y}</option>)}</select>
-            <button class="btn small">Sía</button>
+            <select id="ar" name="ar" data-autosubmit>
+              {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
+              <option value="oll" selected={d.year === 'oll'}>Öll ár</option>
+            </select>
+            <label for="grein">Íþróttagrein</label>
+            <select id="grein" name="grein" data-autosubmit><option value="">Allar greinar</option>{d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}</select>
+            <noscript><button class="btn small">Sía</button></noscript>
           </form>
-          <div class="table-wrap">
-            <table class="list-table">
-              <thead><tr><th>Dags.</th><th>Mót</th><th>Grein</th></tr></thead>
-              <tbody>{d.rows.map((r) => <tr><td class="num">{dateShort(r.date)}</td><td><a href={'/urslit/' + r.id}>{r.title}</a></td><td>{r.sport}</td></tr>)}</tbody>
-            </table>
-          </div>
           {d.rows.length === 0 && <p class="muted">Engin úrslit fundust.</p>}
+          {[...groups].map(([month, list]) => (
+            <section class="month-group">
+              <h2>{month}</h2>
+              <ul class="event-list wide">{list.map((r) => (
+                <li class="event-item">
+                  <a href={'/urslit/' + r.id}>
+                    <span class="datebox"><b>{dayNum(r.date)}</b>{monthShort(r.date)}</span>
+                    <span class="ev-txt">
+                      {r.sport && <span class="kind-tag">{r.sport}</span>}
+                      <strong>{r.title}</strong>
+                    </span>
+                  </a>
+                </li>
+              ))}</ul>
+            </section>
+          ))}
         </>
       );
       break;

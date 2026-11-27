@@ -4,10 +4,9 @@ INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (2,1,'greinar','frettir/greinar','Greinar','','articles',10,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (3,1,'adsendar-greinar','frettir/adsendar-greinar','Aðsendar greinar','','submitted',20,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (4,NULL,'mot','mot','Mót og úrslit','<p>Héraðsmót HSK eru haldin í fjölmörgum íþróttagreinum ár hvert. Hér finnur þú mótaskrá, úrslit og met.</p>','',20,1);
-INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (5,4,'motaskra','mot/motaskra','Mótaskrá','','competitions',10,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (6,4,'urslit','mot/urslit','Úrslit','','results',20,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (7,4,'hsk-met','mot/hsk-met','HSK met','','records',30,1);
-INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (8,4,'vidburdir','mot/vidburdir','Viðburðir','','events',15,1);
+INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (8,4,'dagskra','mot/dagskra','Dagskrá','<p>Mót og viðburðir á vegum HSK og aðildarfélaganna. Mót eru merkt með bláu.</p>','events',10,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (9,NULL,'adildarfelog','adildarfelog','Aðildarfélög','<p>Aðildarfélög HSK eru íþrótta- og ungmennafélög á sambandssvæðinu í Árnes- og Rangárvallasýslum.</p>','clubs',40,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (10,NULL,'um-hsk','um-hsk','Um HSK','<p>Héraðssambandið Skarphéðinn (HSK) var stofnað árið 1910 og er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi. Skrifstofa HSK er í Selinu, Engjavegi 48 á Selfossi.</p>','',50,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (11,10,'stjorn-nefndir-og-rad','um-hsk/stjorn-nefndir-og-rad','Stjórn, nefndir og ráð','','committees',10,1);
@@ -145,7 +144,7 @@ INSERT INTO sponsors (name,url,tier,sort) VALUES ('1X2','https://www.1x2.is','st
 INSERT INTO sponsors (name,url,tier,sort) VALUES ('ÍSÍ','https://www.isi.is','samstarfsadili',50);
 INSERT INTO sponsors (name,url,tier,sort) VALUES ('UMFÍ','https://www.umfi.is','samstarfsadili',60);
 INSERT INTO settings (key,value) VALUES ('quick_links','HSK met | /mot/hsk-met
-Mótaskrá HSK | /mot/motaskra
+Mótaskrá HSK | /mot/dagskra?tegund=mot
 Ársskýrsla HSK | /um-hsk/fundargerdir?flokkur=arsskyrsla
 Verkefnasjóður | /um-hsk/verkefnasjodur
 Viðbragðsáætlun | /um-hsk/vidbragdsaaetlun');

@@ -349,3 +349,13 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
   .h2-tiles a { padding: 16px 18px; }
   .h2-hero { min-height: 340px; }
 }
+
+/* Mót og viðburðir í dagskrá */
+.kind-tag { justify-self: start; display: inline-block; font-size: .78rem; font-weight: 600; line-height: 1; padding: 4px 8px; border-radius: 999px; background: var(--tint); color: var(--muted); margin-bottom: 4px; }
+.kind-tag.mot { background: var(--blue); color: #fff; }
+.is-mot .datebox { background: var(--blue); color: #fff; }
+.is-mot .datebox b { color: #fff; }
+.h2-dates .kind-tag { align-self: flex-start; margin: 2px 0 0; }
+.h2-dates a.is-mot { border-top: 3px solid var(--blue); }
+.kind-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #c9d2e6; margin-right: 6px; vertical-align: 1px; }
+.kind-dot.mot { background: var(--blue); }

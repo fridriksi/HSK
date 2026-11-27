@@ -150,12 +150,13 @@ export const NewsCard: FC<{ n: NewsRow; big?: boolean }> = ({ n, big }) => (
 export type EventRow = { id: number; kind: string; title: string; starts_at: string; ends_at: string | null; location: string; sport: string; image: string };
 
 export const EventItem: FC<{ e: EventRow }> = ({ e }) => (
-  <li class="event-item">
+  <li class={'event-item' + (e.kind === 'mot' ? ' is-mot' : '')}>
     <a href={'/vidburdur/' + e.id}>
       <span class="datebox"><b>{dayNum(e.starts_at)}</b>{monthShort(e.starts_at)}</span>
       <span class="ev-txt">
+        <span class={'kind-tag' + (e.kind === 'mot' ? ' mot' : '')}>{e.kind === 'mot' ? 'Mót' : 'Viðburður'}</span>
         <strong>{e.title}</strong>
-        <small>{[e.kind === 'mot' ? 'Mót' : '', e.sport, e.location, timeOf(e.starts_at)].filter(Boolean).join(' · ')}</small>
+        <small>{[e.sport, e.location, timeOf(e.starts_at)].filter(Boolean).join(' · ')}</small>
       </span>
     </a>
   </li>

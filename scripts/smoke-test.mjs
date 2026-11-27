@@ -97,7 +97,7 @@ try {
   await admin.fill('#f_location', 'Selfoss');
   await admin.click('button[value=published]');
   await admin.waitForURL(/m=birt/);
-  ok((await (await fetch(`${BASE}/mot/motaskra`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í mótaskrá');
+  ok((await (await fetch(`${BASE}/mot/dagskra?tegund=mot`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í mótaskrá');
 
   // 5. Albúm með myndum
   await admin.goto(`${BASE}/stjorn/myndasofn/nytt`);

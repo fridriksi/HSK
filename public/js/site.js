@@ -33,6 +33,9 @@
     sel.addEventListener('change', () => { if (sel.value) { sel.form.q.value = sel.value; sel.form.submit(); } });
   });
 
+  // Síur sem uppfærast strax þegar valið er
+  document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
+
   const gallery = document.querySelector('[data-gallery]');
   if (gallery) {
     const links = [...gallery.querySelectorAll('a')];
