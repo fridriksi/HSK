@@ -353,14 +353,14 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 
 /* Kaflavalmynd: fliparöð undir fyrirsögn á öllum undirsíðum */
 .section-tabs { border-bottom: 1px solid var(--line); background: var(--white); }
-.section-tabs ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px 22px; overflow-x: auto; scrollbar-width: thin; }
-.section-tabs a { display: block; white-space: nowrap; padding: 13px 0 11px; color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 3px solid transparent; }
+.section-tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 18px; }
+.section-tabs a { display: block; white-space: nowrap; padding: 13px 0 11px; color: var(--ink); font-weight: 600; font-size: .95rem; text-decoration: none; border-bottom: 3px solid transparent; }
 .section-tabs a:hover { color: var(--blue); }
 .section-tabs a.on { color: var(--blue); border-bottom-color: var(--blue); }
 .page-head + .section-tabs { margin-top: 0; }
 .page-main > .prose { max-width: 760px; }
 @media (max-width: 720px) {
-  .section-tabs ul { -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 32px; }
+  .section-tabs ul { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 32px; }
 }
 
 /* HSK met */
@@ -379,3 +379,5 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .older-h { font-size: 1.15rem; margin: 8px 0 12px; }
 details.record { max-width: 760px; scroll-margin-top: 90px; }
 details.record[open] { padding-bottom: 12px; }
+
+.section-tabs ul::-webkit-scrollbar { display: none; }
