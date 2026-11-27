@@ -395,3 +395,6 @@ details.record[open] { padding-bottom: 12px; }
 .acc-group { max-width: 760px; margin-bottom: 28px; }
 .acc-group > h2 { font-size: 1.3rem; margin: 8px 0 10px; }
 .acc-body h3 { font-size: 1.05rem; margin: 18px 0 6px; }
+.doc-main { flex: 1; min-width: 200px; }
+.doc-desc { color: var(--muted); font-size: .95rem; margin-top: 4px; }
+.doc-desc p { margin: 0 0 4px; }

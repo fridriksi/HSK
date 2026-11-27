@@ -12,7 +12,6 @@ INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (12,10,'log-og-reglugerdir','um-hsk/log-og-reglugerdir','Lög og reglugerðir','<p>Lög HSK og reglugerðir sambandsins.</p>','',20,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (13,10,'fundargerdir','um-hsk/fundargerdir','Fundargerðir og skjöl','','documents',30,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (14,10,'verkefnasjodur','um-hsk/verkefnasjodur','Verkefnasjóður','<p>Verkefnasjóður HSK styrkir verkefni aðildarfélaga.</p>','',40,1);
-INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (15,10,'vidbragdsaaetlun','um-hsk/vidbragdsaaetlun','Viðbragðsáætlun','<p>Viðbragðsáætlun HSK vegna eineltis, ofbeldis og áreitni.</p>','',50,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (16,1,'myndir','frettir/myndir','Myndir','','albums',30,1);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (17,NULL,'styrktaradilar','styrktaradilar','Styrktaraðilar','<p>HSK þakkar styrktar- og samstarfsaðilum sínum fyrir stuðninginn.</p>','sponsors',70,0);
 INSERT INTO pages (id,parent_id,slug,path,title,body,module,sort,in_menu) VALUES (18,NULL,'en','en','English','<h2>The Skarphéðinn District Sports Association</h2><p>Héraðssambandið Skarphéðinn (HSK) is the district sports and youth association for South Iceland, founded in 1910. It is an umbrella organisation for sports clubs and youth associations in Árnessýsla and Rangárvallasýsla, and a member of the National Olympic and Sports Association of Iceland (ÍSÍ) and the Icelandic Youth Association (UMFÍ).</p><h3>Contact</h3><p>Selið, Engjavegur 48, 800 Selfoss, Iceland<br>Phone: +354 482 1189<br>Email: hsk@hsk.is</p>','',80,0);
@@ -146,4 +145,4 @@ INSERT INTO settings (key,value) VALUES ('quick_links','HSK met | /mot/hsk-met
 Mótaskrá HSK | /mot/dagskra?tegund=mot
 Ársskýrsla HSK | /um-hsk/fundargerdir?flokkur=arsskyrsla
 Verkefnasjóður | /um-hsk/verkefnasjodur
-Viðbragðsáætlun | /um-hsk/vidbragdsaaetlun');
+Viðbragðsáætlun | /um-hsk/fundargerdir?flokkur=aaetlun');

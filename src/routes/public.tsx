@@ -723,7 +723,7 @@ app.get('/*', async (c) => {
       const cat = c.req.query('flokkur') || '';
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
         `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
-      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', met: 'Metaskrár', annad: 'Annað' };
+      const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
       // Aðeins flokkar sem innihalda skjöl fá hnapp
       const used = new Set((await all<{ category: string }>(c.env.DB, 'SELECT DISTINCT category FROM documents')).map((r) => r.category));
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
@@ -734,7 +734,7 @@ app.get('/*', async (c) => {
             {rows.map((d) => (
               <li>
                 <time>{dateShort(d.date)}</time>
-                {d.file ? <a href={d.file}><Icon name="file" />{d.title}</a> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
+                {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
                 <span class="muted small">{cats[d.category] ?? d.category}</span>
               </li>
             ))}
