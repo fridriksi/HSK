@@ -229,6 +229,9 @@
     document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target)) d.open = false; });
   });
 
+  // Síur í listum uppfærast strax þegar valið er
+  document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
+
   // Afrita slóð
   document.querySelectorAll('[data-copy]').forEach((btn) => {
     btn.addEventListener('click', async () => {

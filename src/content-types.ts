@@ -39,6 +39,8 @@ export type ContentType = {
   publicUrl?: (row: Record<string, unknown>) => string;
   listColumns: { field: string; label: string; format?: 'date' | 'datetime' | 'status' | 'option' }[];
   searchFields: string[];
+  /** Síur í lista í vefumsjón: fellilisti fyrir hvern reit (valkostir úr reitnum eða gildum í töflunni) */
+  filters?: { field: string; label: string }[];
 };
 
 export const SPORTS = ['Almenningsíþróttir', 'Blak', 'Borðtennis', 'Bogfimi', 'Fimleikar', 'Frjálsíþróttir', 'Glíma', 'Golf', 'Handknattleikur', 'Hestaíþróttir', 'Júdó', 'Knattspyrna', 'Körfuknattleikur', 'Motocross', 'Pílukast', 'Skák', 'Skotíþróttir', 'Starfsíþróttir', 'Sund', 'Taekwondo', 'Annað'];
@@ -126,6 +128,7 @@ export const contentTypes: ContentType[] = [
     ],
     listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'year', label: 'Ár' }],
     searchFields: ['title'],
+    filters: [{ field: 'category', label: 'Flokkur' }, { field: 'year', label: 'Ár' }],
   },
   {
     // Stök met sem skráð eru í vefumsjón; birtast í töflunni á HSK met með metum úr metaskrám
@@ -144,6 +147,7 @@ export const contentTypes: ContentType[] = [
     ],
     listColumns: [{ field: 'event', label: 'Grein' }, { field: 'athlete', label: 'Nafn' }, { field: 'result', label: 'Árangur' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'date', label: 'Met sett', format: 'date' }],
     searchFields: ['event', 'athlete', 'place', 'age_group'],
+    filters: [{ field: 'category', label: 'Flokkur' }, { field: 'event', label: 'Grein' }],
   },
   {
     key: 'felog', table: 'clubs', label: 'Aðildarfélög', singular: 'félag', titleField: 'name', order: 'name', slug: true, clubOwnRecord: true,

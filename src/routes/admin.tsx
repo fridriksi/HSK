@@ -992,6 +992,16 @@ app.get('/:type', async (c) => {
   else if (status && t.status) { where.push('status = ?'); params.push(status); }
   if (status !== 'tvitekid' && t.status && (t.table === 'events' || t.table === 'news')) where.push('NOT ' + DUP);
   if (!isStaff(user)) { where.push('club_id = ?'); params.push(user.club_id ?? 0); }
+  // Síur (t.d. flokkur og ár á HSK met): valkostir úr skilgreiningu reitsins eða gildum sem eru til í töflunni
+  const filterVals: Record<string, string> = {};
+  const filterOpts: Record<string, [string, string][]> = {};
+  for (const fl of t.filters ?? []) {
+    const def = t.fields.find((f) => f.name === fl.field);
+    const present = (await all<{ v: string }>(c.env.DB, `SELECT DISTINCT ${fl.field} AS v FROM ${t.table} WHERE ${fl.field} IS NOT NULL AND ${fl.field} <> '' ORDER BY ${fl.field} ${fl.field === 'year' ? 'DESC' : ''}`)).map((r) => String(r.v));
+    filterOpts[fl.field] = present.map((v) => [v, def?.options?.[v] ?? v]);
+    const val = c.req.query(fl.field) ?? '';
+    if (val && present.includes(val)) { filterVals[fl.field] = val; where.push(`${fl.field} = ?`); params.push(val); }
+  }
   const per = 50;
   const rows = await all<Row>(c.env.DB, `SELECT * FROM ${t.table} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${t.order} LIMIT ? OFFSET ?`, ...params, per + 1, (pageNo - 1) * per);
   const fmt = (col: ContentType['listColumns'][number], r: Row): Child => {
@@ -1002,7 +1012,7 @@ app.get('/:type', async (c) => {
     if (col.format === 'option') return t.fields.find((f) => f.name === col.field)?.options?.[String(v)] ?? String(v ?? '');
     return String(v ?? '');
   };
-  const qs = (extra: Record<string, string>) => '?' + new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { stada: status } : {}), ...extra });
+  const qs = (extra: Record<string, string>) => '?' + new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { stada: status } : {}), ...filterVals, ...extra });
   return page(c, t.label, t.key, (
     <>
       {(t.key === 'ny-met' || t.key === 'met') ? (
@@ -1015,8 +1025,16 @@ app.get('/:type', async (c) => {
       ) : (
         <div class="title-row"><h1>{t.label}</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`}</a></div>
       )}
-      <form method="get" class="toolbar">
-        <input name="q" type="search" value={q} placeholder="Leita…" aria-label="Leita" />
+      <form method="get" class={t.filters ? 'toolbar filter-bar' : 'toolbar'}>
+        {t.filters ? <div class="fb-field"><label for="tb-q">Leit</label><input id="tb-q" name="q" type="search" value={q} placeholder="Leita…" /></div> : <input name="q" type="search" value={q} placeholder="Leita…" aria-label="Leita" />}
+        {(t.filters ?? []).map((fl) => (
+          <div class="fb-field"><label for={'tb-' + fl.field}>{fl.label}</label>
+            <select id={'tb-' + fl.field} name={fl.field} data-autosubmit>
+              <option value="">{fl.field === 'year' ? 'Öll ár' : `Allt`}</option>
+              {filterOpts[fl.field].map(([v, l]) => <option value={v} selected={filterVals[fl.field] === v}>{l}</option>)}
+            </select>
+          </div>
+        ))}
         {t.status && (
           <select name="stada" aria-label="Staða">
             <option value="">Allar stöður</option>
