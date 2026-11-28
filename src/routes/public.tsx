@@ -341,7 +341,7 @@ async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
 
 const NewsListing = ({ data, base }: { data: Awaited<ReturnType<typeof newsList>>; base: string }) => (
   <>
-    <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita í fréttum og greinum" data-section-search>
+    <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í fréttum og greinum" data-section-search>
       <SectionSearchField term={data.term} placeholder="Titill, efni eða höfundur" />
       {data.years.length > 0 && <YearFilter id="news-year" years={data.years} year={data.year} />}
       <button class="btn">Leita</button>
@@ -604,7 +604,7 @@ app.get('/leit', async (c) => {
   return render(c, 'Leit', (
     <>
       <PageHead title="Leit" />
-      <div class="wrap block narrow">
+      <div class="wrap block">
         <form action="/leit" method="get" class="filter-row search-big" role="search" aria-label="Leita á vefnum">
           <FilterField id="q" label="Leit"><input id="q" name="q" type="search" value={q} placeholder="Hverju ertu að leita að?" autofocus /></FilterField>
           <button class="btn">Leita</button>
@@ -968,7 +968,7 @@ app.get('/*', async (c) => {
       const rows = await all<{ slug: string; name: string; logo: string; sports: string; area: string }>(c.env.DB, 'SELECT slug, name, logo, sports, area FROM clubs ORDER BY name');
       moduleView = (
         <>
-          <div class="filter-row filter-compact" role="search" aria-label="Leita að félagi">
+          <div class="filter-row" role="search" aria-label="Leita að félagi">
             <FilterField id="felag-leit" label="Leit">
               <input id="felag-leit" type="search" placeholder="Nafn félags, íþróttagrein eða svæði" value={c.req.query('q') ?? ''} data-filter=".club-grid > a" data-empty="#felag-tomt" />
             </FilterField>
@@ -990,7 +990,7 @@ app.get('/*', async (c) => {
       const rows = await all<{ name: string; body: string }>(c.env.DB, 'SELECT name, body FROM committees ORDER BY sort, name');
       moduleView = (
         <>
-          <div class="filter-row filter-compact" role="search" aria-label="Leita í stjórn, nefndum og ráðum">
+          <div class="filter-row" role="search" aria-label="Leita í stjórn, nefndum og ráðum">
             <FilterField id="nefnd-leit" label="Leit">
               <input id="nefnd-leit" type="search" placeholder="Nafn nefndar eða einstaklings" data-filter=".committee-list > details" data-empty="#nefnd-tomt" />
             </FilterField>
@@ -1019,7 +1019,7 @@ app.get('/*', async (c) => {
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
       moduleView = (
         <>
-          {shown.length > 1 && <form action={base} method="get" class="filter-row filter-compact" aria-label="Sía skjöl">
+          {shown.length > 1 && <form action={base} method="get" class="filter-row" aria-label="Sía skjöl">
             <FilterField id="document-category" label="Flokkur">
               <select id="document-category" name="flokkur" data-autosubmit>
                 <option value="">Allir flokkar</option>
@@ -1128,7 +1128,7 @@ export async function notFound(c: Context<AppEnv>) {
   return render(c, 'Síða fannst ekki', (
     <>
       <PageHead title="Síða fannst ekki" />
-      <div class="wrap block narrow">
+      <div class="wrap block">
         <p>Síðan sem þú leitaðir að er ekki til eða hefur verið færð.</p>
         <form action="/leit" method="get" class="filter-row search-big" role="search" aria-label="Leita á vefnum">
           <FilterField id="q404" label="Leit"><input id="q404" name="q" type="search" placeholder="Leita á vefnum…" /></FilterField>
