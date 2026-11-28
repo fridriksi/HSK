@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hsk-vefur",
+  "main": "src/index.tsx",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // CSS, JS og merki eru tekin inn í kóðann (npm run static); ritillinn (TinyMCE) kemur af jsDelivr
+  "d1_databases": [
+    { "binding": "DB", "database_name": "hsk", "database_id": "50f99151-05aa-48c2-ac35-03966f103845", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "hsk-media" }],
+  "vars": {
+    "SITE_URL": "https://hsk-vefur.fridriksi.workers.dev",
+    // Lén sem fá ritstjóraaðgang sjálfkrafa
+    "STAFF_DOMAIN": "hsk.is",
+    // Sendandi kerfispósts. Til bráðabirgða frá hostly.is (Resend) þar til hsk.is er komið á Cloudflare
+    "EMAIL_FROM": "vefur-hsk@hostly.is",
+    // Postmark: heiti strauma fyrir kerfispóst og fjöldapóst
+    "POSTMARK_STREAM": "outbound",
+    "POSTMARK_BROADCAST_STREAM": "broadcast",
+    // Aðeins í þróun (.dev.vars): innskráningartengill birtist á skjánum
+    "DEV_LOGIN_LINKS": "false"
+    // Leyndarmál (wrangler secret put): ADMIN_EMAILS, LOGIN_KEY, IMPORT_TOKEN, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY, POSTMARK_SERVER_TOKEN, POSTMARK_WEBHOOK_KEY, UNSUBSCRIBE_SECRET
+  },
+  "observability": { "enabled": true },
+  // Samskipti: sendir tímasettar útsendingar og lotur úr biðröð
+  "triggers": { "crons": ["* * * * *"] }
+}

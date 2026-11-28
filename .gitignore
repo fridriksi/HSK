@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+public/vendor/
+.dev.vars
+*.log
+.migration/
+src/static-files.ts
+src/record-catalogue-data.ts

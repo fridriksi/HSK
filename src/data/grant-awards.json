@@ -1,0 +1,1066 @@
+[
+  {
+    "year": 2025,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið, sex einstaklingar", 114000],
+          ["Fimleikadeild Umf. Selfoss", "Móttökunámskeið, einn einstaklingur", 15000],
+          ["Fimleikadeild Umf. Þórs", "Þjálfaranámskeið 1a og 1b, sjö einstaklingar", 102000],
+          ["Fimleikadeild Umf. Þórs", "Þjálfaranámskeið 2a og 2b, 17 einstaklingar", 340000],
+          ["Fimleikadeild Umf. Þórs", "Þjálfaranámskeið 3a og 3b, átta einstaklingar", 160000],
+          ["Golfkl. Úthlíð", "Nýjung í starfi, verkefnið golf fyrir afa- og ömmubörnin", 50000],
+          ["Íþróttafélagið Garpur", "Landsliðsverkefni, þrír einstaklingar", 180000],
+          ["Júdódeild Umf. Selfoss", "Nýjung í starfi, krílajúdó", 50000],
+          ["Mótokrossdeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Píludeild Umf. Selfoss", "Nýjung í starfi, barna- og unglinganámskeið", 50000],
+          ["Suðradeild Umf. Selfoss", "Þjálfaranámskeið ÍSÍ, tveir einstaklingar", 40000],
+          ["Ungmennafélag Biskupstungna", "Nýjung í starfi, íþróttamálþing Uppsveita", 50000],
+          ["Ungmennafélag Laugdæla", "Nýjung í starfi, leikskólaleikfimi", 50000],
+          ["Ungmennafélag Stokkseyrar", "Nýjung í starfi, borðtennis", 50000]
+        ],
+        "total": 1311000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið FSÍ, 1A, 2A, 2B og 4A, 12 einstaklingar", 225000],
+          ["Fimleikadeild Umf. Selfoss", "Fræðsludagur FSÍ, 23 einstaklingar", 23000],
+          ["Fimleikadeild Umf. Selfoss", "Aðstoðarþjálfaranámskeið FSÍ, 11 einstaklingar", 99000],
+          ["Fimleikadeild Umf. Selfoss", "Dómaranámskeið FSÍ í hópfimleikum, fjórir einstaklingar", 80000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald/fyrirlestur, Haus hugarþjálfun", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið Parkourskúrsins, fyrir þjálfara deildarinnar", 15000],
+          ["Fimleikadeild Umf. Selfoss", "Móttökunámskeið FSÍ, einn einstaklingur", 15000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið í Danmörku, fjórir einstaklingar", 200000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið ÍSÍ, tveir einstaklingar", 40000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald/Þjálfarafyrirlestur, börn með taugaraskanir", 45000],
+          ["Fimleikadeild Umf. Þórs", "Þjálfaranámskeið FSÍ, 1A, 3A og 4A, 13 einstaklingar", 230000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsverkefni, sjö einstaklingar", 420000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsverkefni, fjórir einstaklingar", 240000],
+          ["Handknattleiksdeild Umf. Selfoss", "Sérstök verkefni, þátttaka í Evrópukeppni kvenna", 200000],
+          ["Handknattleiksdeild Umf. Selfoss", "Námskeiðahald, fyrirlestur", 50000],
+          ["Hestamannafélagið Sleipnir", "Landsliðsverkefni, þrír einstaklingar", 180000],
+          ["Judofélag Suðurlands", "Þjálfaranámskeið í Svíþjóð, einn einstaklingur", 50000],
+          ["Judofélag Suðurlands", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsverkefni, fimm einstaklingar", 300000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið KSÍ B1, tveir einstaklingar", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið KSÍ B2, tveir einstaklingar", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið KSÍ B3, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið KSÍ B4, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfanámskeið KSÍ, UEFA Youth Elite, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaraskóli KSÍ A, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Námskeiðahald, unglingadómaranámskeið", 50000],
+          ["Knattspyrnufélagið Ægir", "Þjálfaranámskeið KSÍ, UEFA Pro, einn einstaklingur", 20000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsverkefni, þrír einstaklingar", 180000],
+          ["Körfuknattleiksfélag Selfoss", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Mótokrossdeild Umf. Selfoss", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Vélhjóladeild Umf. Þórs", "Landsliðsverkefni, einn einstaklingur", 60000]
+        ],
+        "total": 3292000
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Hákon Þór Svavarsson", "Íþróttakarl HSK 2024", 125000],
+          ["Perla Ruth Albertsdóttir", "Íþróttakona HSK 2024", 125000],
+          ["Hákon Þór Svavarsson", "Val í Olympíuhóp ÍSÍ vegna næstu leika", 200000],
+          ["Jón Ársæll Bergmann", "Heimsmeistari í hestaíþróttum", 130000],
+          ["Kristján Árni Birgisson", "Heimsmeistari í hestaíþróttum", 130000],
+          ["Védís Huld Sigurðardóttir", "Heimsmeistari í hestaíþróttum", 130000]
+        ],
+        "total": 840000
+      }
+    ],
+    "total": 5443000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2025",
+        "url": "/media/old/skjol/Uthlutun_Verkefnasjods_HSK_2025.docx"
+      }
+    ]
+  },
+  {
+    "year": 2024,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Íþr.f. Hamars", "Þjálfaranámskeið, tveir einstaklingar", 34000],
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsverkefni, 13 einstaklingar", 780000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 1A, einn einstaklingur", 15000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 2A, fjórir einstaklingar", 76000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 2B, tveir einstaklingar", 38000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 3B, tveir einstaklingar", 40000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, fyrirlestur um kvíða", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Móttökunámskeið 2, einn einstaklingur", 13000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, fullorðinsfimleikanámskeið", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, handstöðunámskeið", 50000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsverkefni, 2 einstaklingar", 120000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið, einn einstaklingur", 20000],
+          ["Íþróttafélagið Hamar", "Námskeiðahald, skyndihjálparnámskeið", 50000],
+          ["Íþróttafélagið Hamar", "Nýjung í starfi, Íþróttadagur Hamars", 50000],
+          ["Íþróttafélagið Hamar", "Nýjung í starfi, grunnnámskeið kennt á ensku", 50000],
+          ["Íþróttafélagið Suðri", "Þjálfaranámskeið ÍSÍ, tveir einstaklingar", 40000],
+          ["Judofélag Suðurlands", "Þjálfaranámskeið erlendis, tveir einstaklingar", 100000],
+          ["Knattspyrnufélag Rangæinga", "Þjálfaramenntun, 10 einstaklingar", 200000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Námskeiðahald, fræðsluerindi um jákvæð samskipti", 50000],
+          ["Mótokrossdeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Sunddeild Íþr.f. Hamars", "Námskeiðahald, sóknaráætlun sunddeildar Hamars 2024", 50000]
+        ],
+        "total": 1936000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Blakdeild Íþr.f. Hamars", "Nýjung í starfi, Evrópukeppni í blaki", 50000],
+          ["Blakdeild Íþr.f. Hamars", "Landsliðsverkefni, þrír einstaklingar", 180000],
+          ["Blaknefnd HSK", "Námskeiðahald, leikreglunámskeið í blaki", 31600],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 1A, einn einstaklingur", 17000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 3A, þrír einstaklingar", 60000],
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsverkefni, þrír einstaklingar", 180000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, fyrirlestur Þorgríms Þr.", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, fyrirlestur sjálfsagi.is", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Fræðsludagur FSÍ, 13 einstaklingar", 13000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 2A, tveir einstaklingar", 40000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 4A, fjórir einstaklingar", 80000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 2B, einn einstaklingur", 20000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Golfklúbbur Selfoss", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Golfklúbbur Selfoss", "Menntun þjálfara, tveir einstaklingar", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Íþróttafélag Uppsveita", "Nýjung í starfi, heilsársstarf í knattspyrnu", 50000],
+          ["Íþróttafélag Uppsveita", "Nýjung í starfi, körfuknattleikur", 50000],
+          ["Íþróttafélagið Suðri", "Sérstakt verkefni, Íþróttafjör", 200000],
+          ["Judofélag Suðurlands", "Nýjung í starfi, uppbygging á judói í Rangárþingi", 50000],
+          ["Judofélag Suðurlands", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Júdódeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn einstaklingur", 50000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ B þjálfaragráða, fjórir einstaklingar", 80000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ C1 þjálfaranámskeið, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ C2 þjálfaranámskeið, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ B4 þjálfaranámskeið, fjórir einstaklingar", 80000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsverkefni, fjórir einstaklingar", 240000],
+          ["Knattspyrnudeild Umf. Selfoss", "Nýung í starfi, krílabolti", 50000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsverkefni, fimm einstaklingar", 300000],
+          ["Körfuknattleiksfélag Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Körfuknattleiksfélag Selfoss", "Nýjung í starfi, krílabolti", 50000],
+          ["Körfuknattleiksfélag Selfoss", "Nýjung í starfi, meistaraflokkur kvenna", 50000],
+          ["Körfuknattleiksfélag Selfoss", "KKÍ 3 þjálfaranámskeið, fjórir einstaklingar", 80000],
+          ["Lyftingadeild Íþr.f. Hamars", "Heimsmeistaratitill í einstaklingsíþrótt", 120000],
+          ["Mótokrossdeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Skotíþróttafélagið Skyttur", "Þjálfaramenntun ÍSÍ, einn einstaklingur", 20000],
+          ["Skotíþróttafélagið Skyttur", "Þjálfaranámskeið hjá ISSF, tveir einstaklingar", 40000],
+          ["Umf. Þjótandi", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Ungmennafélag Laugdæla", "Landsliðsverkefni, tveir einstaklingar", 120000],
+          ["Ungmennafélag Laugdæla", "Nýjung í starfi, borðtennis á Laugarvatni", 50000]
+        ],
+        "total": 3191600
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Heiðrún Anna Hlynsdóttir", "Íþróttakona HSK 2024", 100000],
+          ["Sigurjón Ægir Ólafsson", "Íþróttakarl HSK 2024", 100000],
+          ["Íþr.f, Hamar, blakdeild", "Deildar, Íslands og bikarmeistaratitill í blaki karla 2024", 700000],
+          ["Hákon Þór Svavarsson", "Keppandi á Ólympíuleikunum í París", 120000]
+        ],
+        "total": 1020000
+      }
+    ],
+    "total": 6147600,
+    "sources": [
+      {
+        "label": "Úthlutanir 2024",
+        "url": "/media/old/skjol/Uthlutun_Verkefnasjods-HSK_2024.docx"
+      }
+    ]
+  },
+  {
+    "year": 2023,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Námskeið þjálfara, einn einstaklingur", 10000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeið þjálfara, sjö einstaklingar", 133000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald fyrir iðkendur", 15000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, jákvæð samskipti", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeið þjálfara, einn einstaklingur", 19000],
+          ["Fimleikadeild Umf. Selfoss", "Nýjung í starfi, fyrirlestur um samvinnu flokka og uppbyggingu", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeið þjálfara, einn einstaklingur", 19000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Menntun þjálfara, þrír einstaklingar", 60000],
+          ["Golfklúbbur Kiðjabergs", "Nýjung í starfi, fjölskyldudagar Golfklúbbs Kiðjabergs", 50000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 60000],
+          ["Júdódeild Umf. Selfoss", "Þjálfaranámskeið erlendis, tveir einstaklingar", 100000],
+          ["Knattspyrnudeild Hamars, Foreldraráð allra yngri flokka", "Námskeiðahald, foreldrið er lykilleikmaður", 45000],
+          ["Knattspyrnudeild Umf. Selfoss", "Dómaranámskeið, 15 einstaklingar", 150000],
+          ["Umf. HVöt", "Þjálfaramenntun, einn einstaklingur", 20000],
+          ["Umf. Laugdæla", "Landsliðsval, einn einstaklingur", 60000]
+        ],
+        "total": 841000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Íþr.f. Hamars", "Þjálfaranámskeið, fjórir einstaklingar", 76000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið FSÍ 3A, tveir einstaklingar", 40000],
+          ["Fimleikadeild Umf. Selfoss", "Endurmenntun þjálfara, fimm einstaklingar", 100000],
+          ["Fimleikadeild Umf. Selfoss", "Fræðsludagur FSÍ, 12 einstaklingar", 12000],
+          ["Fimleikadeild Umf. Selfoss", "Foreldrafræðsla, Þorgrímur Þráinsson", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald fyrir þjálfara", 50000],
+          ["Fimleikadeild Umf. Selfoss", "Skyndihjálparnámskeið fyrir þjálfara, 15 einstaklingar", 112500],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Menntun þjálfara, einn einstaklingur", 20000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsval, tveir einstaklingar", 120000],
+          ["Golfklúbbur Selfoss", "Landsliðsval, einn einstaklingur", 60000],
+          ["Golfklúbbur Selfoss", "Menntun þjálfara, tveir einstaklingar", 40000],
+          ["Hestamannafélagið Geysir", "Nýjung í starfi, hestafimleikar Geysis", 50000],
+          ["Hestamannafélagið Sleipnir", "Landsliðsval, einn einstaklingur", 60000],
+          ["Judofélag Suðurlands", "Landsliðsval, tveir einstaklingar", 120000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval, tíu einstaklingar", 600000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn einstaklingur", 50000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ C þjálfaranámskeið, fjórir einstaklingar", 80000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ B4 þjálfaranámskeið, einn einstaklingur", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Data and analystic námskeið, einn einstaklingur", 15000],
+          ["Knattspyrnudeild Umf. Selfoss", "Námskeið um líkamlega þjálfun í knattsp., einn einstakl.", 15000],
+          ["Knattspyrnudeild Umf. Selfoss", "Unglingadómaranámskeið, 28 einstaklingar", 560000],
+          ["Knattspyrnudeild Umf. Selfoss", "Héraðsdómaranámskeið, sjö einstaklingar", 140000],
+          ["Körfuknattleiksdeild Íþr.f. Hamars", "Landsliðsval, einn einstaklingur", 60000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsval, fjórir einstaklingar", 240000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Þjálfaranámskeið, þrír einstaklingar", 60000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Þjálfaranámskeið KKÍ 2, fjórir einstaklingar", 80000],
+          ["Körfuknattleiksfélag Selfoss", "Menntun þjálfara, 11 einstaklingar", 220000],
+          ["Körfuknattleiksfélag Selfoss", "Landsliðsval, einn einstaklingur", 60000],
+          ["Umf. Hrunamanna", "Nýjung í starfi, barnablak", 50000],
+          ["Umf. Selfoss", "Þátttaka fatlaðs fólks í íþróttum", 200000],
+          ["Umf. Selfoss", "Nýjung í starfi, þátttaka innflytjenda í skipulögðu íþróttastarfi", 50000],
+          ["Umf. Þjótandi", "Landsliðsval, tveir einstaklingar", 120000]
+        ],
+        "total": 3530500
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Heiðrún Anna Hlynsdóttir", "Íþróttakona HSK 2022", 100000],
+          ["Egill Blöndal", "Íþróttakarl HSK 2022", 100000],
+          ["Íþr.f, Hamar, blakdeild", "Deildar, og bikarmeistaratitill í blaki karla 2023", 400000],
+          ["Elvar Þormarsson", "Heimsmeistari í hestaíþróttum", 120000],
+          ["Glódís Rún Sigurðardóttir", "Heimsmeistari í hestaíþróttum", 120000],
+          ["Jón Ársæll Bermann", "Heimsmeistari í hestaíþróttum", 120000],
+          ["Sara Sigurbjörnsdóttir", "Heimsmeistari í hestaíþróttum", 120000]
+        ],
+        "total": 1080000
+      }
+    ],
+    "total": 5451500,
+    "sources": [
+      {
+        "label": "Úthlutanir 2023",
+        "url": "/media/old/skjol/Uthlutun_Verkefnasjods_HSK_2023.doc"
+      }
+    ]
+  },
+  {
+    "year": 2022,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Knattspyrnufélag Rangæinga", "Fjölgun stúlkna í knattspyrnu", 50000],
+          ["Skotíþróttafélagið Skyttur", "Tvö unglinganámskeið í skotíþróttum", 50000],
+          ["Fimleikadeild Selfoss", "Fræðsla iðkendur meistaraflokks", 50000],
+          ["Fimleikadeild Selfoss", "Námskeið fyrir þjálfara og iðkendur", 50000],
+          ["Fimleikadeild Selfoss", "Fyrirlestur og fræðsla um grindarbotninn", 15000]
+        ],
+        "total": 215000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsverkefni, 4 einstaklingar", 240000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaramenntun, 3 einstaklingar", 30000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaramenntun, 8 einstaklingar", 80000],
+          ["Fimleikadeild Umf. Selfoss", "Fræðsla þjálfara og iðkenda", 15000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Golfklúbbur Hveragerðis", "Landsliðsverkefni, 2 einstaklingar", 120000],
+          ["Golfklúbbur Selfoss", "Landsliðsverkefni, 3 einstaklingar", 180000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaramenntun, einn einstaklingur", 20000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsverkefni, 10 einstaklingar", 600000],
+          ["Íþróttafélagið Hamar", "Nýjung í starfi, fjölgreinafyrirkomulag Hamars", 50000],
+          ["Íþróttafélagið Suðri", "Nýjung í starfi, Íþróttaskóli barna", 50000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsverkefni, 14 einstaklingar", 840000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaramenntun, 6 einstaklingar", 120000],
+          ["Knattspyrnufélag Rangæinga", "Nýjung í starfi, fótboltaæfingar á leikskólatíma", 50000],
+          ["Knattspyrnufélag Rangæinga", "Nýjung í starfi, stofnun meistaraflokks kvenna", 50000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsverkefni, 6 einstaklingar", 360000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Þjálfaramenntun erlendis, einn einstaklingur", 50000],
+          ["Körfuknattleiksfélag Selfoss", "Landsliðsverkefni, 4 einstaklingar", 240000],
+          ["Körfuknattleiksfélag Selfoss", "Tölfræðinámskeið", 34300],
+          ["Körfuknattleiksfélag Selfoss", "Dómaranámskeið", 50000],
+          ["Motokrossdeild Umf. Selfoss", "Landsliðsverkefni, einn einstaklingur", 60000],
+          ["Pílunefnd Umf. Selfoss", "Stofnun Pílunefndar UMFS", 50000],
+          ["Skotíþróttafélagið Skyttur", "Þjálfaramenntun, 3 einstaklingar", 60000],
+          ["Sunddeild Íþr.f. Hamars", "Fyrirlestur fyrir iðkendur og foreldra", 50000],
+          ["Sundnefnd HSK", "Fræðsla á æfingabúðum sundnefndar HSK", 50000],
+          ["Umf. Þjótandi", "Nýjung í starfi, átaksverkefni í skíðaiðkun", 50000]
+        ],
+        "total": 3559300
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Heiðrún Anna Hlynsdóttir", "Íþróttakona HSK 2021", 100000],
+          ["Styrmir Snær Þrastarson", "Íþróttakarl HSK 2021", 100000],
+          ["Íþr.f, Hamar, blakdeild", "Deildar,- bikar- og Íslandsmeistaratitill í blaki karla 2022", 700000]
+        ],
+        "total": 900000
+      }
+    ],
+    "total": 4674300,
+    "sources": [
+      {
+        "label": "Úthlutanir 2022",
+        "url": "/media/old/skjol/Verkefnasj_HSK_2022.doc"
+      }
+    ]
+  },
+  {
+    "year": 2021,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið 1B", 10000],
+          ["Fimleikadeild Umf. Selfoss", "Fyrirlestur frá Bjarna Fritzsyni", 37500],
+          ["Hamar-Þór", "Þjálfaramenntun", 10000],
+          ["Hamar-Þór", "Sameining tveggja félaga í meistaraflokki kvenna", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Markmannsþjálfunarnámskeið", 10000],
+          ["Handknattleiksdeild Umf. Selfoss", "Leikurinn - heimildamynd um Íslandsmeistaratitilinn", 40000],
+          ["Hestamannafélagið Sleipnir", "Nýliðun", 40000],
+          ["Íþróttafélagið Hamar", "Landsliðsval tveir einstaklingar", 100000],
+          ["Íþróttafélagið Hamar", "Menntun þjálfara, fimm einstaklingar", 50000],
+          ["Íþróttafélagið Hamar", "Útbreiðsluverkefni - stúlkur í körfu", 40000],
+          ["Íþróttafélagið Hamar", "Næringarráðgjöf fyrir iðkendur og foreldra", 30000],
+          ["Íþróttafélagið Hamar", "Nýjung í starfi fimleikadeildar - hópfimleikar/dans", 40000],
+          ["Knattspyrnufélag Rangæinga", "Endurmenntun þjálfara", 90000],
+          ["Körfuknattleiksfélag Selfoss", "Efling stúlkna í körfubolta", 40000]
+        ],
+        "total": 577500
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Blakdeild Íþr.f. Hamars", "Menntun þjálfara, einn einstaklingur", 10000],
+          ["Blakdeild Íþr.f. Hamars", "Landsliðsval, þrír einstaklingar", 150000],
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsval, sex einstaklingar", 250000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 50000],
+          ["Frjálsíþróttaráð HSK", "Fræðsludagur", 40000],
+          ["Golfklúbburinn Flúðir", "Nýjung í starfi, barna- og unglingastarf", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið HSÍ, níu einstaklingar", 90000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval, þrír einstaklingar", 150000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval, þrír einstaklingar", 150000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið, tveir einstaklingar", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ B2 þjálfaranámskeið, tveir einstaklingar", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "KSÍ B 3 þjálfaranámskeið, fimm einstaklingar", 50000],
+          ["Knattspyrnudeild Umf. Selfoss", "UEFA youth elite, einn einstaklingur", 10000],
+          ["Knattspyrnudeild Umf. Selfoss", "UEFA A þjálfaranámskeið, tveir einstaklingar", 20000],
+          ["Körfuknattleiksdeild Íþr.f. Hamars", "Landsliðsval, tveir einstaklingar", 100000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsval, fimm einstaklingar", 250000],
+          ["Umf. Gnúpverja", "Nýjung í starfi, borðtennisæfingar", 40000],
+          ["Umf. Hekla", "Fimleikanámskeið, tveir einstaklingar", 20000]
+        ],
+        "total": 1460000
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Heiðrún Anna Hlynsdóttir", "Íþróttakona HSK 2020", 75000],
+          ["Breki Bernhardsson", "Íþróttakarl HSK 2020", 75000],
+          ["Umf. Þór, körfuknattleiksdeild", "Íslandsmeistaratitill karla í körfuknattleik", 400000],
+          ["Íþr.f, Hamar, blakdeild", "Deildar,- bikar- og Íslandsmeistaratitill í blaki karla", 700000]
+        ],
+        "total": 1250000
+      }
+    ],
+    "total": 3287500,
+    "sources": [
+      {
+        "label": "Úthlutanir 2021",
+        "url": "/media/old/skjol/Verkefnasj_HSK_2021.doc"
+      }
+    ]
+  },
+  {
+    "year": 2020,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Golfklúbbur Selfoss", "Skíðagöngubraut, nýung í starfi", 40000],
+          ["Ungmennafélag Selfoss", "Rafíþróttir, nýung í starfi", 40000],
+          ["Hestamannafélagið Geysir", "70 ára saga Geysis", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið 3. stig, einn þátttakandi", 10000],
+          ["Fimleikadeild Selfoss", "Móttökunámskeið 1, einn þátttakandi", 10000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið 1A, einn þátttakandi", 80000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið 2B, 2 þátttakendur", 20000],
+          ["Fimleikadeild Selfoss", "Móttökunámskeið 2, einn þátttakandi", 10000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið 3A, 3 þátttakendur", 30000],
+          ["Fimleikadeild Selfoss", "Dómaranámskeið í hópfimleikum, einn þátttakandi", 10000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið 2A, 3 þátttakendur", 30000],
+          ["Fimleikadeild Selfoss", "Fyrirlestur um hugarfar og hugarafl í hópfimleikum", 30000],
+          ["Knattspyrnudeild Selfoss", "Unglinga- og héraðsdómaranámskeið, 24 þátttak.", 240000],
+          ["Knattspyrnudeild Hamars", "Þjálfaranámskeið, 8 þátttakendur", 80000],
+          ["Knattspyrnudeild Hamars", "Nýtt kvennalið, nýung í starfi", 40000]
+        ],
+        "total": 710000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Námskeið fyrir stjórnendur leikskólahópa, 5 einstakl.", 25000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 50000],
+          ["Golfklúbbur Selfoss", "Landsliðsval, einn einstaklingar", 50000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval, 4 einstaklingar og einn afreksstyrkur", 320000],
+          ["Íþr.f. Hamar, knattspyrnud.", "Dómaranámskeið / Efling á dómarastarfi", 40000],
+          ["Íþr.f. Hamar, blakdeild", "Fjarnám- Þjálfaramenntun ISI, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Umf. Selfoss", "UEFA PRO þjálfaranámskeið, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Umf. Selfoss", "UEFA A Þjálfaranámskeið, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval, 5 einstaklingar", 250000],
+          ["Knattspyrnufélag Rangæinga", "Stofnun Rafíþróttadeildar", 40000],
+          ["Umf. Hekla", "Menntun fimleikaþjálfara, tveir þátttakendur", 20000],
+          ["Umf. Selfoss, rafíþróttanefnd", "Þjálfaramenntun ÍSÍ - 1. stig, 2 einstaklingar", 20000],
+          ["Umf. Hrunamanna", "Landsliðsval, 4 einstaklingar", 200000],
+          ["Umf. Selfoss", "Þjálfararáðstefna", 40000],
+          ["Umf. Selfoss, borðtennisnefnd", "Uppbygging borðtennisdeildar á Selfossi", 40000],
+          ["Umf. Þór, körfuknattleiksdeild", "Val í landslið, 2 einstaklingar", 100000],
+          ["Umf. Selfoss", "Skyndihjálparnámskeið", 40000],
+          ["Umf. Selfoss", "Stjórnendaþjálfun, tveir einstaklingar", 20000]
+        ],
+        "total": 1285000
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Fjóla Signý Hannesdóttir", "Íþróttakona HSK 2019", 75000],
+          ["Haukur Þrastarson", "Íþróttakarl HSK 2019", 75000]
+        ],
+        "total": 150000
+      }
+    ],
+    "total": 2145000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2020",
+        "url": "/media/old/skjol/Verkefnasj_HSK_2020.doc"
+      }
+    ]
+  },
+  {
+    "year": 2019,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Hamars", "Þjálfaranámskeið innanlands, 14 þátttakendur", 140000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið innanlands, fimm þátttakendur", 50000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið innanlands, þrír þátttakendur", 30000],
+          ["Fimleikadeild Selfoss", "Námskeiðahald", 35000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið erlendis, fimm þátttakendur", 200000],
+          ["Fimleikadeild Selfoss", "Námskeiðahald", 25000],
+          ["Golfklúbbur Hveragerðis", "Útbreiðsluverkefni", 40000],
+          ["Golfklúbburinn Flúðir", "Útbreiðsluverkefni", 40000],
+          ["Knattspyrnudeild Selfoss", "Námskeiðahald, tvö námskeið", 80000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, 35 þátttakendur", 350000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsval, einn einstaklingur", 50000],
+          ["Körfuknattleiksdeild Umf. Þórs", "Landsliðsval, einn einstaklingur", 50000],
+          ["Skotíþróttafélag Suðurlands", "Afreksstyrkur, einn einstaklingur", 150000],
+          ["Skotíþróttafélag Suðurlands", "Þjálfaranámskeið erlendis, einn þátttakandi", 40000],
+          ["Sunddeild Hamars", "Námskeiðahald", 15000],
+          ["Sundnefnd HSK", "Námskeiðahald", 40000]
+        ],
+        "total": 1395000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Hamars", "Endurmenntun þjálfara", 72000],
+          ["Fimleikadeild Hamars", "Skyndihjálparnámskeið", 40000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið 1A", 60000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið í Danmörku", 160000],
+          ["Fimleikadeild Selfoss", "Fræðsludagur Fimleikasambandsins", 10000],
+          ["Fimleikadeild Selfoss", "Móttökunámskeið 1", 6000],
+          ["Fimleikadeild Selfoss", "Þjálfarafyrirlestur", 20000],
+          ["Fimleikadeild Selfoss", "Jóhann Ingi - iðkendur", 20000],
+          ["Frjálsíþróttadeild Umf. Þórs", "Þjálfaranámskeið á vegum ÍSÍ", 10000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsfólk", 180000],
+          ["Golfklúbbur Hveragerðis", "Ferðakostnaður vegna landsliðsverkefnis", 50000],
+          ["Golfklúbbur Selfoss", "Landsliðsval þrír einstaklingar", 150000],
+          ["Hamar", "Þjálfarnámskeið", 40000],
+          ["Hamar", "Landsliðsferð U15", 40000],
+          ["Hamar Körfuknattleiksdeild", "Landsliðsferð u-20 karla", 40000],
+          ["Handknattleiksd. Umf. Selfoss", "Landsliðsval", 125000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval", 125000],
+          ["Knattspyrnudeild Selfoss", "KSÍ 3 þjálfaranámskeið", 20000],
+          ["knattspyrnudeild Selfoss", "KSÍ 4a þjálfaranámskeið", 20000],
+          ["Knattspyrnudeild Selfoss", "KSÍ 4B þjálfaranámskeið", 30000],
+          ["Knattspyrnudeild Selfoss", "KSÍ B/UEFA B þjálfarapróf", 6000],
+          ["Knattspyrnudeild Selfoss", "KSÍ A þjálfaraskóli", 20000],
+          ["Knattspyrnudeild Selfoss", "Landsliðsval", 150000],
+          ["Knattspyrnufélag Rangæinga", "Þjálfaramenntun", 80000],
+          ["Körfuknattleiksdeild Þórs", "Landsliðskrakkar", 80000],
+          ["Körfuknattleiksfélag Selfoss", "Þjálfaranámskeið erlendis", 40000],
+          ["Suðri", "Bogfimi á Suðurlandi", 40000],
+          ["Sunddeild Hamars", "Fræðslufyrirlestur sunddeildar", 35000],
+          ["Taekwondodeild Umf. Selfoss", "Landsliðsval", 50000],
+          ["Ungmennafélag Hrunamanna", "Landsliðsval", 300000],
+          ["Ungmennafélag Hrunamanna", "Nýjung í starfi", 40000],
+          ["Ungmennafélag Selfoss", "Endurmenntun styrktarþjálfara", 40000]
+        ],
+        "total": 2099000
+      },
+      {
+        "label": "Sérstök úthlutun",
+        "rows": [
+          ["Dagný María Pétursdóttir", "Íþróttakona HSK 2018", 50000],
+          ["Elvar Örn Jónsson", "Íþróttakarl HSK 2018", 50000],
+          ["Handknattleiksdeild Umf. Selfoss", "Íslandsmeistaratitill karla í handknattleik 2019", 400000],
+          ["Knattspyrnudeild Umf. Selfoss", "Bikarmeistaratitill kvenna í knattspyrnu 2019", 400000]
+        ],
+        "total": 900000
+      }
+    ],
+    "total": 4394000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2019",
+        "url": "/media/old/skjol/uthl_2019.doc"
+      }
+    ]
+  },
+  {
+    "year": 2018,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild umf Selfoss", "Þjálfaranámskeið innanlands, sex þátttakendur", 60000],
+          ["Fimleikadeild umf Selfoss", "Þjálfaranámskeið innanlands, 16 þátttakendur", 160000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, átta þátttakendur", 80000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval, sjö einstaklingar", 280000],
+          ["Íþróttafélagið Hamar", "Landsliðsval, tveir einstaklingar", 80000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval, fjórir einstaklingar og einn afreksstyrkur", 280000],
+          ["Júdódeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Knattspyrnudeild Selfoss", "Dómaranámskeið innanlands, fjórir þátttakendur", 40000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, þrír þátttakendur", 30000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Umf. Þór, körfuknattleiksdeild", "Landsliðsval, einn einstaklingur", 40000],
+          ["Ungmennafélag Selfoss", "Námskeiðahald, skyndihjálp, tvö námskeið", 80000],
+          ["Ungmennafélag Selfoss", "Námskeiðahald, þjálfararáðstefna 2018", 40000],
+          ["Ungmennafélag Selfoss", "Ólympíuveggur Selfyssinga", 40000]
+        ],
+        "total": 1290000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald", 12500],
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 40000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Afreksstyrkur, einn einstaklingur", 120000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Landsliðsval, tveir einstaklingar", 80000],
+          ["Frjálsíþróttadeild Umf. Þórs", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Golfklúbbur Selfoss", "Landsliðsval, einn einstaklingur", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Handknattleiksdeild Umf. Selfoss", "Afreksstyrkur karlaliðs vegna þátttöku í Evrópukeppni", 250000],
+          ["Handknattleiksdeild Umf. Selfoss", "Afreksstyrkur, sex einstaklingar", 560000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 40000],
+          ["Júdódeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval, fimm einstaklingar", 200000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Sunddeild Íþr.f. Hamars", "Námskeiðahald", 25000],
+          ["Taekwondodeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Taekwondodeild Umf. Selfoss", "Þjálfaranámskeið erlendis, tveir þátttakendur", 60000],
+          ["Taekwondodeild Umf. Selfoss", "Landsliðsval, einn einstaklingur", 40000],
+          ["Umf. Hekla", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Umf. Hekla", "Landsliðsval, einn einstaklingur", 40000],
+          ["Umf. Hrunamanna", "Landsliðsval, þrír einstaklingar", 120000],
+          ["Umf. Þjótandi", "Nýung í starfi, útivistarverkefni félagsins", 40000]
+        ],
+        "total": 1827500
+      }
+    ],
+    "total": 3117500,
+    "sources": [
+      {
+        "label": "Úthlutanir 2018, vor",
+        "url": "/media/old/skjol/vor_2018_uthl.xlsx"
+      },
+      {
+        "label": "Úthlutanir 2018, haust",
+        "url": "/media/old/skjol/haust_2018_uthl.xlsx"
+      }
+    ]
+  },
+  {
+    "year": 2017,
+    "rounds": [
+      {
+        "label": "Fyrri úthlutun",
+        "rows": [
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, sex þátttakendur", 60000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, 14 þátttakendur", 140000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, þrír þátttakendur", 30000],
+          ["Fimleikadeild Umf. Selfoss", "A- landsliðsval og fimm afreksstyrkir", 600000],
+          ["Fimleikadeild Umf. Selfoss", "Landsliðsval yngri landsliða, tveir einstaklingar", 70000],
+          ["Golfklúbbur Selfoss", "Landsliðsval yngri landsliða, tveir einstaklingar", 70000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval yngri landsliða, þrír einstaklingar", 105000],
+          ["Handknattleiksdeild Umf. Selfoss", "A- landsliðsval og einn afreksstyrkur", 120000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval yngri landsliða, sex einstaklingar", 210000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval yngri landsliða, einn einstaklingur", 35000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið innanlands, tveir þátttakendur", 20000],
+          ["Hestamannafélagið Geysir", "Ritun 70 ára sögu félagsins", 35000],
+          ["Júdódeild Umf. Selfoss", "A- landsliðsval og einn afreksstyrkur", 120000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval yngri landsliða, þrír einstaklingar", 105000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, 31 þátttakandi", 310000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, fimm þátttakendur", 50000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Taekwondodeild Umf. Selfoss", "Landsliðsval yngri landsliða, einn einstaklingur", 35000],
+          ["Taekwondodeild Umf. Selfoss", "A- landsliðsval og einn afreksstyrkur", 120000],
+          ["Taekwondodeild Umf. Selfoss", "A- landsliðsval og einn afreksstyrkur", 120000],
+          ["Taekwondodeild Umf. Selfoss", "Þjálfaranámskeið erlendis, tveir þátttakendur", 60000],
+          ["Umf. Hrunamanna", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Umf. Hrunamanna", "Landsliðsval yngri landsliða, einn einstaklingur", 35000],
+          ["Umf. Hrunamanna", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Umf. Hrunamanna", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Umf. Þjótandi", "Munasýning, séstakt verkefni", 35000],
+          ["Umf. Þjótandi", "Handbolti, nýjung í starfi", 35000],
+          ["Umf. Þór, frjálsíþróttadeild", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000]
+        ],
+        "total": 2610000
+      },
+      {
+        "label": "Seinni úthlutun",
+        "rows": [
+          ["Frjálsíþróttadeild Umf. Selfoss", "A- landsliðsval og einn afreksstyrkur", 120000],
+          ["Handknattleiksdeild Umf. Selfoss", "Námskeiðahald, íþróttasálfræði", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Landsliðsval yngri landsliða, sex einstaklingar", 210000],
+          ["Handknattleiksdeild Umf. Selfoss", "Námskeiðahald/fræðsla í handboltaakademíu FSu", 40000],
+          ["Handknattleiksdeild Umf. Selfoss", "Þjálfaranámskeið, einn þátttakandi", 10000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval yngri landsliða, einn einstaklingur", 35000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval yngri landsliða, þrír einstaklingar", 105000],
+          ["Knattspyrnudeild Umf. Selfoss", "Endurmenntunarnámskeið, fjórir eintaklingar", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Dómaranámskeið, átta eintaklingar", 80000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið, átta einstaklingar", 80000],
+          ["Skotíþróttafélagið Skyttur", "Þjálfaranámskeið, þrír einstaklingar", 30000],
+          ["Umf. Hrunamanna", "Landsliðsval yngri landsliða, einn einstaklingur", 35000],
+          ["Umf. Hrunamanna", "Þjálfaranámskeið, einn þátttakandi", 10000],
+          ["Umf. Selfoss", "Námskeiðahald, skyndihjálp", 40000]
+        ],
+        "total": 875000
+      }
+    ],
+    "total": 3485000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2017, vor",
+        "url": "/media/old/skjol/vor_2017_uthl.xlsx"
+      },
+      {
+        "label": "Úthlutanir 2017, haust",
+        "url": "/media/old/skjol/haust_2017_uthl.xlsx"
+      }
+    ]
+  },
+  {
+    "year": 2016,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Blakdeild Hamars", "Krakkablak, nýung í starfi", 35000],
+          ["Blakdeild Hamars", "Námskeiðahald, eitt námskeið", 40000],
+          ["Fimleikadeild Hamars", "Þjálfaranámskeið innanlands, sjö þátttakendur", 70000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Fimleikadeild Umf. Selfoss", "Þjálfaranámskeið innanlands, þrír þátttakendur", 30000],
+          ["Fimleikadeild Umf. Selfoss", "Námskeiðahald, eitt námskeið", 40000],
+          ["Frjálsíþróttadeild UMF. Selfoss", "A- landsliðsval og tveir afreksstyrkir", 240000],
+          ["Glímuráð HSK", "Landsliðsval, tveir einstaklingar", 70000],
+          ["Golfklúbbur Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 30000],
+          ["Íþróttafélagið Garpur", "Landsliðsval, einn einstaklingur", 35000],
+          ["Knattspyrnudeild Selfoss", "Dómaranámskeið innanlands, 25 þátttakendur", 250000],
+          ["Knattspyrnudeild Selfoss", "Þjálfaranámskeið innanlands, 21 þátttakandi", 210000],
+          ["Knattspyrnudeild Selfoss", "A- landsliðsval og tveir afreksstyrkir", 240000],
+          ["Körfuknattleiksfélag FSu", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Körfuknattleiksfélag FSu", "Körfuboltaskóli leikskólabarna, nýung í starfi", 35000],
+          ["Umf. Selfoss, handknattleikdsdeild", "Landsliðsval, einn einstaklingur", 35000],
+          ["Umf. Þór, körfuknattleiksdeild", "Landsliðsval, fjórir einstaklingar", 140000],
+          ["Ungmennafélagið Þjótandi", "Námskeiðahald, eitt námskeið", 40000]
+        ],
+        "total": 1560000
+      }
+    ],
+    "total": 1560000,
+    "sources": [
+      {
+        "label": "Úthlutunartilkynning HSK 2016",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2016.xlsx",
+        "displayUrl": "https://www.hsk.is/web/default.cfm?brid=0&frett_id=7391&lang=1&page=frettirnar"
+      }
+    ]
+  },
+  {
+    "year": 2015,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Fimleikadeild Hamars", "Þjálfaranámskeið erlendis, tveir þátttakendur", 40000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið innanlands, sex þátttakendur", 60000],
+          ["Fimleikadeild Selfoss", "Þjálfaranámskeið erlendis, fimm þátttakendur", 100000],
+          ["Fimleikadeild Þórs", "Þjálfaranámskeið innanlands, fjórir þátttakendur", 40000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "Námskeiðahald, þrjú námskeið", 120000],
+          ["Frjálsíþróttadeild Umf. Selfoss", "A - landsliðsval og tveir afreksstyrkir", 240000],
+          ["Glímuráð HSK", "Landsliðsval í yngri landslið, fjórir einstaklingar", 140000],
+          ["Glímuráð HSK", "Landsliðsval í A-landsslið, einn einstaklingur", 35000],
+          ["Golfklúbbur Selfoss", "Þjálfaranámskeið erlendis, tveir þátttakendur", 40000],
+          ["Golfklúbbur Þorlákshafnar", "Efling unglingastarfs, nýjung í starfi", 35000],
+          ["Handkn.deild Umf. Selfoss", "Námskeiðahald, eitt námskeið", 40000],
+          ["Handkn.deild Umf. Selfoss", "Landsliðsval í yngri landslið, einn einstaklingur", 35000],
+          ["Handkn.deild Umf. Selfoss", "Þjálfaranámskeið innanlands, 15 þátttakendur", 150000],
+          ["Handkn.deild Umf. Selfoss", "Dómaranámskeið innanlands, 15 þátttakendur", 150000],
+          ["Handkn.deild Umf. Selfoss", "A - landsliðsval og einn afreksstyrkur", 120000],
+          ["Júdódeild Umf. Selfoss", "A - landsliðsval og tveir afreksstyrkur", 240000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsval í yngri landslið, tveir einstaklingar", 70000],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsval í yngri landslið", 105000],
+          ["Knattspyrnudeild Umf. Selfoss", "A - landsliðsval og tveir afreksstyrkir", 240000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið erlendis, einn þátttakandi", 20000],
+          ["Knattspyrnudeild Umf. Selfoss", "Dómaranámskeið innanlands, 13 þátttakendur", 130000],
+          ["Knattspyrnudeild Umf. Selfoss", "Þjálfaranámskeið innanlands, 11 þátttakendur", 110000],
+          ["Knattspyrnufélag Rangæinga", "Þjálfaranámskeið innanlands, þrír þátttakendur", 30000],
+          ["Knattspyrnufélagið Ægir", "Ungmennamót, nýjung í starfi", 35000],
+          ["Sunddeild Umf. Selfoss", "Þjálfaranámskeið innanlands, einn þátttakandi", 10000],
+          ["Taekwondodeild Umf. Selfoss", "A - landsliðsval og tveir afreksstyrkir", 240000],
+          ["Taekwondodeild Umf. Selfoss", "Landsliðsval í yngri landslið, þrír einstaklingar", 105000],
+          ["Körfuknattleiksdeild Umf. Hrunamanna", "Landsliðsval í yngri landslið, þrír einstaklingar", 105000],
+          ["Umf. Hekla", "Námskeiðahald, tvö námskeið", 80000],
+          ["Umf. Hekla", "Línuskautar, nýjung í starfi", 35000],
+          ["Umf. Hekla", "Fimleikar á Hellu, nýjung í starfi", 35000],
+          ["Umf. Hrunamanna", "íþróttaskóli yngstu iðkenda, nýjung í starfi", 35000],
+          ["Umf. Selfoss", "Námskeiðahald, eitt námskeið", 40000],
+          ["Umf. Selfoss", "Námskeið erlendis, tveir þátttakendur", 40000],
+          ["Umf. Vaka", "Námskeið erlendis, einn þátttakandi", 20000]
+        ],
+        "total": 3070000
+      }
+    ],
+    "total": 3070000,
+    "sources": [
+      {
+        "label": "Ársskýrsla HSK 2015, bls. 11",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2015.xlsx",
+        "displayUrl": "https://hsk.is/skjol/hskskyrsla15_net1.pdf#page=11"
+      }
+    ]
+  },
+  {
+    "year": 2014,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Aðalstjórn Umf. Selfoss", "Þjálfararáðstefna 2014", 40000],
+          ["Aðalstjórn Umf. Selfoss", "Þjálfararáðstefna 2015", 40000],
+          ["Aðalstjórn Umf. Selfoss", "Varðveisla sögulegra heimilda", 40000],
+          ["Fimleikadeild Selfoss", "þjálfaranámskeið ÍSÍ 3. stig", 10000],
+          ["Fimleikadeild Selfoss", "Þjálfaramenntun FSÍ námskeið 1A", 70000],
+          ["Fimleikadeild Selfoss", "þátttaka iðkenda fimleikadeildar Selfoss á Evrópumótinu í hópfimleikum", 120000],
+          ["Fimleikadeild Selfoss", "Þátttaka iðkenda í æfinga- og kepppnisferð á vegum landsliða FSÍ í hópfimleikum", 20000],
+          ["Frjálsíþróttadeild Selfoss", "Fjóla Signý Hannesdóttir frjálsíþróttakona", 50000],
+          ["Frjálsíþróttadeild Selfoss", "Keppnisferð á heimsleika barna- og unglinga í Gautaborg", 45000],
+          ["Frjálsíþróttadeild Selfoss", "Þátttaka á námskeiðum", 20000],
+          ["Handknattleiksdeild Umf. Selfoss", "Partille Cup 2014", 75000],
+          ["Handknattleiksdeild Umf. Selfoss", "4.fl.ka á Partille-cup", 80000],
+          ["Handknattleiksdeild Umf. Selfoss", "Fyllum pallana", 40000],
+          ["ÍF Mílan", "Nýstofnun Íþróttafélagsins Mílan", 40000],
+          ["Júdódeild Umf. Selfoss", "Landsliðsverkefni", 80000],
+          ["Júdódeild Umf. Selfoss", "Keppnisferðir erlendis", 22500],
+          ["Knattspyrnudeild Umf. Selfoss", "Landsliðsverkefni", 200000],
+          ["Knattspyrnudeild Umf. Selfoss", "Menntun dómara í knattspyrnu", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Kynningarverkefni knattspyrnudeildar", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Sameinumst Sunnlendingar", 40000],
+          ["Knattspyrnudeild Umf. Selfoss", "Keppnisferð meistaraflokks og 2. flokks kvenna í knattspyrnu", 87500],
+          ["Knattspyrnudeild Umf. Selfoss", "Menntun þjálfara", 130000],
+          ["Knattspyrnufélag Rangæinga", "Keppnisferð til Svíþjóðar", 42500],
+          ["knattspyrnufélag Rangæinga", "Þjálfaranámskeið fyrir þjálfara KFR", 70000],
+          ["Knattspyrnufélagið Ægir", "Verkefni um afreksþjálfun yngri flokka hjá Knattspyrnufélaginu Ægi", 40000],
+          ["Knattspyrnufélagið Ægir", "Auka menntun þjálfara Ægis 2014-2015", 60000],
+          ["Mótokrossdeild Umf. Selfoss", "Kynning á mótokross", 40000],
+          ["Selfoss/Ægir", "Keppnisferð 3. fl. karla til Svíþjóðar", 77500],
+          ["Taekwondodeild Umf. Selfoss", "Landsliðsverkefni", 80000],
+          ["Taekwondodeild Umf. Selfoss", "Keppnisferðir erlendis", 17500],
+          ["Umf. Hekla", "Heimasíða", 40000],
+          ["Umf. Hekla", "Landsliðskona í fimleikum", 20000],
+          ["Umf. Hekla", "Þjálfaranámskeið í blaki", 10000],
+          ["Umf. Hekla", "Efling frjálsra íþrótta á Hellu", 40000],
+          ["Umf. Hekla", "Fimleikar á Hellu", 40000],
+          ["Umf. Hrunamanna", "Unglingalandsliðsmenn", 45000],
+          ["Umf. Laugdæla", "Barna- og unglingastarf UMFL", 40000],
+          ["Umf. Selfoss", "Hátíðar- og sögusýning Umf. Selfoss", 40000],
+          ["Umf. Vaka", "Ferðastyrkur á Evrópumeistaramót í keltneskum fangbrögðum", 22500],
+          ["Umf. Vaka", "Ferðastyrkur vegna æfingabúða og Hálandaleika í Skotlandi", 22500],
+          ["Umf. Vaka", "Ferðastyrkur vegna æfingabúða og Hálandaleika í Skotlandi", 22500],
+          ["Umf. Vaka", "Efling skákíþróttarinnar í Flóahreppi", 40000]
+        ],
+        "total": 2140000
+      }
+    ],
+    "total": 2140000,
+    "sources": [
+      {
+        "label": "Úthlutunartilkynning HSK 2014",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2014.xls",
+        "displayUrl": "https://www.hsk.is/web/default.cfm?brid=0&frett_id=6988&lang=1&page=frettirnar"
+      }
+    ]
+  },
+  {
+    "year": 2013,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Íþróttafélagið Dímon, borðtennisdeild", "Efling og styrking borðtennisiðkunnar á Hvolsvelli", 30000],
+          ["Íþróttafélagið Dímon, frjálsíþróttadeild", "Efling frjálsíþrótta á Hvolsvelli", 30000],
+          ["Íþróttafélagið Hamar, körfuknattleiksdeild", "Val í landslið og keppnisferðir", 35000],
+          ["Körfuknattl.f. Fsu", "Meistaraflokkur kvenna", 30000],
+          ["Landsmótsnefnd HSK", "Undirbúningur landsmótsliðs HSK", 530000],
+          ["Sögu- og minjanefnd HSK", "Innbinding á þinggerðum HSK frá upphafi", 30000],
+          ["Umf. Laugdæla, fimleikanefnd", "Þjálfaranámskeið 1A í fimleikum", 5000],
+          ["Umf. Laugdæla, frjálsíþróttanefnd", "Landsliðsmaður í frjálsíþróttum", 17500],
+          ["Umf. Laugdæla, glímunefnd", "Landsliðsmaður í glímu", 17500],
+          ["Umf. Laugdæla, körfuknattleiksnefnd", "Unglingalandsliðsmaður í körfuknattleik", 17500],
+          ["Umf. Selfoss, aðalstjórn", "Þjálfararáðstefna Sveitarfélagsins Árborgar", 30000],
+          ["Umf. Selfoss, fimleikadeild", "Námsskrárgerð fyrir fimleikadeild Umf. Selfoss", 30000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið 1A, sérgreinahluti FSÍ", 85000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið ÍSÍ 1A, B og C", 15000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Fjóla Signý Hannesdóttir afrekskona í frjálsum íþróttum", 22500],
+          ["Umf. Selfoss, handknattleiksdeild", "4. flokkur kvenna á Partille-cup 2014", 80000],
+          ["Umf. Selfoss, handknattleiksdeild", "3. flokkur karla á Granollers-cup á Spáni", 50000],
+          ["Umf. Selfoss, handknattleiksdeild", "Landsliðsverkefni", 120000],
+          ["Umf. Selfoss, judódeild", "Keppnisferðir erlendis", 25000],
+          ["Umf. Selfoss, judódeild", "Landsliðsverkefni", 60000],
+          ["Umf. Selfoss, knattspyrnudeild", "Keppnisferð 3. flokks kvenna til Bandaríkjana", 55000],
+          ["Umf. Selfoss, knattspyrnudeild", "Keppnisferð meistaraflokks kvenna til Spánar", 90000],
+          ["Umf. Selfoss, knattspyrnudeild", "Þjálfaramenntun erlendis", 30000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara", 45000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun dómara í knattspyrnu", 30000],
+          ["Umf. Selfoss, knattspyrnudeild", "Val í landslið KSÍ", 240000],
+          ["Umf. Selfoss, minjaverndarnefnd", "Innbinding á árskýrslum félagsins", 30000],
+          ["Umf. Selfoss, taekwondodeild", "Keppnisferðir erlendis", 25000],
+          ["Umf. Selfoss, taekwondodeild", "Landsliðsverkefni", 165000],
+          ["Umf. Þór, frjálsíþróttadeild", "Keppnisferð á Gautarborgarleika", 25000],
+          ["Unglingalandsmótsnefnd HSK", "Unglingalandsmót UMFÍ 2013", 255000]
+        ],
+        "total": 2250000
+      }
+    ],
+    "total": 2250000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2013",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2013.xls"
+      }
+    ]
+  },
+  {
+    "year": 2012,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Frjálsíþróttaráð HSK", "Kynning á frjálsíþróttum í grunnskólum á Suðurlandi", 30000],
+          ["Golfklúbbur Kiðjabergs", "Útgáfa á söguriti á 20 ára afmæli klúbbsins", 30000],
+          ["Golfklúbbur Selfoss", "Allir í golf", 30000],
+          ["Körfuknattl.f. Fsu", "Landsliðsferðir á Evrópu- og Norðurlandamót", 20000],
+          ["Íþróttafélagið Hamar", "20 ára afmælisrit Hamars", 30000],
+          ["Íþróttafélagið Hamar, körfuknattleiksd.", "Norðurlandamót yngri landsliða", 40000],
+          ["Íþróttafélagið Hamar, körfuknattleiksd.", "Menntun þjálfara", 30000],
+          ["Íþróttafélagið Suðri", "Nýungar í starfi félagsins", 30000],
+          ["Knattspyrnufélag Rangæinga", "Markmannsnámskeið", 30000],
+          ["Knattspyrnufélag Rangæinga", "Menntun þjálfara", 20000],
+          ["Knattspyrnufélag Rangæinga", "Keppnisferð til Svíþjóðar", 47500],
+          ["Sögu- og minjanefnd HSK", "Sýningin sunnlendingar á Ólympíuleikum", 30000],
+          ["Umf. Biskupstungna", "Saga Umf. Biskupstungna, bókaútgáfa", 30000],
+          ["Umf. Eyrarbakka", "Uppbygging körfuboltadeildar", 30000],
+          ["Umf. Framtíðin", "Jákvæðninámskeið, lykillinn að þinni leið", 30000],
+          ["Umf. Laugdæla, glímunefnd", "Landsliðsmaður í glímu", 22500],
+          ["Umf. Laugdæla, blakdeild", "Dómaranámskeið í blaki", 30000],
+          ["Umf. Laugdæla", "Norræn ungmennavika á Grænlandi", 25000],
+          ["Umf. Selfoss, fimleikadeild", "Dómaranámskeið í hópfimleikum", 18000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið 1A", 20000],
+          ["Umf. Selfoss, fimleikadeild", "Evrópumeistaramót í hópfimleikum", 210000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Fjóla Signý Hannesdóttir frjálsíþróttakona", 25000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Keppnisferð á heimsleika barna- og unglinga í Gautaborg", 42500],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Kynning á Kids Athletic í grunnskólum Árborgar", 30000],
+          ["Umf. Selfoss, handknattleiksdeild", "4. flokkur kvenna Partille-cup 2012", 47500],
+          ["Umf. Selfoss, handknattleiksdeild", "4. flokkur karla Partille-cup 2013", 70000],
+          ["Umf. Selfoss, handknattleiksdeild", "Val í landslið og þátttaka í landsliðsverkefnum erlendis", 140000],
+          ["Umf. Selfoss, handknattleiksdeild", "Námskeið - forvarnir, markmiðssetning o.fl.", 30000],
+          ["Umf. Selfoss, handknattleiksdeild", "Stækkuð umgjörð vegna meistaraflokks kvenna", 30000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara", 50000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara erlendis", 15000],
+          ["Umf. Selfoss, knattspyrnudeild", "Val í landslið KSÍ", 90000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun dómara í knattspyrnu", 30000],
+          ["Umf. Selfoss, knattspyrnud.minjaverndarsjóður", "Úrklippusafn um knattspyrnu á Selfossi", 30000],
+          ["Unglingalandsmótsnefnd HSK", "Vegna þátttöku á Unglingalandsmóti UMFÍ 2012", 875000]
+        ],
+        "total": 2288000
+      }
+    ],
+    "total": 2288000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2012",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2012.xls"
+      }
+    ]
+  },
+  {
+    "year": 2011,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Frjálsíþróttaráð HSK", "Dómaranámskeið fyrir frjálsíþróttadómara", 30000],
+          ["Frjálsíþróttaráð HSK", "Skráning HSK meta og afreksskráning", 30000],
+          ["Glímuráð HSK", "Landsliðsferð", 12500],
+          ["Glímuráð HSK", "Silfurkeðja á Skarphéðinsskjöldinn endurnýjuð", 30000],
+          ["Golfklúbbur Hveragerðis", "Útbreiðsla og kynning á starfsemi félagsins", 30000],
+          ["Golfklúbbur Selfoss", "Héraðsdómaranámskeið og golfkennaranám", 15000],
+          ["Hestamannafélagið Sleipnir", "Val í landslið", 12500],
+          ["Íþróttafélagið Dímon", "Þrjú þjálfaranámskeið ÍSÍ 1a, 1b og 1c", 90000],
+          ["Íþróttafélagið Garpur", "Fimleikar í Rangárþingi ytra", 30000],
+          ["Knattspyrnufélag Rangæinga", "Menntun þjálfara", 15000],
+          ["Sögu- og minjanefnd HSK", "Varðveisla ársskýrslna HSK", 30000],
+          ["Umf. Biskupstungna", "Félagsmálafræðsla", 30000],
+          ["Umf. Biskupstungna", "Skönnun á Litla-Bergþór", 30000],
+          ["Umf. Biskupstungna", "Menntun þjálfara", 30000],
+          ["Umf. Laugdæla, glímunefnd", "Landsliðsmenn í glímu", 27500],
+          ["Umf. Laugdæla, frjálsíþróttanefnd", "Unglingalandsliðsmaður í frjálsíþróttum", 12500],
+          ["Umf. Laugdæla, frjálsíþróttanefnd", "Landsliðsfólk í frjálsíþróttum", 20000],
+          ["Umf. Laugdæla, aðalstjórn", "Skyndihjálparnámskeið", 30000],
+          ["Umf. Selfoss, aðalstjórn", "Útbreiðslu- og kynningarstarf Umf. Selfoss", 30000],
+          ["Umf. Selfoss, aðalstjórn", "Ráðstefna um þjálfun", 30000],
+          ["Umf. Selfoss, afmælisnefnd", "75 ára afmælisrit Umf. Selfoss", 30000],
+          ["Umf. Selfoss, afmælisnefnd", "Kvikmyndaviðtöl við forystufólk og afreksfólk", 30000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið FSÍ 1A", 15000],
+          ["Umf. Selfoss, fimleikadeild", "Toppþjálfaranámskeið 2C", 25000],
+          ["Umf. Selfoss, fimleikadeild", "Styrktarþjálfaranámskeið í hópíþróttum", 10000],
+          ["Umf. Selfoss, fimleikadeild", "Námskeið í listdansmíði", 10000],
+          ["Umf. Selfoss, judódeild", "Landsliðsverkefni", 20000],
+          ["Umf. Selfoss, handknattleiksdeild", "Partille-cup 2011", 47500],
+          ["Umf. Selfoss, handknattleiksdeild", "Þátttaka á Falk Eliteturnering í Noregi", 37500],
+          ["Umf. Selfoss, handknattleiksdeild", "Norðurlandamót félagsliða í handbolta", 37500],
+          ["Umf. Selfoss, handknattleiksdeild", "Val í unglingalandslið Íslands", 72500],
+          ["Umf. Selfoss, knattspyrnudeild", "Þátttaka í USA CUP", 45000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun dómara í knattspyrnu", 115000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara erlendis", 10000],
+          ["Umf. Selfoss, knattspyrnudeild", "Val í landslið", 80000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara", 115000],
+          ["Umf. Selfoss, knattspyrnudeild", "Stækkuð umgjörð vegna meistarflokks kvenna", 30000],
+          ["Umf. Self, knattspyrnud.minjaverndarsjóður", "Stuttmynd um Íslandsmeistaralið 3. flokks kvenna", 30000],
+          ["Umf. Selfoss, knattspyrnudeild", "Keppnisferð 3. fl. karla 2012", 60000],
+          ["Umf. Selfoss, sunddeild", "Kynning á sunddeild fyrir unglinga í Árborg", 30000],
+          ["Umf. Vaka", "Afmælsirit í tilefni 75 ára afmæli Umf. Vöku", 30000],
+          ["Umf. Þór, fimleikadeild", "Nýliðun þjálfara", 35000],
+          ["Umf. Þór, körfuknattleiksdeild", "Útbreiðsla og kynning - MÍKRÓbolti", 30000],
+          ["Umf. Þór, körfuknattleiksdeild", "Þátttaka á Norðurlandamóti í körfubolta", 12500],
+          ["Umf. Þór, körfuknattleiksdeild", "Þátttaka á Norðurlandamóti í körfubolta", 12500],
+          ["Umf. Þór, körfuknattleiksdeild", "Þátttaka á Norðurlandamóti í körfubolta", 12500],
+          ["Unglingalandsmótsnefnd HSK", "Unglingalandsmót UMFÍ 2011", 95000]
+        ],
+        "total": 1642500
+      }
+    ],
+    "total": 1642500,
+    "sources": [
+      {
+        "label": "Úthlutanir 2011",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2011.xls"
+      }
+    ]
+  },
+  {
+    "year": 2010,
+    "rounds": [
+      {
+        "label": "Úthlutun",
+        "rows": [
+          ["Frjálsíþróttaráð HSK", "Verkefnisstjórn frjálsíþróttamála HSK", 30000],
+          ["Frjálsíþróttaráð HSK", "Frjálsíþróttaskóli UMFÍ", 30000],
+          ["Golfklúbbur Hellu", "Alþjóðleg unglingamót", 30000],
+          ["Hestamannafélagið Sleipnir", "Norðurlandamót í hestaíþróttum", 12500],
+          ["Hestamannafélagið Sleipnir", "Handbók Sleipnis v. fyrirmyndarfélag", 30000],
+          ["Íþróttafélagið Hamar", "Lýðheilsuverkefni Hamars", 30000],
+          ["Íþróttafélagið Hamar, skokkhópur", "Efla og auka áhuga almennings á göngu og hlaupum", 30000],
+          ["Knattspyrnufélag Rangæinga", "Hópefli, æfingaferð erlendis", 32500],
+          ["Knattspyrnufélag Rangæinga", "Menntun þjálfara", 10000],
+          ["Knattspyrnufélag Rangæinga", "Fjör í fótbolta", 30000],
+          ["Skotíþr.f. Suðrulands", "Þátttaka á HM í skeet", 12500],
+          ["Umf. Hekla", "Taekwondo á Hellu", 30000],
+          ["Umf. Laugdæla, blaknefnd", "Dómaranámskeið í blaki", 30000],
+          ["Umf. Laugdæla, blaknefnd", "Þjálfaranámskeið í blaki", 10000],
+          ["Umf. Laugdæla, frjálsíþróttanefnd", "Unglingalandalandsliðsmaður í frjálsum", 10000],
+          ["Umf. Laugdæla, glímunefnd", "Landsliðsmaður í glímu", 12500],
+          ["Umf. Selfoss, fimleikadeild", "Þátttaka á Eurogym í Danmörku", 82500],
+          ["Umf. Selfoss, fimleikadeild", "Val í landslið og þátttaka á Evrópumóti", 15000],
+          ["Umf. Selfoss, fimleikadeild", "Evrópumót í hópfimleikum", 177500],
+          ["Umf. Selfoss, fimleikadeild", "Þátttaka á alþjóðlegri ráðstefnu um afreksíþróttir", 5000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið FSÍ 1C", 20000],
+          ["Umf. Selfoss, fimleikadeild", "Þjálfaranámskeið FSÍ 1C", 5000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Landsliðsþátttaka", 12500],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Landsliðsþátttaka", 10000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Keppnisferð til Spánar", 40000],
+          ["Umf. Selfoss, frjálsíþróttadeild", "Keppnisferð á heimsleika barna- og unglinga", 40000],
+          ["Umf. Selfoss, handknattleiksdeild", "Norðurlandamót í handbolta", 27500],
+          ["Umf. Selfoss, handknattleiksdeild", "Keppnisferð 4. flokks til Svíþjóðar", 42500],
+          ["Umf. Selfoss, handknattleiksdeild", "Val í landslið HSÍ og keppisferð", 25000],
+          ["Umf. Selfoss, handknattleiksdeild", "Menntun þjálfara, námskeið", 5000],
+          ["Umf. Selfoss, handknattleiksdeild", "Efling styrktarþjálfunar eldri iðkenda", 30000],
+          ["Umf. Selfoss, handknattleiksdeild", "Efling kvennahandbolta á Suðurlandi", 30000],
+          ["Umf. Selfoss, handknattleiksdeild", "Útbreiðsla handknattleiks á Suðurlandi", 30000],
+          ["Umf. Selfoss, knattspyrnudeild", "Landsliðsfólk", 55000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun þjálfara", 40000],
+          ["Umf. Selfoss, knattspyrnudeild", "Þjálfaranám fyrir úrvaldsdeild", 5000],
+          ["Umf. Selfoss, knattspyrnudeild", "Menntun dómara í knattspyrnu", 40000],
+          ["Umf. Selfoss, knattspyrnudeild", "Æfingaferð meistaraflokks karla til Spánar", 57500],
+          ["Umf. Selfoss, knattspyrnudeild", "Keppnisferð 3. flokks karla til Svíþjóðar", 60000],
+          ["Umf. Selfoss, knattspyrnudeild", "Þjálfaranám/ráðstefna", 10000],
+          ["Umf. Selfoss, kraftlyftingadeild", "Stofnun kraftlyftingadeildar - útbreiðsla", 30000],
+          ["Umf. Þór, körfuknattleiksdeild", "Auka þátttöku stúlkna og minnka brottfall ungm.", 30000],
+          ["Umf. Þór, körfuknattleiksdeild", "Val í landslið KSÍ og landsliðsferð", 12500],
+          ["Umf. Þór, körfuknattleiksdeild", "Val í landslið KSÍ og landsliðsferð", 12500],
+          ["Unglingalandsmótsnefnd HSK", "Unglingalandsmótsþátttaka", 95000],
+          ["Sögu- og minjanefnd HSK", "100 ára sögunámskeið", 30000]
+        ],
+        "total": 1445000
+      }
+    ],
+    "total": 1445000,
+    "sources": [
+      {
+        "label": "Úthlutanir 2010",
+        "url": "/media/old/skjol/Uthlutun_ur_Verkefnasjodi_HSK_2010.xls"
+      }
+    ]
+  }
+]

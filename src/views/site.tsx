@@ -1,0 +1,232 @@
+import { asset } from '../static';
+import type { Child, FC } from 'hono/jsx';
+import { raw } from 'hono/html';
+import { Icon } from './icons';
+import { dateLong, dayNum, monthShort, timeOf, plainText } from '../lib';
+
+export type MenuItem = { id: number; title: string; path: string; children: MenuItem[] };
+export type Sponsor = { name: string; logo: string; url: string; tier: string };
+export type SiteChrome = {
+  menu: MenuItem[];
+  sponsors: Sponsor[];
+  notice: string;
+  contact: { address: string; phone: string; email: string };
+  social: { name: string; url: string; icon: 'facebook' | 'instagram' | 'youtube' | 'tiktok' }[];
+};
+
+export const Layout: FC<{
+  title: string;
+  chrome: SiteChrome;
+  path: string;
+  description?: string;
+  image?: string;
+  lang?: string;
+  children?: Child;
+}> = ({ title, chrome, path, description, image, lang, children }) => {
+  const fullTitle = title === 'Forsíða' ? 'Héraðssambandið Skarphéðinn – HSK' : `${title} – HSK`;
+  // Stakar færslur (frétt, viðburður …) merkja sinn hluta í valmyndinni
+  const SECTION: Record<string, string> = { frett: 'frettir', album: 'frettir', vidburdur: 'mot', urslit: 'mot', felag: 'adildarfelog' };
+  const sec = SECTION[path.split('/')[1]];
+  const active = (p: string) => path === '/' + p || path.startsWith('/' + p + '/') || sec === p;
+  return (
+    <html lang={lang ?? 'is'}>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{fullTitle}</title>
+        {description && <meta name="description" content={description} />}
+        <meta property="og:title" content={title} />
+        {description && <meta property="og:description" content={description} />}
+        {image && <meta property="og:image" content={image} />}
+        <link rel="icon" href="/img/hsk-merki.svg" type="image/svg+xml" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" />
+        <link rel="stylesheet" href={asset('/css/site.css')} />
+        <link rel="alternate" type="application/rss+xml" title="Fréttir HSK" href="/rss.xml" />
+      </head>
+      <body>
+        <a class="skip" href="#efni">Fara í efni</a>
+        <header class="site-header">
+          <div class="wrap header-inner">
+            <a class="brand" href="/">
+              <img src="/img/hsk-merki.svg" alt="" width="40" height="66" />
+              <span>Héraðssambandið<br />Skarphéðinn<small>Stofnað 1910</small></span>
+            </a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="valmynd">
+              <Icon name="menu" /><span>Valmynd</span>
+            </button>
+            <nav id="valmynd" class="main-nav" aria-label="Aðalvalmynd">
+              <ul>
+                {chrome.menu.map((m) => (
+                  <li class={m.children.length ? 'has-sub' : ''}>
+                    <a href={'/' + m.path} class={active(m.path) ? 'on' : ''} aria-current={path === '/' + m.path ? 'page' : undefined}>{m.title}</a>
+                    {m.children.length > 0 && (
+                      <ul class="sub">
+                        {m.children.map((s) => <li><a href={'/' + s.path}>{s.title}</a></li>)}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+                <li class="search-li">
+                  <form action="/leit" method="get" class="nav-search" role="search">
+                    <label class="sr" for="leit-q">Leita</label>
+                    <Icon name="search" />
+                    <input class="filter-input" id="leit-q" name="q" type="search" placeholder="Leita" />
+                  </form>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </header>
+        {chrome.notice && (
+          <div class="notice"><div class="wrap">{raw(chrome.notice)}</div></div>
+        )}
+        <main id="efni">{children}</main>
+        <footer class="site-footer">
+          {chrome.sponsors.length > 0 && (
+            <section class="sponsors" aria-label="Styrktaraðilar">
+              <div class="wrap">
+                <h2 class="eyebrow">Styrktar- og samstarfsaðilar</h2>
+                <ul>
+                  {chrome.sponsors.map((s) => (
+                    <li>
+                      <a href={s.url || '/styrktaradilar'} rel="noopener" target={s.url ? '_blank' : undefined} title={s.name}>
+                        {s.logo ? <img src={s.logo} alt={s.name} loading="lazy" /> : <span>{s.name}</span>}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
+          {chrome.social.length > 0 && (
+            <section class="social-band" aria-label="Samfélagsmiðlar">
+              <div class="wrap">
+                <h2 class="social-title">Fylgstu með HSK</h2>
+                <ul>
+                  {chrome.social.map((s) => (
+                    <li><a href={s.url} rel="noopener" target="_blank"><Icon name={s.icon} />{s.name}</a></li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
+          <div class="footer-main">
+            <div class="wrap footer-grid">
+              <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                  <span class="footer-badge"><img src="/img/hsk-merki.svg" alt="" width="40" height="40" /></span>
+                  <span>Héraðssambandið<br />Skarphéðinn</span>
+                </a>
+                <p class="footer-address"><Icon name="pin" />{chrome.contact.address}</p>
+              </div>
+              <div>
+                <h2 class="footer-h">Hafðu samband</h2>
+                <ul class="footer-list">
+                  {chrome.contact.phone && <li><Icon name="phone" /><a href={'tel:' + chrome.contact.phone.replace(/\s/g, '')}>{chrome.contact.phone}</a></li>}
+                  {chrome.contact.email && <li><Icon name="mail" /><a href={'mailto:' + chrome.contact.email}>{chrome.contact.email}</a></li>}
+                </ul>
+              </div>
+              <nav aria-label="Flýtileiðir">
+                <h2 class="footer-h">Flýtileiðir</h2>
+                <ul class="footer-list footer-links">
+                  {chrome.menu.map((m) => <li><a href={'/' + m.path}>{m.title}</a></li>)}
+                </ul>
+              </nav>
+            </div>
+            <div class="wrap">
+              <div class="footer-bottom">
+                <span>© {new Date().getUTCFullYear()} Héraðssambandið Skarphéðinn</span>
+                <span class="footer-meta"><a href="/en">English</a><a href="/rss.xml">RSS</a><a href="/stjorn">Innskráning</a></span>
+              </div>
+            </div>
+          </div>
+        </footer>
+        <script src={asset('/js/site.js')} defer></script>
+      </body>
+    </html>
+  );
+};
+
+// Brauðmolar eru ekki sýndir: aðalvalmyndin og fliparöðin sýna hvar maður er
+export const PageHead: FC<{ title: string; crumbs?: { title: string; path: string }[]; lead?: string }> = ({ title, lead }) => (
+  <div class="page-head">
+    <div class="wrap">
+      <h1>{title}</h1>
+      {lead && <p class="lead">{lead}</p>}
+    </div>
+  </div>
+);
+
+export const SectionTabs: FC<{ title: string; path: string; tabs: { title: string; path: string }[]; overview?: string }> = ({ title, path, tabs, overview }) => tabs.length ? (
+  <nav class="section-tabs" aria-label={title}>
+    <div class="wrap">
+      <ul>{overview && <li><a href={overview} class={path === overview ? 'on' : ''} aria-current={path === overview ? 'page' : undefined}>{title}</a></li>}{tabs.map((tab) => {
+        const current = path === tab.path;
+        const active = current || path.startsWith(tab.path + '/');
+        return <li><a href={tab.path} class={active ? 'on' : ''} aria-current={current ? 'page' : active ? 'location' : undefined}>{tab.title}</a></li>;
+      })}</ul>
+    </div>
+  </nav>
+) : null;
+
+export type NewsRow = { slug: string; title: string; excerpt: string; body: string; image: string; published_at: string; kind: string; author: string };
+
+export const NewsCard: FC<{ n: NewsRow; big?: boolean }> = ({ n, big }) => (
+  <article class={big ? 'news-card big' : 'news-card'}>
+    <a href={'/frett/' + n.slug}>
+      <div class="thumb">{n.image ? <img src={n.image} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
+      <div class="txt">
+        <time datetime={n.published_at}>{dateLong(n.published_at)}{n.kind === 'adsend' && <span class="card-kind"> · Aðsend grein</span>}{n.kind === 'adsend' && n.author && <span class="card-kind"> · {n.author}</span>}</time>
+        <h3>{n.title}</h3>
+        {big && <p>{n.excerpt || plainText(n.body, 180)}</p>}
+      </div>
+    </a>
+  </article>
+);
+
+export type EventRow = { id: number; kind: string; title: string; starts_at: string; ends_at: string | null; location: string; sport: string; image: string };
+
+/** Dagsetningarreitur: sama útlit fyrir mót, viðburði og úrslit alls staðar á vefnum */
+export const DateBox: FC<{ d: string }> = ({ d }) => (
+  <time class="datebox" datetime={d.slice(0, 10)}><b>{dayNum(d)}</b>{monthShort(d)}</time>
+);
+
+export const EventItem: FC<{ e: EventRow }> = ({ e }) => (
+  <li class={'event-item' + (e.kind === 'mot' ? ' is-mot' : '')}>
+    <a href={'/vidburdur/' + e.id}>
+      <DateBox d={e.starts_at} />
+      <span class="ev-txt">
+        <span class={'kind-tag' + (e.kind === 'mot' ? ' mot' : '')}>{e.kind === 'mot' ? 'Mót' : 'Viðburður'}</span>
+        <strong>{e.title}</strong>
+        <small>{[e.sport, e.location, timeOf(e.starts_at)].filter(Boolean).join(' · ')}</small>
+      </span>
+    </a>
+  </li>
+);
+
+export const ResultItem: FC<{ r: { id: number; title: string; date: string; sport: string } }> = ({ r }) => (
+  <li class="event-item">
+    <a href={'/urslit/' + r.id}>
+      <DateBox d={r.date} />
+      <span class="ev-txt">
+        {r.sport && <span class="kind-tag">{r.sport}</span>}
+        <strong>{r.title}</strong>
+      </span>
+    </a>
+  </li>
+);
+
+export const Pager: FC<{ page: number; hasNext: boolean; base: string }> = ({ page, hasNext, base }) => {
+  if (page <= 1 && !hasNext) return null;
+  const sep = base.includes('?') ? '&' : '?';
+  return (
+    <nav class="pager" aria-label="Síður">
+      {page > 1 ? <a href={`${base}${sep}s=${page - 1}`}><Icon name="chevronLeft" />Nýrra</a> : <span></span>}
+      <span>Síða {page}</span>
+      {hasNext ? <a href={`${base}${sep}s=${page + 1}`}>Eldra<Icon name="chevronRight" /></a> : <span></span>}
+    </nav>
+  );
+};
+
+export const Prose: FC<{ html: string }> = ({ html }) => <div class="prose">{raw(html)}</div>;
