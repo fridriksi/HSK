@@ -295,31 +295,64 @@ app.get('/frett/:slug', async (c) => {
   ), { description: n.excerpt || plainText(n.body, 160), image: n.image || undefined });
 });
 
+function sectionSearch(c: Context<AppEnv>, fields: string[], where: string[], params: unknown[]) {
+  const term = (c.req.query('q') ?? '').trim().slice(0, 100);
+  if (term) {
+    // SQLite lower() only covers ASCII. Fold the uppercase Icelandic letters first.
+    const text = [...'ÁÐÉÍÓÚÝÞÆÖ'].reduce((sql, letter) =>
+      `replace(${sql}, '${letter}', '${letter.toLowerCase()}')`, fields.join(" || ' ' || "));
+    for (const word of term.toLowerCase().split(/\s+/)) {
+      where.push(`instr(lower(${text}), ?) > 0`);
+      params.push(word);
+    }
+  }
+  return term;
+}
+
+function sectionUrl(base: string, filters: Record<string, string | undefined>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) if (value) query.set(key, value);
+  return query.size ? `${base}?${query}` : base;
+}
+
+function SectionSearchField({ term, placeholder }: { term: string; placeholder: string }) {
+  return <FilterField id="section-search" label="Leit">
+    <input id="section-search" name="q" type="search" value={term} maxlength={100} placeholder={placeholder} />
+  </FilterField>;
+}
+
 async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
   const kinds = kind ? ([] as string[]).concat(kind) : [];
   const page = pageNum(c);
-  const year = c.req.query('ar');
+  const ar = c.req.query('ar');
+  const year = ar && /^\d{4}$/.test(ar) ? ar : undefined;
   const where = ["status = 'published'", "published_at <= datetime('now')"];
   const params: unknown[] = [];
   if (kinds.length) { where.push(`kind IN (${kinds.map(() => '?').join(',')})`); params.push(...kinds); }
-  if (year && /^\d{4}$/.test(year)) { where.push("substr(published_at, 1, 4) = ?"); params.push(year); }
+  if (year) { where.push("substr(published_at, 1, 4) = ?"); params.push(year); }
+  const term = sectionSearch(c, ['title', 'excerpt', 'body', 'author'], where, params);
   const rows = await all<NewsRow>(c.env.DB, `SELECT slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE ${where.join(' AND ')} ORDER BY published_at DESC LIMIT ? OFFSET ?`, ...params, PER_PAGE + 1, (page - 1) * PER_PAGE);
   const years = await all<{ y: string }>(c.env.DB, `SELECT DISTINCT substr(published_at, 1, 4) AS y FROM news WHERE status = 'published' ${kinds.length ? `AND kind IN (${kinds.map(() => '?').join(',')})` : ''} ORDER BY y DESC`, ...kinds);
-  return { rows: rows.slice(0, PER_PAGE), hasNext: rows.length > PER_PAGE, page, years: years.map((y) => y.y).filter(Boolean), year };
+  return { rows: rows.slice(0, PER_PAGE), hasNext: rows.length > PER_PAGE, page, years: years.map((y) => y.y).filter(Boolean), year, term };
 }
 
 const NewsListing = ({ data, base }: { data: Awaited<ReturnType<typeof newsList>>; base: string }) => (
   <>
+    <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita í fréttum og greinum">
+      {data.year && <input type="hidden" name="ar" value={data.year} />}
+      <SectionSearchField term={data.term} placeholder="Titill, efni eða höfundur" />
+      <button class="btn">Leita</button>
+    </form>
     {data.years.length > 1 && (
       <div class="filter-row">
         <FilterOptions label="Ár">
-          <a href={base} aria-current={!data.year ? 'true' : undefined}>Öll ár</a>
-          {data.years.map((y) => <a href={`${base}?ar=${y}`} aria-current={data.year === y ? 'true' : undefined}>{y}</a>)}
+          <a href={sectionUrl(base, { q: data.term })} aria-current={!data.year ? 'true' : undefined}>Öll ár</a>
+          {data.years.map((y) => <a href={sectionUrl(base, { ar: y, q: data.term })} aria-current={data.year === y ? 'true' : undefined}>{y}</a>)}
         </FilterOptions>
       </div>
     )}
     {data.rows.length ? <div class="news-grid">{data.rows.map((n) => <NewsCard n={n} />)}</div> : <p class="muted">Engar fréttir fundust.</p>}
-    <Pager page={data.page} hasNext={data.hasNext} base={data.year ? `${base}?ar=${data.year}` : base} />
+    <Pager page={data.page} hasNext={data.hasNext} base={sectionUrl(base, { ar: data.year, q: data.term })} />
   </>
 );
 
@@ -399,9 +432,10 @@ async function eventList(c: Context<AppEnv>, fixed: 'vidburdur' | 'mot' | null) 
   const params: unknown[] = [today()];
   if (kind) { where.push('kind = ?'); params.push(kind); }
   if (sport) { where.push('sport = ?'); params.push(sport); }
+  const term = sectionSearch(c, ['title', 'description', 'sport', 'location', 'organizer'], where, params);
   const rows = await all<EventRow>(c.env.DB, `SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE ${where.join(' AND ')} ORDER BY starts_at ${past ? 'DESC' : 'ASC'} LIMIT 200`, ...params);
   const sports = await all<{ sport: string }>(c.env.DB, `SELECT DISTINCT sport FROM events WHERE sport != '' ${kind ? 'AND kind = ?' : ''} ORDER BY sport`, ...(kind ? [kind] : []));
-  return { rows, past, sport, kind, fixed: !!fixed, sports: sports.map((s) => s.sport) };
+  return { rows, past, sport, kind, fixed: !!fixed, sports: sports.map((s) => s.sport), term };
 }
 
 const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventList>>; base: string }) => {
@@ -410,11 +444,9 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
     const k = monthYear(e.starts_at);
     groups.set(k, [...(groups.get(k) ?? []), e]);
   }
-  const q = (p: Record<string, string>) => {
-    const u = new URLSearchParams({ ...(!data.fixed && data.kind ? { tegund: data.kind } : {}), ...(data.sport ? { grein: data.sport } : {}), ...(data.past ? { lidid: '1' } : {}), ...p });
-    for (const [k, v] of [...u]) if (!v) u.delete(k);
-    return `${base}${u.toString() ? '?' + u : ''}`;
-  };
+  const q = (p: Record<string, string>) => sectionUrl(base, {
+    tegund: !data.fixed ? data.kind ?? undefined : undefined, grein: data.sport, lidid: data.past ? '1' : '', q: data.term, ...p,
+  });
   return (
     <>
       <div class="filter-row">
@@ -429,22 +461,23 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
             <a href={q({ tegund: 'vidburdur' })} aria-current={data.kind === 'vidburdur' ? 'true' : undefined}><span class="kind-dot"></span>Viðburðir</a>
           </FilterOptions>
         )}
+        <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
+      </div>
+      <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita að mótum og viðburðum">
+        {data.past && <input type="hidden" name="lidid" value="1" />}
+        {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
+        <SectionSearchField term={data.term} placeholder="Heiti, íþróttagrein eða staður" />
         {data.sports.length > 0 && (
-          <form method="get" class="filter-row filter-sport" aria-label="Sía eftir íþróttagrein">
-            {data.past && <input type="hidden" name="lidid" value="1" />}
-            {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
             <FilterField id="grein" label="Íþróttagrein">
               <select id="grein" name="grein" data-autosubmit>
                 <option value="">Allar greinar</option>
                 {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
               </select>
             </FilterField>
-            <noscript><button class="btn">Sía</button></noscript>
-          </form>
         )}
-        <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
-      </div>
-      {data.rows.length === 0 && <p class="muted">Ekkert skráð.</p>}
+        <button class="btn">Leita</button>
+      </form>
+      {data.rows.length === 0 && <p class="muted">{data.term ? 'Engin mót eða viðburðir fundust.' : 'Ekkert skráð.'}</p>}
       {[...groups].map(([month, list]) => (
         <section class="month-group">
           <h2>{month}</h2>
@@ -480,9 +513,10 @@ async function resultList(c: Context<AppEnv>) {
   const params: unknown[] = [];
   if (sport) { where.push('sport = ?'); params.push(sport); }
   if (/^\d{4}$/.test(year)) { where.push('substr(date, 1, 4) = ?'); params.push(year); }
+  const term = sectionSearch(c, ['title', 'sport', 'body'], where, params);
   const rows = await all<{ id: number; title: string; date: string; sport: string }>(c.env.DB, `SELECT id, title, date, sport FROM results WHERE ${where.join(' AND ')} ORDER BY date DESC LIMIT 300`, ...params);
   const sports = (await all<{ sport: string }>(c.env.DB, "SELECT DISTINCT sport FROM results WHERE sport != '' ORDER BY sport")).map((s) => s.sport);
-  return { rows, sport, year, sports, years };
+  return { rows, sport, year, sports, years, term };
 }
 
 // ---------- Félög, myndir ----------
@@ -807,7 +841,8 @@ app.get('/*', async (c) => {
       for (const r of d.rows) { const k = monthYear(r.date); groups.set(k, [...(groups.get(k) ?? []), r]); }
       moduleView = (
         <>
-          <form method="get" class="filter-row filter-compact" aria-label="Sía úrslit">
+          <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í úrslitum">
+            <SectionSearchField term={d.term} placeholder="Mót, íþróttagrein eða nafn" />
             <FilterField id="ar" label="Ár">
               <select id="ar" name="ar" data-autosubmit>
                 {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
@@ -820,7 +855,7 @@ app.get('/*', async (c) => {
                 {d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}
               </select>
             </FilterField>
-            <noscript><button class="btn">Sía</button></noscript>
+            <button class="btn">Leita</button>
           </form>
           {d.rows.length === 0 && <p class="muted">Engin úrslit fundust.</p>}
           {[...groups].map(([month, list]) => (
