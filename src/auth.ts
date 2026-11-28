@@ -47,9 +47,10 @@ export async function resolveLoginUser(env: Env, rawEmail: string, create = true
   return { id: Number(r.meta.last_row_id), email, name: email.split('@')[0], role, club_id: null };
 }
 
-export async function createLoginToken(env: Env, email: string): Promise<string> {
+/** Innskráningartengill; gildir í TOKEN_MINUTES nema annað sé tekið fram (boð til nýrra notenda gilda lengur) */
+export async function createLoginToken(env: Env, email: string, minutes = TOKEN_MINUTES): Promise<string> {
   const token = randomId();
-  await run(env.DB, 'INSERT INTO login_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)', await sha256(token), email.toLowerCase(), isoIn(TOKEN_MINUTES));
+  await run(env.DB, 'INSERT INTO login_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)', await sha256(token), email.toLowerCase(), isoIn(minutes));
   return token;
 }
 

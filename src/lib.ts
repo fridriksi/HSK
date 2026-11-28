@@ -13,6 +13,7 @@ export type Env = {
   EMAIL_FROM?: string;
   IMPORT_TOKEN?: string;
   LOGIN_KEY?: string;
+  RESEND_API_KEY?: string;
 };
 
 export type Role = 'admin' | 'editor' | 'club';

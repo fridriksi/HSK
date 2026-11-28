@@ -13,9 +13,11 @@
     "SITE_URL": "https://hsk-vefur.fridriksi.workers.dev",
     // Lén sem fá ritstjóraaðgang sjálfkrafa
     "STAFF_DOMAIN": "hsk.is",
+    // Sendandi kerfispósts. Til bráðabirgða frá hostly.is (Resend) þar til hsk.is er komið á Cloudflare
+    "EMAIL_FROM": "vefur-hsk@hostly.is",
     // Aðeins í þróun (.dev.vars): innskráningartengill birtist á skjánum
     "DEV_LOGIN_LINKS": "false"
-    // Leyndarmál (wrangler secret put): ADMIN_EMAILS, LOGIN_KEY, IMPORT_TOKEN, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+    // Leyndarmál (wrangler secret put): ADMIN_EMAILS, LOGIN_KEY, IMPORT_TOKEN, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY
   },
   "observability": { "enabled": true }
 }

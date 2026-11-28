@@ -30,6 +30,7 @@ const MESSAGES: Record<string, string> = {
   vistad: 'Vistað.', birt: 'Birt á vefnum.', eytt: 'Eytt.', sent: 'Sent til samþykktar. Starfsfólk HSK fær tilkynningu.',
   samthykkt: 'Samþykkt og birt.', hafnad: 'Hafnað. Sendandi fær athugasemdina.', endurheimt: 'Eldri útgáfa endurheimt.',
   bodid: 'Boð sent.', myndir: 'Myndir uppfærðar.',
+  'bodid-ekki': 'Notandinn var stofnaður en ekki tókst að senda boðspóst. Hann getur samt skráð sig inn á /stjorn með netfanginu sínu.',
 };
 
 function isStaff(u: User) { return u.role === 'admin' || u.role === 'editor'; }
@@ -1003,10 +1004,11 @@ app.post('/notendur/bjoda', async (c) => {
   await run(c.env.DB, `INSERT INTO users (email, name, role, club_id) VALUES (?, ?, ?, ?)
     ON CONFLICT(email) DO UPDATE SET role = excluded.role, club_id = excluded.club_id, active = 1, name = CASE WHEN excluded.name != '' THEN excluded.name ELSE users.name END`,
     email, String(f.get('name') || '').trim(), role, role === 'club' ? clubId : null);
-  const token = await createLoginToken(c.env, email);
-  await sendMail(c.env, email, 'Þér hefur verið boðinn aðgangur að vef HSK',
-    `Halló,\n\nÞér hefur verið boðinn aðgangur að vefumsjón Héraðssambandsins Skarphéðins (HSK).\n\nSkráðu þig inn hér:\n${c.env.SITE_URL}/stjorn/innskra?t=${encodeURIComponent(token)}\n\nTengillinn gildir í 20 mínútur. Eftir það getur þú alltaf skráð þig inn á ${c.env.SITE_URL}/stjorn með þessu netfangi.`);
-  return c.redirect('/stjorn/notendur?m=bodid');
+  // Boðstengill gildir í 7 daga svo fólk nái að opna póstinn
+  const token = await createLoginToken(c.env, email, 7 * 24 * 60);
+  const sent = await sendMail(c.env, email, 'Þér hefur verið boðinn aðgangur að vef HSK',
+    `Halló,\n\nÞér hefur verið boðinn aðgangur að vefumsjón Héraðssambandsins Skarphéðins (HSK).\n\nSkráðu þig inn hér:\n${c.env.SITE_URL}/stjorn/innskra?t=${encodeURIComponent(token)}\n\nTengillinn gildir í 7 daga og aðeins einu sinni. Eftir það getur þú alltaf skráð þig inn á ${c.env.SITE_URL}/stjorn með þessu netfangi, og valið þér lykilorð undir „Lykilorð“.`);
+  return c.redirect(`/stjorn/notendur?m=${sent ? 'bodid' : 'bodid-ekki'}`);
 });
 
 app.post('/notendur/:id{[0-9]+}', async (c) => {
