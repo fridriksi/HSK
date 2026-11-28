@@ -47,6 +47,10 @@ async function chrome(c: Context<AppEnv>): Promise<SiteChrome> {
       phone: await getSetting(db, 'contact_phone', '482 1189'),
       email: await getSetting(db, 'contact_email', 'hsk@hsk.is'),
     },
+    // Samfélagsmiðlar HSK (stillt í Forsíða og stillingar); röðin birtist aðeins ef einhver slóð er skráð
+    social: (await Promise.all(([['Facebook', 'facebook'], ['Instagram', 'instagram'], ['TikTok', 'tiktok'], ['YouTube', 'youtube']] as const)
+      .map(async ([name, icon]) => ({ name, icon, url: (await getSetting(db, 'social_' + icon)).trim() }))))
+      .filter((x) => /^https?:\/\//.test(x.url)),
   };
 }
 

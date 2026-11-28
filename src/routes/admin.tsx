@@ -688,6 +688,11 @@ app.get('/stillingar', async (c) => {
           <div class="field"><label for="contact_address">Heimilisfang</label><input id="contact_address" name="contact_address" value={await s('contact_address', 'Selinu, Engjavegi 48, 800 Selfossi')} /></div>
           <div class="field"><label for="contact_phone">Sími</label><input id="contact_phone" name="contact_phone" value={await s('contact_phone', '482 1189')} /></div>
           <div class="field"><label for="contact_email">Netfang</label><input id="contact_email" name="contact_email" type="email" value={await s('contact_email', 'hsk@hsk.is')} /></div>
+          <div class="field wide"><h3 style="margin: 12px 0 0">Samfélagsmiðlar</h3><small class="help">Slóðir á miðla HSK. Röð með tenglum birtist neðst á öllum síðum, fyrir ofan fótinn, um leið og a.m.k. ein slóð er skráð.</small></div>
+          <div class="field"><label for="social_facebook">Facebook</label><input id="social_facebook" name="social_facebook" type="url" placeholder="https://www.facebook.com/…" value={await s('social_facebook')} /></div>
+          <div class="field"><label for="social_instagram">Instagram</label><input id="social_instagram" name="social_instagram" type="url" placeholder="https://www.instagram.com/…" value={await s('social_instagram')} /></div>
+          <div class="field"><label for="social_tiktok">TikTok</label><input id="social_tiktok" name="social_tiktok" type="url" placeholder="https://www.tiktok.com/@…" value={await s('social_tiktok')} /></div>
+          <div class="field"><label for="social_youtube">YouTube</label><input id="social_youtube" name="social_youtube" type="url" placeholder="https://www.youtube.com/@…" value={await s('social_youtube')} /></div>
         </div>
         <div class="form-actions"><button class="btn">Vista</button><a class="btn ghost cancel" href="/stjorn" data-back>Hætta við</a></div>
       </form>
@@ -698,7 +703,7 @@ app.get('/stillingar', async (c) => {
 app.post('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const f = await c.req.formData();
-  for (const k of ['hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'home_tiles', 'contact_address', 'contact_phone', 'contact_email']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
+  for (const k of ['hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'home_tiles', 'contact_address', 'contact_phone', 'contact_email', 'social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
   const notice = sanitizeHtml(String(f.get('notice') ?? '')).trim();
   await setSetting(c.env.DB, 'notice', plainText(notice) ? notice : '');
   await logRevision(c.env.DB, 'settings', 0, c.get('user')!.id, 'update', Object.fromEntries(f));

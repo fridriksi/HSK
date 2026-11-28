@@ -11,6 +11,7 @@ export type SiteChrome = {
   sponsors: Sponsor[];
   notice: string;
   contact: { address: string; phone: string; email: string };
+  social: { name: string; url: string; icon: 'facebook' | 'instagram' | 'youtube' | 'tiktok' }[];
 };
 
 export const Layout: FC<{
@@ -93,6 +94,18 @@ export const Layout: FC<{
                         {s.logo ? <img src={s.logo} alt={s.name} loading="lazy" /> : <span>{s.name}</span>}
                       </a>
                     </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
+          {chrome.social.length > 0 && (
+            <section class="social-band" aria-label="Samfélagsmiðlar">
+              <div class="wrap">
+                <h2 class="social-title">Fylgstu með HSK</h2>
+                <ul>
+                  {chrome.social.map((s) => (
+                    <li><a href={s.url} rel="noopener" target="_blank"><Icon name={s.icon} />{s.name}</a></li>
                   ))}
                 </ul>
               </div>

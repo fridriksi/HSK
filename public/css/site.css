@@ -550,3 +550,12 @@ details.record[open] { padding-bottom: 12px; }
 .gf .gf-check { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
 .gf .gf-check input { width: auto; margin-top: 4px; }
 .gf select { font: inherit; padding: 10px 12px; border: 1px solid #c9d2e6; border-radius: var(--radius); background: #fff; color: var(--ink); width: 100%; }
+
+/* Samfélagsmiðlar milli styrktaraðila og fótar */
+.social-band { background: var(--tint); border-top: 1px solid var(--line); padding-block: 26px; }
+.social-band .wrap { display: flex; align-items: center; justify-content: center; gap: 14px 28px; flex-wrap: wrap; }
+.social-title { font: 700 1.05rem var(--display); margin: 0; color: var(--ink); }
+.social-band ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.social-band a { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--blue); font-weight: 600; text-decoration: none; min-height: 44px; box-sizing: border-box; }
+.social-band a:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+.social-band .icon { width: 20px; height: 20px; }

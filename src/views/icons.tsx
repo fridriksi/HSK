@@ -22,6 +22,10 @@ const PATHS = {
   mail: <><rect x="3.5" y="5.5" width="17" height="13" rx="1.5" /><path d="M4 7l8 6 8-6" /></>,
   phone: <path d="M5 4.5h3.5l1.5 4-2 1.3a10 10 0 005.2 5.2l1.3-2 4 1.5V18a1.5 1.5 0 01-1.6 1.5A15 15 0 013.5 6.1 1.5 1.5 0 015 4.5z" />,
   image: <><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><circle cx="9" cy="10" r="1.8" /><path d="M20.5 16l-5-5-8.5 8.5" /></>,
+  facebook: <path d="M14.5 8.5H16V5h-2a4 4 0 00-4 4v2.5H8V15h2v6h3.5v-6H16l.5-3.5h-3V9.5a1 1 0 011-1z" />,
+  instagram: <><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r=".6" /></>,
+  youtube: <><rect x="2.5" y="5.5" width="19" height="13" rx="3.5" /><path d="M10 9.2v5.6l4.8-2.8z" /></>,
+  tiktok: <path d="M13.5 3.5v11.2a3.3 3.3 0 11-3.3-3.3M13.5 3.5c.4 2.6 2.2 4.3 5 4.5" />,
   globe: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.4 3.5 5.2 3.5 8.5s-1.1 6.1-3.5 8.5c-2.4-2.4-3.5-5.2-3.5-8.5s1.1-6.1 3.5-8.5z" /></>,
 } as const;
 

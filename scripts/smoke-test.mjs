@@ -348,6 +348,19 @@ try {
   ok((await fetch(`${BASE}/afskra?t=ogilt.tak`)).status === 400 && (await fetch(`${BASE}/postmark/webhook/rangt`, { method: 'POST', body: '{}' })).status === 403,
     'Samskipti: ógildur afskráningartengill og óheimil stöðutilkynning hafnað');
 
+  // 3o. Samfélagsmiðlar: röð birtist fyrir ofan fótinn þegar slóð er skráð í stillingum, annars ekki
+  await admin.goto(`${BASE}/stjorn/stillingar`);
+  await admin.fill('#social_facebook', 'https://www.facebook.com/hsk.prufa');
+  await admin.fill('#social_instagram', 'https://www.instagram.com/hsk.prufa');
+  await Promise.all([admin.waitForURL(/m=/), admin.click('form .form-actions button:has-text("Vista")')]);
+  const withSocial = await (await fetch(`${BASE}/`)).text();
+  await admin.goto(`${BASE}/stjorn/stillingar`);
+  await admin.fill('#social_facebook', '');
+  await admin.fill('#social_instagram', '');
+  await Promise.all([admin.waitForURL(/m=/), admin.click('form .form-actions button:has-text("Vista")')]);
+  ok(withSocial.includes('social-band') && withSocial.includes('https://www.instagram.com/hsk.prufa') && !(await (await fetch(`${BASE}/`)).text()).includes('social-band'),
+    'Samfélagsmiðlar birtast í röð fyrir ofan fótinn aðeins þegar slóð er skráð');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
