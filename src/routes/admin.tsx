@@ -1005,7 +1005,16 @@ app.get('/:type', async (c) => {
   const qs = (extra: Record<string, string>) => '?' + new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { stada: status } : {}), ...extra });
   return page(c, t.label, t.key, (
     <>
-      <div class="title-row"><h1>{t.label}</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`}</a></div>
+      {(t.key === 'ny-met' || t.key === 'met') ? (
+        // HSK met: stök met og metaskrár (Excel) á einum stað, með flipum
+        <>
+          <div class="title-row"><h1>HSK met</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{t.key === 'ny-met' ? 'Skrá nýtt met' : 'Hlaða inn metaskrá'}</a></div>
+          <nav class="subtabs"><a href="/stjorn/ny-met" class={t.key === 'ny-met' ? 'on' : ''}>Skráð met</a><a href="/stjorn/met" class={t.key === 'met' ? 'on' : ''}>Metaskrár (Excel)</a></nav>
+          <p class="lead">{t.key === 'ny-met' ? 'Stök met sem skráð eru hér birtast strax í töflunni á síðunni HSK met.' : 'Heilar metaskrár í Excel. Metin í þeim birtast í sömu töflu á síðunni HSK met.'}</p>
+        </>
+      ) : (
+        <div class="title-row"><h1>{t.label}</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`}</a></div>
+      )}
       <form method="get" class="toolbar">
         <input name="q" type="search" value={q} placeholder="Leita…" aria-label="Leita" />
         {t.status && (

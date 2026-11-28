@@ -160,3 +160,6 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 .multi-opts { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); max-height: 280px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 10px 30px -12px rgba(1, 39, 154, .3); padding: 6px 0; }
 .multi-opts .check { display: flex; gap: 8px; align-items: center; padding: 6px 12px; font-weight: 400; cursor: pointer; }
 .multi-opts .check:hover { background: var(--tint); }
+.subtabs { display: flex; gap: 22px; border-bottom: 1px solid var(--line); margin: 4px 0 14px; }
+.subtabs a { padding: 8px 0; border-bottom: 3px solid transparent; color: var(--ink); text-decoration: none; font-weight: 600; }
+.subtabs a.on { color: var(--blue); border-bottom-color: var(--blue); }

@@ -8,8 +8,8 @@ const ROLE_LABEL: Record<string, string> = { admin: 'Stjórnandi', editor: 'Rits
 
 export const AdminLayout: FC<{ title: string; user: User | null; active?: string; flash?: string; error?: string; pending?: number; applications?: number; children?: Child }> = ({ title, user, active, flash, error, pending, applications, children }) => {
   const staff = user && (user.role === 'admin' || user.role === 'editor');
-  const link = (href: string, label: string, key: string, badge?: number) => (
-    <li><a href={href} class={active === key ? 'on' : ''}>{label}{badge ? <span class="badge">{badge}</span> : null}</a></li>
+  const link = (href: string, label: string, key: string | string[], badge?: number) => (
+    <li><a href={href} class={([] as string[]).concat(key).includes(active ?? '') ? 'on' : ''}>{label}{badge ? <span class="badge">{badge}</span> : null}</a></li>
   );
   return (
     <html lang="is">
@@ -43,8 +43,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     <ul>
                       {link('/stjorn/vidburdir', 'Mót og viðburðir', 'vidburdir')}
                       {link('/stjorn/urslit', 'Úrslit', 'urslit')}
-                      {link('/stjorn/ny-met', 'Ný met', 'ny-met')}
-                      {link('/stjorn/met', 'Metaskrár', 'met')}
+                      {link('/stjorn/ny-met', 'HSK met', ['ny-met', 'met'])}
                     </ul>
                     <h3 class="side-h">Aðildarfélög</h3>
                     <ul>
