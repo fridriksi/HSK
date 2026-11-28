@@ -262,6 +262,12 @@
     camp.querySelector('[data-aud-csv]')?.addEventListener('click', async (e) => { e.preventDefault(); await save(); location.href = e.target.href; });
   }
 
+  // Hnappar með data-confirm-btn biðja um staðfestingu áður en formið er sent (t.d. hafna umsókn)
+  document.addEventListener('submit', (e) => {
+    const msg = e.submitter?.dataset?.confirmBtn;
+    if (msg && !confirm(msg)) e.preventDefault();
+  });
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {

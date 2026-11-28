@@ -15,7 +15,7 @@ import { archivedRecords } from '../record-catalogue-data';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
-import { GrantAwards, grantPageIntro } from '../views/grant-awards';
+import { GrantAwards, grantPageIntro, type ExtraAward } from '../views/grant-awards';
 import { asset } from '../static';
 import { RECORD_CATEGORIES, AREAS } from '../content-types';
 
@@ -569,7 +569,22 @@ const GrantForm = ({ values = {}, error }: { values?: Record<string, string>; er
   </section>
 );
 
+/** Úthlutanir sem voru samþykktar og birtar í vefumsjón; bætast við töfluna úr gamla vefnum */
+async function grantExtras(db: D1Database): Promise<ExtraAward[]> {
+  return all<ExtraAward>(db,
+    `SELECT award_recipient AS recipient, award_project AS project, award_amount AS amount, award_year AS year, award_round AS roundId
+     FROM applications WHERE decision = 'samthykkt' AND award_published = 1 AND award_year IS NOT NULL`);
+}
+
+const GrantClosed = ({ text }: { text: string }) => (
+  <section class="grant" id="umsokn">
+    <h2>Lokað fyrir umsóknir</h2>
+    <p>{text || 'Ekki er tekið við umsóknum í Verkefnasjóð eins og er. Opnað verður fyrir umsóknir fyrir næstu úthlutun og það auglýst hér á vefnum.'}</p>
+  </section>
+);
+
 app.post('/umsokn/verkefnasjodur', async (c) => {
+  if ((await getSetting(c.env.DB, 'grant_open', '1')) !== '1') return c.redirect('/um-hsk/verkefnasjodur#umsokn', 303);
   const form = await c.req.formData();
   const r = await saveGrant(c.env, form);
   if (!r.error) return c.redirect('/um-hsk/verkefnasjodur?umsokn=send#umsokn', 303);
@@ -740,10 +755,12 @@ app.get('/*', async (c) => {
       break;
     }
     case 'grant': {
+      // Opið eða lokað fyrir umsóknir er stillt í vefumsjón (Umsóknir í Verkefnasjóð)
+      const open = (await getSetting(c.env.DB, 'grant_open', '1')) === '1';
       const application = c.req.query('umsokn') === 'send'
         ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
-        : <GrantForm />;
-      moduleView = <><GrantAwards params={c.req.query()} script={asset('/js/grant-awards.js')} />{application}</>;
+        : open ? <GrantForm /> : <GrantClosed text={await getSetting(c.env.DB, 'grant_closed_text', '')} />;
+      moduleView = <><GrantAwards params={c.req.query()} script={asset('/js/grant-awards.js')} extra={await grantExtras(c.env.DB)} />{application}</>;
       break;
     }
     case 'assemblies': {

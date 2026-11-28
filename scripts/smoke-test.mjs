@@ -131,8 +131,27 @@ try {
   const dl = await admin.request.get(`${BASE}${fileHref}`);
   ok(dl.ok() && (await dl.text()).includes('%PDF'), 'Starfsfólk getur sótt fylgiskjal');
   ok((await (await fetch(`${BASE}${fileHref}`, { redirect: 'manual' })).status) !== 200, 'Fylgiskjal er ekki aðgengilegt án innskráningar');
+  // Samþykkt umsókn birtist í úthlutunartöflunni á vefnum
+  await admin.fill('#award_amount', '120000');
+  await admin.uncheck('input[name=notify]');
+  await Promise.all([admin.waitForURL(/\?m=/), admin.click('button[value=samthykkja]')]);
+  const awardsHtml = await (await fetch(`${BASE}/um-hsk/verkefnasjodur?q=${encodeURIComponent('Prufa ' + stamp)}`)).text();
+  ok(awardsHtml.includes(`Umf. Prufa ${stamp}`) && awardsHtml.includes('120.000 kr.'), 'Samþykkt umsókn birtist í úthlutunum á vefnum');
+  await Promise.all([admin.waitForURL(/\?m=/), admin.click('button[value=afturkalla]')]);
+  ok(!(await (await fetch(`${BASE}/um-hsk/verkefnasjodur?q=${encodeURIComponent('Prufa ' + stamp)}`)).text()).includes(`Umf. Prufa ${stamp}`), 'Afturkölluð ákvörðun fjarlægir úthlutun af vefnum');
   await admin.click('button:has-text("Eyða umsókn")');
   await admin.waitForURL(/m=eytt/);
+  // Lokað fyrir umsóknir: formið hverfur og vefurinn tekur ekki við umsóknum
+  await admin.goto(`${BASE}/stjorn/umsoknir`);
+  await admin.check('input[name=open][value="0"]');
+  await admin.fill('#closed_text', `Lokað til vors ${stamp}`);
+  await Promise.all([admin.waitForURL(/\?m=/), admin.click('.grant-open-form button')]);
+  const closedHtml = await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text();
+  const closedPost = await fetch(`${BASE}/umsokn/verkefnasjodur`, { method: 'POST', body: new URLSearchParams({ felag: 'x' }), redirect: 'manual' });
+  await admin.check('input[name=open][value="1"]');
+  await Promise.all([admin.waitForURL(/\?m=/), admin.click('.grant-open-form button')]);
+  ok(closedHtml.includes(`Lokað til vors ${stamp}`) && !closedHtml.includes('Senda umsókn') && closedPost.status === 303
+    && (await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text()).includes('Senda umsókn'), 'Lokað fyrir umsóknir felur formið og opnað aftur sýnir það');
   ok(await admin.locator(`text=Umf. Prufa ${stamp}`).count() === 0, 'Umsókn eytt');
 
   // 3d. Ný metaskrá fer á rétt spjald á HSK met eftir flokki og ári

@@ -29,7 +29,9 @@ const rounds = [
   { id: 'arleg', label: 'Árleg', source: 'Úthlutun' },
 ];
 const pageSize = 75;
-const awards = archive.flatMap(({ year, rounds: entries }) => entries.flatMap((entry) => {
+/** Úthlutun sem var samþykkt í vefumsjón (Umsóknir í Verkefnasjóð) og bætist við gögnin úr gamla vefnum */
+export type ExtraAward = { recipient: string; project: string; amount: number; year: number; roundId: string };
+const archiveAwards = archive.flatMap(({ year, rounds: entries }) => entries.flatMap((entry) => {
   const round = rounds.find((round) => round.source === entry.label);
   if (!round) throw new Error(`Óþekkt úthlutun: ${entry.label}`);
   return entry.rows.map(([name, description, value]) => ({
@@ -38,12 +40,25 @@ const awards = archive.flatMap(({ year, rounds: entries }) => entries.flatMap((e
   }));
 }));
 
+function withExtra(extra: ExtraAward[] = []) {
+  if (!extra.length) return archiveAwards;
+  return [...archiveAwards, ...extra.map((e) => ({
+    recipient: e.recipient, project: e.project, amount: e.amount, year: e.year,
+    round: rounds.find((r) => r.id === e.roundId)?.label ?? 'Árleg', roundId: e.roundId,
+    search: searchText(`${e.recipient} ${e.project}`),
+  }))];
+}
+
+function years(extra: ExtraAward[] = []) {
+  return [...new Set([...archive.map((e) => e.year), ...extra.map((e) => e.year)])].sort((a, b) => b - a);
+}
+
 function defaultDirection(key: typeof columns[number][0]) {
   return key === 'year' || key === 'amount' ? 'desc' : 'asc';
 }
 
-function grantAwardFilters(params: Record<string, string>) {
-  const year = archive.find((entry) => String(entry.year) === params.ar)?.year;
+function grantAwardFilters(params: Record<string, string>, extra: ExtraAward[] = []) {
+  const year = years(extra).find((y) => String(y) === params.ar);
   const round = rounds.find((entry) => entry.id === params.uthlutun)?.id;
   const sort = columns.find(([key]) => key === params.rodun)?.[0] ?? 'year';
   const direction = params.att === 'asc' || params.att === 'desc' ? params.att : defaultDirection(sort);
@@ -51,10 +66,10 @@ function grantAwardFilters(params: Record<string, string>) {
   return { year, round, sort, direction, term };
 }
 
-export function GrantAwardResults({ params }: { params: Record<string, string> }) {
-  const { year, round, sort, direction, term } = grantAwardFilters(params);
+export function GrantAwardResults({ params, extra = [] }: { params: Record<string, string>; extra?: ExtraAward[] }) {
+  const { year, round, sort, direction, term } = grantAwardFilters(params, extra);
   const words = searchText(term).split(/\s+/).filter(Boolean);
-  const matching = awards.filter((award) => (!year || award.year === year) && (!round || award.roundId === round)
+  const matching = withExtra(extra).filter((award) => (!year || award.year === year) && (!round || award.roundId === round)
     && words.every((word) => award.search.includes(word)));
   matching.sort((a, b) => {
     const left = a[sort];
@@ -119,8 +134,8 @@ export function GrantAwardResults({ params }: { params: Record<string, string> }
   );
 }
 
-export function GrantAwards({ params, script }: { params: Record<string, string>; script: string }) {
-  const { year, round, sort, direction, term } = grantAwardFilters(params);
+export function GrantAwards({ params, script, extra = [] }: { params: Record<string, string>; script: string; extra?: ExtraAward[] }) {
+  const { year, round, sort, direction, term } = grantAwardFilters(params, extra);
   return (
     <section class="prose grant-awards" id="uthlutanir" aria-labelledby="uthlutanir-title">
       <h2 id="uthlutanir-title">Úthlutanir fyrri ára</h2>
@@ -133,7 +148,7 @@ export function GrantAwards({ params, script }: { params: Record<string, string>
           <label for="grant-year">Ár</label>
           <select id="grant-year" name="ar">
             <option value="">Öll ár</option>
-            {archive.map((entry) => <option value={entry.year} selected={entry.year === year}>{entry.year}</option>)}
+            {years(extra).map((y) => <option value={y} selected={y === year}>{y}</option>)}
           </select>
         </div>
         <div class="gf">
@@ -148,7 +163,8 @@ export function GrantAwards({ params, script }: { params: Record<string, string>
         <button class="btn" type="submit">Sía</button>
         <a class="btn ghost" href="?#uthlutanir" hidden={!(year || round || term)}>Hreinsa síur</a>
       </form>
-      <div id="grant-results"><GrantAwardResults params={params} /></div>
+      <div id="grant-results"><GrantAwardResults params={params} extra={extra} /></div>
+      {extra.length > 0 && <script type="application/json" id="grant-extra" dangerouslySetInnerHTML={{ __html: JSON.stringify(extra).replace(/</g, '\\u003c') }}></script>}
       <script type="module" src={script}></script>
     </section>
   );

@@ -860,26 +860,55 @@ app.post('/heradsthing/:id{[0-9]+}/eyda', async (c) => {
 
 // ---------- Umsóknir (Verkefnasjóður) ----------
 
-type AppRow = { id: number; kind: string; title: string; data: string; files: string; status: string; note: string; created_at: string };
+type AppRow = {
+  id: number; kind: string; title: string; data: string; files: string; status: string; note: string; created_at: string;
+  decision: string; award_recipient: string; award_project: string; award_amount: number; award_year: number | null; award_round: string;
+  award_published: number; decided_at: string | null;
+};
+const GRANT_ROUNDS: Record<string, string> = { fyrri: 'Fyrri úthlutun', seinni: 'Seinni úthlutun', serstok: 'Sérstök úthlutun', arleg: 'Árleg úthlutun' };
+const DECISION_TABS: [string, string][] = [['', 'Óafgreiddar'], ['samthykkt', 'Samþykktar'], ['hafnad', 'Hafnaðar'], ['allar', 'Allar']];
+const DecisionPill = ({ d }: { d: string }) => d === 'samthykkt' ? <span class="pill published">Samþykkt</span>
+  : d === 'hafnad' ? <span class="pill rejected">Hafnað</span> : <span class="pill pending">Óafgreidd</span>;
 
 app.get('/umsoknir', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
-  const rows = await all<AppRow>(c.env.DB, 'SELECT id, title, data, status, created_at FROM applications ORDER BY status, created_at DESC LIMIT 300');
+  const db = c.env.DB;
+  const tab = c.req.query('flipi') ?? '';
+  const where = tab === 'allar' ? '1 = 1' : 'decision = ?';
+  const rows = await all<AppRow>(db, `SELECT * FROM applications WHERE ${where} ORDER BY created_at DESC LIMIT 500`, ...(tab === 'allar' ? [] : [tab]));
+  const counts = Object.fromEntries((await all<{ decision: string; n: number }>(db, 'SELECT decision, count(*) AS n FROM applications GROUP BY decision')).map((r) => [r.decision, r.n]));
+  const open = (await getSetting(db, 'grant_open', '1')) === '1';
+  const closedText = await getSetting(db, 'grant_closed_text', '');
+  const msg = c.req.query('m');
   return page(c, 'Umsóknir', 'umsoknir', (
     <>
       <h1>Umsóknir í Verkefnasjóð</h1>
-      <p class="lead">Umsóknir sem berast í gegnum formið á síðunni Verkefnasjóður. Nýjar umsóknir eru efst.</p>
-      {rows.length === 0 ? <p class="muted">Engar umsóknir hafa borist.</p> : (
+      {msg && <div class="flash ok" role="status">{msg}</div>}
+      <section class={open ? 'panel' : 'panel attention'}>
+        <h2>Móttaka umsókna: {open ? 'opin' : 'lokuð'}</h2>
+        <form method="post" action="/stjorn/umsoknir/mottaka" class="grant-open-form">
+          <label class="check"><input type="radio" name="open" value="1" checked={open} /> <strong>Opið fyrir umsóknir.</strong> Umsóknaformið birtist á síðunni Verkefnasjóður.</label>
+          <label class="check"><input type="radio" name="open" value="0" checked={!open} /> <strong>Lokað fyrir umsóknir.</strong> Í stað formsins birtast skilaboðin hér fyrir neðan.</label>
+          <div class="field wide"><label for="closed_text">Skilaboð þegar lokað er</label>
+            <textarea id="closed_text" name="closed_text" rows={2} placeholder="Ekki er tekið við umsóknum í Verkefnasjóð eins og er. Opnað verður fyrir umsóknir fyrir næstu úthlutun og það auglýst hér á vefnum.">{closedText}</textarea></div>
+          <div class="form-actions"><button class="btn">Vista</button><a class="btn ghost" href="/um-hsk/verkefnasjodur#umsokn" target="_blank">Skoða á vef</a></div>
+        </form>
+      </section>
+      <nav class="subtabs">{DECISION_TABS.map(([k, l]) => (
+        <a href={`/stjorn/umsoknir${k ? '?flipi=' + k : ''}`} class={tab === k ? 'on' : ''}>{l}{k !== 'allar' && ` (${counts[k] ?? 0})`}</a>
+      ))}</nav>
+      {rows.length === 0 ? <p class="muted">Engar umsóknir hér.</p> : (
         <table class="tbl">
-          <thead><tr><th>Umsókn</th><th>Upphæð</th><th>Barst</th><th>Staða</th></tr></thead>
+          <thead><tr><th>Umsókn</th><th>Sótt um</th><th>Veitt</th><th>Barst</th><th>Staða</th></tr></thead>
           <tbody>{rows.map((r) => {
             const d = JSON.parse(r.data) as Record<string, string>;
             return (
               <tr>
                 <td><a href={`/stjorn/umsoknir/${r.id}`}><strong>{d.felag}</strong></a><div class="muted small">{d.verkefni}</div></td>
                 <td>{fmtNum(Number(d.upphaed || 0))} kr.</td>
+                <td>{r.decision === 'samthykkt' ? `${fmtNum(r.award_amount)} kr.` : '—'}{r.decision === 'samthykkt' && !r.award_published && <div class="muted small">Ekki birt</div>}</td>
                 <td>{dateLong(r.created_at)}</td>
-                <td>{r.status === 'ny' ? <span class="pill pending">Ný</span> : <span class="pill published">Afgreidd</span>}</td>
+                <td><DecisionPill d={r.decision} /></td>
               </tr>
             );
           })}</tbody>
@@ -889,35 +918,132 @@ app.get('/umsoknir', async (c) => {
   ));
 });
 
+app.post('/umsoknir/mottaka', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const f = await c.req.formData();
+  const open = f.get('open') === '0' ? '0' : '1';
+  await setSetting(c.env.DB, 'grant_open', open);
+  await setSetting(c.env.DB, 'grant_closed_text', String(f.get('closed_text') ?? '').trim().slice(0, 1000));
+  return c.redirect('/stjorn/umsoknir?m=' + encodeURIComponent(open === '1' ? 'Opið fyrir umsóknir. Formið birtist á vefnum.' : 'Lokað fyrir umsóknir. Formið er falið á vefnum.'));
+});
+
 app.get('/umsoknir/:id{[0-9]+}', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const r = await one<AppRow>(c.env.DB, 'SELECT * FROM applications WHERE id = ?', c.req.param('id'));
   if (!r) return c.notFound();
   const d = JSON.parse(r.data) as Record<string, string>;
   const files = JSON.parse(r.files) as { key: string; name: string; label: string }[];
+  const decided = r.decision !== '';
+  const year = r.award_year ?? new Date().getUTCFullYear();
+  const msg = c.req.query('m');
+  const awardFields = (
+    <div class="form-grid">
+      <div class="field"><label for="award_recipient">Styrkþegi</label><input id="award_recipient" name="award_recipient" value={r.award_recipient || d.felag} required /></div>
+      <div class="field"><label for="award_amount">Veitt upphæð (kr.)</label><input id="award_amount" name="award_amount" inputmode="numeric" value={String(r.award_amount || Number(String(d.upphaed || '0').replace(/\D/g, '')) || '')} required /></div>
+      <div class="field wide"><label for="award_project">Verkefni (eins og það birtist á vefnum)</label><input id="award_project" name="award_project" value={r.award_project || d.verkefni} required /></div>
+      <div class="field"><label for="award_year">Ár úthlutunar</label><input id="award_year" name="award_year" inputmode="numeric" value={String(year)} required /></div>
+      <div class="field"><label for="award_round">Úthlutun</label><select id="award_round" name="award_round">
+        {Object.entries(GRANT_ROUNDS).map(([k, l]) => <option value={k} selected={(r.award_round || 'fyrri') === k}>{l}</option>)}</select></div>
+      <div class="field wide"><label class="check"><input type="checkbox" name="award_published" value="1" checked={!decided || !!r.award_published} /> Birta úthlutunina á vefnum (Úthlutanir fyrri ára á síðunni Verkefnasjóður)</label></div>
+    </div>
+  );
   return page(c, r.title, 'umsoknir', (
     <>
       <p><a href="/stjorn/umsoknir">← Allar umsóknir</a></p>
+      {msg && <div class="flash ok" role="status">{msg}</div>}
       <h1>{d.verkefni}</h1>
-      <p class="lead">{d.felag} · barst {dateLong(r.created_at)} · {r.status === 'ny' ? 'Ný' : 'Afgreidd'}</p>
+      <p class="lead">{d.felag} · barst {dateLong(r.created_at)} · <DecisionPill d={r.decision} />{r.decided_at && ` ${dateLong(r.decided_at)}`}</p>
       <dl class="app-data">
         {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${fmtNum(Number(d[f.name] || 0))} kr.` : d[f.name] || '—'}</dd></>)}
         <dt>Fylgiskjöl</dt>
         <dd>{files.length ? files.map((f, i) => <div><a href={`/stjorn/umsoknir/${r.id}/skra/${i}`}>{f.name}</a> <span class="muted small">({f.label})</span></div>) : '—'}</dd>
       </dl>
-      <form method="post" action={`/stjorn/umsoknir/${r.id}/stada`} class="edit-form">
-        <div class="field wide"><label for="note">Athugasemd starfsfólks (sést ekki opinberlega)</label><textarea id="note" name="note" rows={3}>{r.note}</textarea></div>
+
+      <form method="post" action={`/stjorn/umsoknir/${r.id}/akvordun`} class="edit-form decision-form">
+        <h2>{decided ? 'Ákvörðun' : 'Afgreiða umsókn'}</h2>
+        {r.decision === 'hafnad' ? (
+          <p>Umsókninni var hafnað {r.decided_at && dateLong(r.decided_at)}. Hún birtist ekki á vefnum.</p>
+        ) : (
+          <>
+            {!decided && <p class="muted">Ef umsóknin er samþykkt bætist úthlutunin í töfluna „Úthlutanir fyrri ára“ á síðunni Verkefnasjóður (ef hakað er við að birta hana).</p>}
+            {awardFields}
+          </>
+        )}
+        {!decided && (
+          <div class="field wide"><label for="reason">Ástæða höfnunar (valfrjálst, fer í póstinn til umsækjanda ef hafnað er)</label><textarea id="reason" name="reason" rows={2}></textarea></div>
+        )}
+        {!decided && d.netfang && <div class="field wide"><label class="check"><input type="checkbox" name="notify" value="1" checked /> Senda umsækjanda tölvupóst um niðurstöðuna ({d.netfang})</label></div>}
         <div class="form-actions">
-          <button class="btn" name="status" value={r.status === 'ny' ? 'afgreidd' : 'ny'}>{r.status === 'ny' ? 'Merkja afgreidda' : 'Merkja sem nýja'}</button>
-          <button class="btn ghost" name="status" value={r.status}>Vista athugasemd</button>
+          {!decided ? (
+            <>
+              <button class="btn" name="action" value="samthykkja">Samþykkja umsókn</button>
+              <button class="btn danger" name="action" value="hafna" formnovalidate data-confirm-btn="Hafna umsókninni?">Hafna umsókn</button>
+            </>
+          ) : (
+            <>
+              {r.decision === 'samthykkt' && <button class="btn" name="action" value="vista">Vista breytingar</button>}
+              <button class="btn ghost" name="action" value="afturkalla" formnovalidate data-confirm-btn="Afturkalla ákvörðunina? Umsóknin verður aftur óafgreidd og úthlutunin hverfur af vefnum.">Afturkalla ákvörðun</button>
+            </>
+          )}
           <a class="btn ghost cancel" href="/stjorn/umsoknir" data-back>Til baka</a>
         </div>
+      </form>
+
+      <form method="post" action={`/stjorn/umsoknir/${r.id}/stada`} class="edit-form">
+        <div class="field wide"><label for="note">Athugasemd starfsfólks (sést ekki opinberlega)</label><textarea id="note" name="note" rows={3}>{r.note}</textarea></div>
+        <div class="form-actions"><button class="btn ghost" name="status" value={r.status}>Vista athugasemd</button></div>
       </form>
       <form method="post" action={`/stjorn/umsoknir/${r.id}/eyda`} class="danger-zone" data-confirm="Eyða umsókninni og fylgiskjölum hennar fyrir fullt og allt?">
         <button class="btn danger">Eyða umsókn</button>
       </form>
     </>
   ));
+});
+
+app.post('/umsoknir/:id{[0-9]+}/akvordun', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const db = c.env.DB;
+  const id = Number(c.req.param('id'));
+  const r = await one<AppRow>(db, 'SELECT * FROM applications WHERE id = ?', id);
+  if (!r) return c.notFound();
+  const d = JSON.parse(r.data) as Record<string, string>;
+  const f = await c.req.formData();
+  const action = String(f.get('action') || '');
+  const user = c.get('user')!;
+  const back = (m: string) => c.redirect(`/stjorn/umsoknir/${id}?m=${encodeURIComponent(m)}`);
+  const award = () => ({
+    recipient: String(f.get('award_recipient') || d.felag || '').trim().slice(0, 200),
+    project: String(f.get('award_project') || d.verkefni || '').trim().slice(0, 500),
+    amount: Number(String(f.get('award_amount') || '0').replace(/\D/g, '')) || 0,
+    year: Number(String(f.get('award_year') || '').replace(/\D/g, '')) || new Date().getUTCFullYear(),
+    round: GRANT_ROUNDS[String(f.get('award_round'))] ? String(f.get('award_round')) : 'fyrri',
+    published: f.get('award_published') ? 1 : 0,
+  });
+  if (action === 'samthykkja' || action === 'vista') {
+    const a = award();
+    await run(db, `UPDATE applications SET decision = 'samthykkt', status = 'afgreidd', award_recipient = ?, award_project = ?, award_amount = ?,
+      award_year = ?, award_round = ?, award_published = ?, decided_at = COALESCE(decided_at, datetime('now')), decided_by = COALESCE(decided_by, ?) WHERE id = ?`,
+      a.recipient, a.project, a.amount, a.year, a.round, a.published, user.id, id);
+    if (action === 'samthykkja' && f.get('notify') && d.netfang) {
+      await sendMail(c.env, d.netfang, `Umsókn í Verkefnasjóð HSK samþykkt: ${a.project}`,
+        `Sæl/l,\n\nHSK hefur samþykkt umsókn ${a.recipient} í Verkefnasjóð HSK vegna verkefnisins „${a.project}“. Veittur styrkur er ${fmtNum(a.amount)} kr.\n\nTil hamingju og gangi ykkur vel með verkefnið. Nánari upplýsingar veitir skrifstofa HSK.\n\nKveðja,\nHéraðssambandið Skarphéðinn`);
+    }
+    return back(action === 'vista' ? 'Breytingar vistaðar.' : a.published ? 'Umsókn samþykkt og úthlutunin birt á vefnum.' : 'Umsókn samþykkt. Úthlutunin er ekki birt á vefnum.');
+  }
+  if (action === 'hafna') {
+    await run(db, "UPDATE applications SET decision = 'hafnad', status = 'afgreidd', award_published = 0, decided_at = datetime('now'), decided_by = ? WHERE id = ?", user.id, id);
+    if (f.get('notify') && d.netfang) {
+      const reason = String(f.get('reason') || '').trim();
+      await sendMail(c.env, d.netfang, `Umsókn í Verkefnasjóð HSK: ${d.verkefni}`,
+        `Sæl/l,\n\nTakk fyrir umsókn ${d.felag} í Verkefnasjóð HSK vegna verkefnisins „${d.verkefni}“. Því miður var ekki unnt að verða við umsókninni að þessu sinni.${reason ? `\n\n${reason}` : ''}\n\nNánari upplýsingar veitir skrifstofa HSK.\n\nKveðja,\nHéraðssambandið Skarphéðinn`);
+    }
+    return back('Umsókn hafnað.');
+  }
+  if (action === 'afturkalla') {
+    await run(db, "UPDATE applications SET decision = '', status = 'ny', award_published = 0, decided_at = NULL, decided_by = NULL WHERE id = ?", id);
+    return back('Ákvörðun afturkölluð. Umsóknin er aftur óafgreidd.');
+  }
+  return back('Engin breyting.');
 });
 
 app.get('/umsoknir/:id{[0-9]+}/skra/:n{[0-9]+}', async (c) => {

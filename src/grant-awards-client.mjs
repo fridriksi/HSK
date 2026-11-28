@@ -2,6 +2,9 @@ import { GrantAwardResults } from './views/grant-awards';
 
 const form = document.querySelector('.grant-awards-filter');
 const results = document.getElementById('grant-results');
+// Úthlutanir samþykktar í vefumsjón (bætast við gögnin úr gamla vefnum)
+let extra = [];
+try { extra = JSON.parse(document.getElementById('grant-extra')?.textContent || '[]'); } catch { extra = []; }
 
 if (form && results) {
   const search = form.elements.namedItem('q');
@@ -19,7 +22,7 @@ if (form && results) {
     const params = Object.fromEntries(new FormData(form));
     const detailsOpen = results.querySelector('details').open;
     // Use the same escaping, totals and links as the initial server-rendered table.
-    template.innerHTML = GrantAwardResults({ params }).toString();
+    template.innerHTML = GrantAwardResults({ params, extra }).toString();
     const nextStatus = template.content.querySelector('[role="status"]');
     status.textContent = nextStatus.textContent;
     nextStatus.remove();
