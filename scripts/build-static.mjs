@@ -25,6 +25,8 @@ const [recordImport] = buildSync({ entryPoints: ['src/record-import.ts'], format
 addAsset('/js/record-import.js', TYPES['.js'], Buffer.from(recordImport.contents));
 const [catalogueClient] = buildSync({ entryPoints: ['src/record-catalogue-client.mjs'], format: 'esm', platform: 'browser', bundle: true, write: false, minify: true, target: 'es2022' }).outputFiles;
 addAsset('/js/record-catalogue.js', TYPES['.js'], Buffer.from(catalogueClient.contents));
+const [grantAwardsClient] = buildSync({ entryPoints: ['src/grant-awards-client.mjs'], format: 'esm', platform: 'browser', bundle: true, write: false, minify: true, target: 'es2022' }).outputFiles;
+addAsset('/js/grant-awards.js', TYPES['.js'], Buffer.from(grantAwardsClient.contents));
 const [catalogueBuilder] = buildSync({ entryPoints: ['src/record-catalogue.ts'], format: 'esm', platform: 'node', bundle: true, write: false }).outputFiles;
 const { buildCatalogue } = await import(`data:text/javascript;base64,${Buffer.from(catalogueBuilder.contents).toString('base64')}`);
 const records = buildCatalogue(JSON.parse(readFileSync('src/data/hsk-record-books.json', 'utf8')));
