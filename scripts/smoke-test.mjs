@@ -175,6 +175,21 @@ try {
   await admin.click('button:has-text("Eyða þingi")');
   await admin.waitForURL(/m=eytt/);
 
+  // 3g. Íþróttagreinar félags: hakað við margar greinar í fellilista
+  await admin.goto(`${BASE}/stjorn/felog/1`);
+  const sportsBefore = await admin.evaluate(() => [...document.querySelectorAll('#f_sports input:checked')].map((i) => i.value));
+  await admin.click('#f_sports summary');
+  for (const sp of ['Golf', 'Sund']) { const cb = admin.locator(`#f_sports input[value="${sp}"]`); if (!(await cb.isChecked())) await cb.check(); }
+  ok((await admin.textContent('#f_sports [data-multi-label]')).includes('Sund'), 'Valdar greinar birtast í fellilistanum');
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+  const saved = await admin.evaluate(() => [...document.querySelectorAll('#f_sports input:checked')].map((i) => i.value));
+  ok(saved.includes('Golf') && saved.includes('Sund'), 'Margar íþróttagreinar vistast á félag');
+  await admin.click('#f_sports summary');
+  for (const sp of ['Golf', 'Sund']) { if (!sportsBefore.includes(sp)) await admin.locator(`#f_sports input[value="${sp}"]`).uncheck(); }
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

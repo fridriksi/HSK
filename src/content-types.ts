@@ -3,7 +3,7 @@
  * Nýrri efnistegund er bætt við með því að bæta við færslu hér (og töflu í migrations/).
  */
 
-export type FieldType = 'text' | 'textarea' | 'richtext' | 'date' | 'datetime' | 'select' | 'image' | 'file' | 'number' | 'url' | 'email' | 'club' | 'event' | 'album';
+export type FieldType = 'text' | 'textarea' | 'richtext' | 'date' | 'datetime' | 'select' | 'multiselect' | 'image' | 'file' | 'number' | 'url' | 'email' | 'club' | 'event' | 'album';
 
 export type Field = {
   name: string;
@@ -127,7 +127,7 @@ export const contentTypes: ContentType[] = [
     fields: [
       { name: 'name', label: 'Nafn félags', type: 'text', required: true, wide: true, staffOnly: true },
       { name: 'logo', label: 'Merki', type: 'image' },
-      { name: 'sports', label: 'Íþróttagreinar', type: 'text', help: 'Komma á milli' },
+      { name: 'sports', label: 'Íþróttagreinar', type: 'multiselect', options: sportOptions, help: 'Hakaðu við allar greinar sem félagið býður upp á.' },
       { name: 'area', label: 'Svæði / sveitarfélag', type: 'text' },
       { name: 'contact_name', label: 'Formaður / tengiliður', type: 'text' },
       { name: 'email', label: 'Netfang', type: 'email' },

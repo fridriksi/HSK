@@ -1166,6 +1166,7 @@ function readFields(t: ContentType, user: User, f: FormData): Record<string, unk
       case 'datetime': data[field.name] = v ? (v.length === 10 ? v : v.replace('T', ' ').slice(0, 16) + ':00') : null; break;
       case 'date': data[field.name] = v ? v.slice(0, 10) : null; break;
       case 'select': data[field.name] = field.options && v in field.options ? v : Object.keys(field.options ?? { '': '' })[0]; break;
+      case 'multiselect': data[field.name] = f.getAll(field.name).map((x) => String(x).trim()).filter(Boolean).join(', '); break;
       case 'url': data[field.name] = v && !/^(https?:|mailto:|\/)/.test(v) ? 'https://' + v : v; break;
       default: data[field.name] = v;
     }

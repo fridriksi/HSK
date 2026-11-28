@@ -122,6 +122,20 @@ export const FieldInput: FC<{ f: Field; value: unknown; options?: { id: number; 
         </select>
       );
       break;
+    case 'multiselect': {
+      // Fellilisti með gátreitum: hægt að velja margar greinar (geymt sem „Golf, Sund“)
+      const picked = String(value ?? '').split(/\s*,\s*/).filter(Boolean);
+      const opts = { ...(f.options ?? {}), ...Object.fromEntries(picked.filter((p) => !(p in (f.options ?? {}))).map((p) => [p, p])) };
+      input = (
+        <details class="multi" id={id} data-multi>
+          <summary><span data-multi-label data-empty="Veldu greinar">{picked.length ? picked.join(', ') : 'Veldu greinar'}</span></summary>
+          <div class="multi-opts">
+            {Object.entries(opts).map(([k, l]) => <label class="check"><input type="checkbox" name={f.name} value={k} checked={picked.includes(k)} /> {l}</label>)}
+          </div>
+        </details>
+      );
+      break;
+    }
     case 'club':
     case 'event':
     case 'album':

@@ -219,6 +219,16 @@
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
   }
 
+  // Fellilisti með gátreitum (t.d. íþróttagreinar félags)
+  document.querySelectorAll('details[data-multi]').forEach((d) => {
+    const label = d.querySelector('[data-multi-label]');
+    d.addEventListener('change', () => {
+      const picked = [...d.querySelectorAll('input:checked')].map((i) => i.value);
+      label.textContent = picked.length ? picked.join(', ') : label.dataset.empty;
+    });
+    document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target)) d.open = false; });
+  });
+
   // Afrita slóð
   document.querySelectorAll('[data-copy]').forEach((btn) => {
     btn.addEventListener('click', async () => {

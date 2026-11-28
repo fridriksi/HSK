@@ -153,3 +153,10 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 .doc-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) auto auto auto; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
 .doc-row .doc-file { font-size: .85rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 700px) { .doc-row { grid-template-columns: 1fr auto auto auto; } .doc-row .doc-file { grid-column: 1 / -1; order: 5; } }
+.multi { position: relative; }
+.multi summary { list-style: none; cursor: pointer; padding: 9px 34px 9px 11px; border: 1px solid #cdd5e4; border-radius: 4px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316203f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.multi summary::-webkit-details-marker { display: none; }
+.multi[open] summary { border-color: var(--blue); }
+.multi-opts { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); max-height: 280px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 10px 30px -12px rgba(1, 39, 154, .3); padding: 6px 0; }
+.multi-opts .check { display: flex; gap: 8px; align-items: center; padding: 6px 12px; font-weight: 400; cursor: pointer; }
+.multi-opts .check:hover { background: var(--tint); }
