@@ -184,7 +184,32 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .grant-awards summary { cursor: pointer; }
 @media (max-width: 560px) {
   .grant-awards-filter { grid-template-columns: minmax(0, 1fr); }
-  .grant-awards th, .grant-awards td { padding: 6px 4px; font-size: .86rem; }
+  .grant-awards-table, .grant-awards-table thead, .grant-awards-table tbody { display: block; }
+  .grant-awards-table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 12px;
+    padding: 4px 12px;
+    background: var(--tint);
+  }
+  .grant-awards-table thead th {
+    width: auto;
+    padding: 5px 0;
+    border: 0;
+    font-size: .88rem;
+  }
+  .grant-awards-table tbody tr {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content;
+    gap: 2px 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .grant-awards-table tbody tr:nth-child(even) { background: #fafbfe; }
+  .grant-awards-table tbody tr td { width: auto; padding: 0; border: 0; background: none; }
+  .grant-awards-table td:nth-child(-n+2) { grid-column: 1 / -1; min-width: 0; }
+  .grant-awards-table td:first-child, .grant-awards-table .num { font-weight: 600; }
+  .grant-awards-table td:nth-child(n+3) { margin-top: 4px; color: var(--muted); font-size: .88rem; }
 }
 
 .btn { display: inline-flex; align-items: center; gap: 0; background: var(--blue); color: #fff; border: 2px solid var(--blue); border-radius: var(--radius); padding: 10px 18px; font: 700 .95rem var(--body); text-decoration: none; cursor: pointer; }
