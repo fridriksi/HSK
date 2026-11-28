@@ -90,12 +90,8 @@ app.get('/', async (c) => {
   const older = others.slice(2, 7);
   const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
   const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 5");
-  // Nýjasta metaskrá í hverjum flokki, t.d. „Utanhúss 2026“
-  const recRows = await all<{ id: number; category: string; year: number | null; file: string }>(db, "SELECT id, category, year, file FROM records WHERE file <> '' AND category NOT IN ('annad', 'reglur') ORDER BY year DESC");
-  const records = Object.entries(RECORD_CATEGORIES).map(([k, label]) => {
-    const r = recRows.find((x) => x.category === k);
-    return r ? { title: `${label}${r.year ? ' ' + r.year : ''}`, href: recordLink(r.file, r.id) } : null;
-  }).filter((x) => x !== null);
+  // Nýjustu metin úr töflunni á síðunni HSK met
+  const records = await recentRecords(c.env);
   const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
   const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
   // Ein mynd úr hverju af nýjustu myndasöfnunum
@@ -176,9 +172,15 @@ app.get('/', async (c) => {
             <ul class="event-list">{results.map((r) => <ResultItem r={r} />)}</ul>
           </div>
           <div>
-            <div class="h2-head"><h2>HSK met</h2><a href="/mot/hsk-met">Allar metaskrár</a></div>
-            <ul class="h2-links">
-              {records.map((r) => <li><a href={r.href}>{r.title}</a></li>)}
+            <div class="h2-head"><h2>Nýjustu HSK met</h2><a href="/mot/hsk-met">Öll met</a></div>
+            <ul class="rec-list">
+              {records.map((r) => (
+                <li><a href="/mot/hsk-met">
+                  <span class="rec-result">{r.result}</span>
+                  <span class="rec-main"><strong>{r.event}</strong>{[...r.groups, ...r.categories].length > 0 && <small> · {[...r.groups, ...r.categories].join(' · ')}</small>}</span>
+                  <span class="rec-meta">{[r.athlete, dateLong(`${Math.floor(r.dateKey / 10000)}-${String(Math.floor(r.dateKey / 100) % 100).padStart(2, '0')}-${String(r.dateKey % 100).padStart(2, '0')}`)].filter(Boolean).join(' · ')}</span>
+                </a></li>
+              ))}
             </ul>
           </div>
         </div>
@@ -226,6 +228,17 @@ app.get('/', async (c) => {
     </div>
   ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
 });
+
+/** Fimm nýjustu metin (eftir dagsetningu) úr töflunni HSK met; geymd í minni í 5 mínútur svo forsíðan sé hröð */
+let recentCache: { at: number; rows: RecordResult[] } | null = null;
+async function recentRecords(env: AppEnv['Bindings']): Promise<RecordResult[]> {
+  if (recentCache && Date.now() - recentCache.at < 5 * 60 * 1000) return recentCache.rows;
+  const today = Number(new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+  const rows = (await catalogueRows(env)).filter((r) => r.dateKey > 0 && r.dateKey <= today)
+    .sort((a, b) => b.dateKey - a.dateKey).slice(0, 5);
+  recentCache = { at: Date.now(), rows };
+  return rows;
+}
 
 type Ad = { title: string; image: string; url: string };
 
