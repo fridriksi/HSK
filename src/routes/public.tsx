@@ -16,6 +16,7 @@ import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 import { GrantAwards, grantPageIntro } from '../views/grant-awards';
+import { asset } from '../static';
 import { RECORD_CATEGORIES, AREAS } from '../content-types';
 
 const app = new Hono<AppEnv>();
@@ -742,7 +743,7 @@ app.get('/*', async (c) => {
       const application = c.req.query('umsokn') === 'send'
         ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
         : <GrantForm />;
-      moduleView = <><GrantAwards params={c.req.query()} />{application}</>;
+      moduleView = <><GrantAwards params={c.req.query()} script={asset('/js/grant-awards.js')} />{application}</>;
       break;
     }
     case 'assemblies': {
