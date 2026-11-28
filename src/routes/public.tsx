@@ -742,7 +742,7 @@ app.get('/*', async (c) => {
       const application = c.req.query('umsokn') === 'send'
         ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
         : <GrantForm />;
-      moduleView = <><GrantAwards year={c.req.query('ar')} query={c.req.query('q')} />{application}</>;
+      moduleView = <><GrantAwards params={c.req.query()} />{application}</>;
       break;
     }
     case 'assemblies': {
