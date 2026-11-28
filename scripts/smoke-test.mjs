@@ -236,6 +236,20 @@ try {
   await recPage.uncheck('input[name=gildandi]');
   ok(curCount !== allCount && (await recPage.textContent('[data-record-count]')) === allCount, 'Sían „Aðeins gild met“ fækkar metum og öll birtast aftur án hennar');
 
+  // 3k. Skrá nýtt met: gilt met í völdum flokki birtist og varað er við röngum aldursflokki
+  await admin.goto(`${BASE}/stjorn/ny-met/nytt`);
+  await admin.fill('#f_event', '60 m hlaup');
+  await admin.selectOption('#f_category', 'innanhuss');
+  await admin.fill('#f_age_group', 'Piltar 11 ára');
+  await admin.fill('#f_date', '2030-01-01');
+  await admin.waitForSelector('.record-check.info:has-text("Gilt met núna")');
+  ok(await admin.locator('.record-check .ok').count() > 0, 'Formið sýnir gilt met og að nýja metið leysi það af');
+  await admin.fill('#f_age_group', 'Piltar 11');
+  await admin.waitForSelector('.record-check.warn:has-text("Ekkert met finnst")');
+  await admin.click('.record-check [data-pick-group="Piltar 11 ára"]');
+  await admin.waitForSelector('.record-check.info');
+  ok((await admin.inputValue('#f_age_group')) === 'Piltar 11 ára', 'Varað við óþekktum aldursflokki og hægt að velja réttan');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

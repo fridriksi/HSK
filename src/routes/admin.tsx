@@ -13,6 +13,8 @@ import { sendMail, notifyAdmins } from '../mail';
 import { GRANT_FIELDS } from '../grant';
 import { archivedRecords } from '../record-catalogue-data';
 import { catalogueRows } from '../record-rows';
+import { currentRecords } from '../record-catalogue';
+import { RECORD_CATEGORIES } from '../content-types';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { DEFAULT_TILES } from '../lib';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
@@ -973,6 +975,27 @@ app.post('/saga/:rev{[0-9]+}/endurheimta', async (c) => {
 // ---------- HSK met: öll met í einni töflu ----------
 
 // „Skráð met“ sýnir allar línur úr töflunni á vefnum; met skráð í vefumsjón fá tengilinn „Breyta“
+// Gilt met í grein, flokki og aldursflokki: sýnt í „Skrá nýtt met“ svo innsláttarvillur sjáist strax
+app.get('/met-gild', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const low = (v: string) => v.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('is');
+  const event = low(c.req.query('grein') ?? '');
+  const catLabel = RECORD_CATEGORIES[c.req.query('flokkur') ?? ''] ?? '';
+  const group = low(c.req.query('aldur') ?? '');
+  const self = Number(c.req.query('id') || 0);
+  if (!event || !catLabel) return c.json({ status: 'tomt' });
+  const all_ = (await catalogueRows(c.env)).filter((r) => !(self && r.entry === self));
+  const current = currentRecords(all_);
+  const sameEvent = all_.filter((r) => low(r.event) === event);
+  if (!sameEvent.length) return c.json({ status: 'ny-grein' });
+  const sameCat = sameEvent.filter((r) => r.categories.includes(catLabel));
+  const groupsHere = [...new Set(sameCat.flatMap((r) => r.groups))].sort((a, b) => a.localeCompare(b, 'is', { numeric: true }));
+  const combo = sameCat.filter((r) => group ? r.groups.some((g) => low(g) === group) : r.groups.length === 0);
+  if (!combo.length) return c.json({ status: 'enginn-flokkur', groups: groupsHere.slice(0, 40) });
+  const valid = combo.filter((r) => current.has(r)).map(({ result, athlete, date, place, dateKey }) => ({ result, athlete, date, place, dateKey }));
+  return c.json({ status: 'til', current: valid });
+});
+
 app.get('/ny-met', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const rows = await catalogueRows(c.env);

@@ -232,6 +232,53 @@
   // Síur í listum uppfærast strax þegar valið er
   document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
 
+  // Skrá nýtt met: sýna gilt met í völdum flokki svo rangt heiti greinar eða aldursflokks sjáist strax
+  const recEvent = document.getElementById('f_event');
+  const recGroup = document.getElementById('f_age_group');
+  const recCat = document.getElementById('f_category');
+  const recDate = document.getElementById('f_date');
+  if (recEvent && recGroup && recCat && location.pathname.startsWith('/stjorn/ny-met')) {
+    const box = document.createElement('div');
+    box.className = 'record-check';
+    box.setAttribute('role', 'status');
+    recGroup.closest('.field').after(box);
+    const self = (location.pathname.match(/\/ny-met\/(\d+)/) || [])[1] || '';
+    const toKey = (iso) => iso ? Number(iso.replaceAll('-', '')) : 0;
+    const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    let timer;
+    const check = async () => {
+      const params = new URLSearchParams({ grein: recEvent.value, flokkur: recCat.value, aldur: recGroup.value, id: self });
+      if (!recEvent.value.trim()) { box.hidden = true; return; }
+      const res = await fetch('/stjorn/met-gild?' + params, { credentials: 'same-origin' });
+      const d = await res.json().catch(() => ({}));
+      box.hidden = false;
+      box.className = 'record-check';
+      if (d.status === 'ny-grein') {
+        box.classList.add('warn');
+        box.innerHTML = '<strong>Greinin finnst ekki í metaskrám.</strong> Athugaðu stafsetningu og veldu heiti úr listanum, t.d. „60 m hlaup“. Ef þetta er ný grein má vista samt.';
+      } else if (d.status === 'enginn-flokkur') {
+        box.classList.add('warn');
+        box.innerHTML = '<strong>Ekkert met finnst í þessum aldursflokki.</strong> ' + (d.groups.length
+          ? 'Aldursflokkar sem til eru í þessari grein og flokki: ' + d.groups.map((g) => `<button type="button" class="linklike" data-pick-group="${esc(g)}">${esc(g)}</button>`).join(', ') + '.'
+          : 'Engin met eru í þessari grein í völdum flokki.');
+        box.querySelectorAll('[data-pick-group]').forEach((b) => b.addEventListener('click', () => { recGroup.value = b.dataset.pickGroup; check(); }));
+      } else if (d.status === 'til') {
+        const newKey = toKey(recDate && recDate.value);
+        const latest = Math.max(0, ...d.current.map((r) => r.dateKey || 0));
+        const list = d.current.map((r) => `<li><strong>${esc(r.result)}</strong> – ${esc(r.athlete || 'nafn vantar')}${r.date ? ', ' + esc(r.date) : ''}${r.place ? ', ' + esc(r.place) : ''}</li>`).join('');
+        const verdict = !newKey ? '' : newKey > latest
+          ? '<p class="ok">Nýja metið verður gilt met og það eldra fer úr síunni „Aðeins gild met“.</p>'
+          : '<p class="bad">Dagsetning nýja metsins er ekki síðari en gilda metsins, svo það verður ekki gilt met. Athugaðu dagsetninguna.</p>';
+        box.classList.add(newKey && newKey <= latest ? 'warn' : 'info');
+        box.innerHTML = `<strong>Gilt met núna:</strong><ul>${list}</ul>${verdict}`;
+      } else box.hidden = true;
+    };
+    const later = () => { clearTimeout(timer); timer = setTimeout(check, 300); };
+    [recEvent, recGroup].forEach((el) => el.addEventListener('input', later));
+    [recEvent, recGroup, recCat, recDate].forEach((el) => el && el.addEventListener('change', check));
+    check();
+  }
+
   // Afrita slóð
   document.querySelectorAll('[data-copy]').forEach((btn) => {
     btn.addEventListener('click', async () => {
