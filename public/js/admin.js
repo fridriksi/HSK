@@ -169,6 +169,29 @@
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); handle(e.dataTransfer.files); });
   });
 
+  // Úrslit: þegar mót er valið úr „Mót og viðburðir“ fyllast heiti, dagsetning og grein út.
+  // Reitum sem notandinn hefur sjálfur breytt er ekki skrifað yfir.
+  const resEvent = document.getElementById('f_event_id');
+  if (resEvent && location.pathname.startsWith('/stjorn/urslit')) {
+    const targets = { title: 'f_title', date: 'f_date', sport: 'f_sport' };
+    const auto = {};
+    for (const [k, id] of Object.entries(targets)) { const el = document.getElementById(id); if (el) auto[k] = el.value; }
+    resEvent.addEventListener('change', () => {
+      const o = resEvent.selectedOptions[0];
+      if (!o || !o.dataset.title) return;
+      for (const [k, id] of Object.entries(targets)) {
+        const el = document.getElementById(id);
+        const val = o.dataset[k] || '';
+        if (!el || !val || (el.value && el.value !== auto[k])) continue;
+        if (el.tagName === 'SELECT' && ![...el.options].some((x) => x.value === val)) continue;
+        el.value = val;
+        auto[k] = val;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.closest('.field')?.classList.add('ai-filled');
+      }
+    });
+  }
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {

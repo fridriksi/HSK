@@ -281,6 +281,13 @@ try {
   await admin.waitForURL(/m=birt/);
   ok((await (await fetch(`${BASE}/mot/dagskra?tegund=mot`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í Mót og viðburðir (sía: mót)');
 
+  // 4b. Skrá úrslit: val á móti úr Mót og viðburðir fyllir út heiti, dagsetningu og grein
+  await admin.goto(`${BASE}/stjorn/urslit/nytt`);
+  const evVal = await admin.$eval('#f_event_id', (sel, t) => [...sel.options].find((o) => o.textContent.includes(t))?.value, `Héraðsmót ${stamp}`);
+  await admin.selectOption('#f_event_id', evVal);
+  ok((await admin.inputValue('#f_title')) === `Héraðsmót ${stamp}` && (await admin.inputValue('#f_date')) === '2027-01-15'
+    && (await admin.inputValue('#f_sport')) === 'Frjálsíþróttir', 'Skrá úrslit: val á móti fyllir út heiti, dagsetningu og grein');
+
   // 5. Albúm með myndum
   await admin.goto(`${BASE}/stjorn/myndasofn/nytt`);
   await admin.fill('#f_title', `Albúm ${stamp}`);

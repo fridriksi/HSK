@@ -1114,12 +1114,32 @@ app.get('/ny-met', async (c) => {
 
 // ---------- Almennar efnistegundir ----------
 
-async function refOptions(c: Context<AppEnv>, t: ContentType) {
+export type RefOption = { id: number; label: string; group?: string; data?: Record<string, string> };
+
+/** Mót og viðburðir til að tengja við: birt atriði síðustu tveggja ára og fram undan, auk þess sem þegar er tengt.
+ *  Hverju fylgja heiti, dagsetning og grein svo formið geti fyllt þau út. */
+async function eventOptions(db: D1Database, current?: number, onlyMot = false): Promise<RefOption[]> {
+  const rows = await all<{ id: number; title: string; starts_at: string; sport: string; kind: string }>(db,
+    `SELECT id, title, starts_at, sport, kind FROM events
+     WHERE (status = 'published' AND starts_at >= date('now', '-2 years')${onlyMot ? " AND kind = 'mot'" : ''}) OR id = ? ORDER BY starts_at DESC`, current ?? 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const opt = (r: typeof rows[number], group: string): RefOption => ({
+    id: r.id, group, label: `${dateLong(r.starts_at)} – ${r.title}${r.kind === 'vidburdur' ? ' (viðburður)' : ''}`,
+    data: { title: r.title, date: r.starts_at.slice(0, 10), sport: r.sport || '' },
+  });
+  // Liðin mót fyrst (nýjast efst), svo það sem er fram undan (næst efst)
+  return [
+    ...rows.filter((r) => r.starts_at.slice(0, 10) <= today).map((r) => opt(r, onlyMot ? 'Liðin mót' : 'Liðin mót og viðburðir')),
+    ...rows.filter((r) => r.starts_at.slice(0, 10) > today).reverse().map((r) => opt(r, 'Fram undan')),
+  ];
+}
+
+async function refOptions(c: Context<AppEnv>, t: ContentType, row?: Partial<Row> | null) {
   const db = c.env.DB;
   const need = new Set(t.fields.map((f) => f.type));
   return {
     club: need.has('club') ? (await all<{ id: number; name: string }>(db, 'SELECT id, name FROM clubs ORDER BY name')).map((r) => ({ id: r.id, label: r.name })) : [],
-    event: need.has('event') ? (await all<{ id: number; title: string; starts_at: string }>(db, 'SELECT id, title, starts_at FROM events ORDER BY starts_at DESC LIMIT 400')).map((r) => ({ id: r.id, label: `${dateLong(r.starts_at)} – ${r.title}` })) : [],
+    event: need.has('event') ? await eventOptions(db, Number(row?.event_id) || undefined, t.key === 'urslit') : [],
     album: need.has('album') ? (await all<{ id: number; title: string; date: string }>(db, 'SELECT id, title, date FROM albums ORDER BY date DESC LIMIT 300')).map((r) => ({ id: r.id, label: `${dateLong(r.date)} – ${r.title}` })) : [],
     ...(need.has('suggest') ? await recordSuggestions(db) : {}),
   };
@@ -1244,7 +1264,7 @@ app.get('/:type', async (c) => {
 
 async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | null, error?: string) {
   const user = c.get('user')!;
-  const opts = await refOptions(c, t);
+  const opts = await refOptions(c, t, row);
   const isNew = !row?.id;
   const status = String(row?.status ?? '');
   const title = isNew ? (isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`) : String(row![t.titleField] ?? '');

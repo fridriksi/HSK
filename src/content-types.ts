@@ -106,10 +106,10 @@ export const contentTypes: ContentType[] = [
     key: 'urslit', table: 'results', label: 'Úrslit', singular: 'úrslit', titleField: 'title', dateField: 'date',
     order: 'date DESC', status: true, publicUrl: (r) => `/urslit/${r.id}`,
     fields: [
+      { name: 'event_id', label: 'Mót úr „Mót og viðburðir“', type: 'event', wide: true, help: 'Veldu mótið og heiti, dagsetning og íþróttagrein fyllast út sjálfkrafa. Ef mótið var ekki skráð í Mót og viðburðir skaltu skilja þetta eftir autt og fylla reitina út sjálf/ur.' },
       { name: 'title', label: 'Heiti móts', type: 'text', required: true, wide: true },
       { name: 'date', label: 'Dagsetning', type: 'date', required: true },
       { name: 'sport', label: 'Íþróttagrein', type: 'select', options: { '': '—', ...sportOptions } },
-      { name: 'event_id', label: 'Tengt mót', type: 'event' },
       { name: 'body', label: 'Úrslit', type: 'richtext', help: 'Hægt er að líma töflu beint úr Excel inn í ritilinn.', wide: true },
       { name: 'attachment', label: 'Úrslit sem PDF', type: 'file' },
     ],

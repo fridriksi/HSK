@@ -123,7 +123,8 @@ function toInput(type: string, v: unknown): string {
   return s;
 }
 
-export const FieldInput: FC<{ f: Field; value: unknown; options?: { id: number; label: string }[] }> = ({ f, value, options }) => {
+type Opt = { id: number; label: string; group?: string; data?: Record<string, string> };
+export const FieldInput: FC<{ f: Field; value: unknown; options?: Opt[] }> = ({ f, value, options }) => {
   const id = 'f_' + f.name;
   const v = toInput(f.type, value);
   let input: Child;
@@ -170,7 +171,14 @@ export const FieldInput: FC<{ f: Field; value: unknown; options?: { id: number; 
       input = (
         <select id={id} name={f.name}>
           <option value="">— Ekkert —</option>
-          {(options ?? []).map((o) => <option value={String(o.id)} selected={String(o.id) === v}>{o.label}</option>)}
+          {(() => {
+            // Valmöguleikar í flokkum (t.d. liðin mót / fram undan); gögn fylgja svo formið geti fyllt út reiti
+            const item = (o: Opt) => <option value={String(o.id)} selected={String(o.id) === v} {...Object.fromEntries(Object.entries(o.data ?? {}).map(([k, d]) => ['data-' + k, d]))}>{o.label}</option>;
+            const opts = options ?? [];
+            if (!opts.some((o) => o.group)) return opts.map(item);
+            const groups = [...new Set(opts.map((o) => o.group ?? ''))];
+            return groups.map((g) => <optgroup label={g}>{opts.filter((o) => (o.group ?? '') === g).map(item)}</optgroup>);
+          })()}
         </select>
       );
       break;
