@@ -158,12 +158,22 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 
 .grant-awards { margin-bottom: 2rem; scroll-margin-top: 6rem; }
 .grant-awards-filter { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
-.grant-awards-filter .gf:nth-child(2) { flex: 1 1 220px; max-width: 320px; min-width: 0; }
+.grant-awards-search { flex: 1 1 220px; max-width: 320px; min-width: 0; }
 .grant-awards-filter select { min-width: 5rem; }
+.grant-awards th a { color: inherit; }
+.grant-sort-mark::after { content: ' ↕'; color: var(--muted); }
+.grant-awards th[aria-sort='ascending'] .grant-sort-mark::after { content: ' ↑'; color: var(--blue); }
+.grant-awards th[aria-sort='descending'] .grant-sort-mark::after { content: ' ↓'; color: var(--blue); }
 .grant-awards th:last-child, .grant-awards td:last-child { text-align: right; }
 .grant-awards td { overflow-wrap: anywhere; }
-.grant-awards tfoot td { font-weight: 700; }
+.grant-awards-pages { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 1rem; }
+.grant-awards-pages a { text-decoration: none; }
+#grant-results { scroll-margin-top: 6rem; }
 .grant-awards summary { cursor: pointer; }
+@media (max-width: 560px) {
+  .grant-awards-search { flex-basis: 100%; max-width: none; }
+  .grant-awards th, .grant-awards td { padding: 6px 4px; font-size: .86rem; }
+}
 
 .btn { display: inline-flex; align-items: center; gap: 0; background: var(--blue); color: #fff; border: 2px solid var(--blue); border-radius: var(--radius); padding: 10px 18px; font: 700 .95rem var(--body); text-decoration: none; cursor: pointer; }
 .btn:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; }

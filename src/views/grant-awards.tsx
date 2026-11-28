@@ -19,59 +19,113 @@ function searchText(value: string) {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('is-IS');
 }
 
-export function GrantAwards({ year, query }: { year?: string; query?: string }) {
-  const selected = archive.find((entry) => String(entry.year) === year) ?? archive[0];
-  const term = query?.trim().slice(0, 100) ?? '';
+const columns = [
+  ['recipient', 'Styrkþegi'], ['project', 'Verkefni'], ['year', 'Ár'], ['round', 'Úthlutun'], ['amount', 'Upphæð'],
+] as const;
+const rounds = [
+  { id: 'fyrri', label: 'Fyrri', source: 'Fyrri úthlutun' },
+  { id: 'seinni', label: 'Seinni', source: 'Seinni úthlutun' },
+  { id: 'serstok', label: 'Sérstök', source: 'Sérstök úthlutun' },
+  { id: 'arleg', label: 'Árleg', source: 'Úthlutun' },
+];
+const pageSize = 75;
+const awards = archive.flatMap(({ year, rounds: entries }) => entries.flatMap((entry) => {
+  const round = rounds.find((round) => round.source === entry.label);
+  if (!round) throw new Error(`Óþekkt úthlutun: ${entry.label}`);
+  return entry.rows.map(([name, description, value]) => ({
+    recipient: String(name), project: String(description), amount: Number(value), year, round: round.label, roundId: round.id,
+    search: searchText(`${name} ${description}`),
+  }));
+}));
+
+function defaultDirection(key: typeof columns[number][0]) {
+  return key === 'year' || key === 'amount' ? 'desc' : 'asc';
+}
+
+export function GrantAwards({ params }: { params: Record<string, string> }) {
+  const year = archive.find((entry) => String(entry.year) === params.ar)?.year;
+  const round = rounds.find((entry) => entry.id === params.uthlutun)?.id;
+  const sort = columns.find(([key]) => key === params.rodun)?.[0] ?? 'year';
+  const direction = params.att === 'asc' || params.att === 'desc' ? params.att : defaultDirection(sort);
+  const term = params.q?.trim().slice(0, 100) ?? '';
   const words = searchText(term).split(/\s+/).filter(Boolean);
-  const rounds = selected.rounds.map((round) => ({
-    ...round,
-    rows: words.length
-      ? round.rows.filter(([recipient, project]) => {
-        const haystack = searchText(`${recipient} ${project}`);
-        return words.every((word) => haystack.includes(word));
-      })
-      : round.rows,
-  })).filter((round) => round.rows.length);
+  const matching = awards.filter((award) => (!year || award.year === year) && (!round || award.roundId === round)
+    && words.every((word) => award.search.includes(word)));
+  matching.sort((a, b) => {
+    const left = a[sort];
+    const right = b[sort];
+    const order = typeof left === 'number' && typeof right === 'number'
+      ? left - right
+      : String(left).localeCompare(String(right), 'is-IS', { sensitivity: 'base', numeric: true });
+    return order * (direction === 'asc' ? 1 : -1);
+  });
+  const lastPage = Math.max(1, Math.ceil(matching.length / pageSize));
+  const requestedPage = Number(params.sida);
+  const page = Number.isSafeInteger(requestedPage) ? Math.min(lastPage, Math.max(1, requestedPage)) : 1;
+  const start = (page - 1) * pageSize;
+  const rows = matching.slice(start, start + pageSize);
+  const total = matching.reduce((sum, award) => sum + award.amount, 0);
+  const sources = year ? archive.filter((entry) => entry.year === year) : archive;
+
+  function link(nextPage: number, nextSort = sort, nextDirection = direction) {
+    const query = new URLSearchParams({ rodun: nextSort, att: nextDirection });
+    if (year) query.set('ar', String(year));
+    if (round) query.set('uthlutun', round);
+    if (term) query.set('q', term);
+    if (nextPage > 1) query.set('sida', String(nextPage));
+    return `?${query}#grant-results`;
+  }
 
   return (
     <section class="prose grant-awards" id="uthlutanir" aria-labelledby="uthlutanir-title">
       <h2 id="uthlutanir-title">Úthlutanir fyrri ára</h2>
       <form method="get" action="#uthlutanir" class="grant-awards-filter" role="search" aria-label="Leita í úthlutunum">
-        <div class="gf">
-          <label for="grant-year">Ár</label>
-          <select id="grant-year" name="ar">
-            {archive.map((entry) => <option value={entry.year} selected={entry.year === selected.year}>{entry.year}</option>)}
-          </select>
-        </div>
-        <div class="gf">
+        <div class="gf grant-awards-search">
           <label for="grant-query">Styrkþegi eða verkefni</label>
           <input type="search" id="grant-query" name="q" value={term} maxlength={100} />
         </div>
-        <button class="btn" type="submit">Sýna úthlutanir</button>
+        <div class="gf">
+          <label for="grant-year">Ár</label>
+          <select id="grant-year" name="ar">
+            <option value="">Öll ár</option>
+            {archive.map((entry) => <option value={entry.year} selected={entry.year === year}>{entry.year}</option>)}
+          </select>
+        </div>
+        <div class="gf">
+          <label for="grant-round">Úthlutun</label>
+          <select id="grant-round" name="uthlutun">
+            <option value="">Allar úthlutanir</option>
+            {rounds.map((entry) => <option value={entry.id} selected={entry.id === round}>{entry.label}</option>)}
+          </select>
+        </div>
+        <input type="hidden" name="rodun" value={sort} />
+        <input type="hidden" name="att" value={direction} />
+        <button class="btn" type="submit">Sía</button>
+        {(year || round || term) && <a class="btn ghost" href="?#uthlutanir">Hreinsa síur</a>}
       </form>
-      <p><strong>Samtals úthlutað {selected.year}</strong> · {formatAmount(selected.total)} kr.</p>
-      {term && <p><a href={`?ar=${selected.year}#uthlutanir`}>Hreinsa leit</a></p>}
-      {rounds.length === 0 && <p>Engar úthlutanir fundust fyrir þessa leit.</p>}
-      {rounds.map((round, index) => {
-        const titleId = `grant-round-${index}`;
-        return (
-          <>
-            <h3 id={titleId}>{round.label}</h3>
-            <table aria-labelledby={titleId}>
-              <thead><tr><th scope="col">Styrkþegi</th><th scope="col">Verkefni</th><th scope="col">Kr.</th></tr></thead>
-              <tbody>
-                {round.rows.map(([recipient, project, amount]) => (
-                  <tr><td>{recipient}</td><td>{project}</td><td class="num">{formatAmount(Number(amount))}</td></tr>
-                ))}
-              </tbody>
-              {!term && <tfoot><tr><th scope="row" colspan={2}>Samtals</th><td class="num">{formatAmount(round.total)}</td></tr></tfoot>}
-            </table>
-          </>
-        );
-      })}
+      <p id="grant-results" role="status">{matching.length
+        ? `${start + 1}–${start + rows.length} af ${matching.length} styrkveitingum · Samtals ${formatAmount(total)} kr.`
+        : 'Engar úthlutanir fundust.'}</p>
+      {rows.length > 0 && <table aria-labelledby="uthlutanir-title">
+        <thead><tr>{columns.map(([key, label]) => {
+          const active = key === sort;
+          const nextDirection = active ? direction === 'asc' ? 'desc' : 'asc' : defaultDirection(key);
+          return <th scope="col" aria-sort={active ? direction === 'asc' ? 'ascending' : 'descending' : undefined}>
+            <a href={link(1, key, nextDirection)}>{label}<span class="grant-sort-mark" aria-hidden="true"></span></a>
+          </th>;
+        })}</tr></thead>
+        <tbody>{rows.map(({ recipient, project, amount, year, round }) => (
+          <tr><td>{recipient}</td><td>{project}</td><td>{year}</td><td>{round}</td><td class="num">{formatAmount(amount)} kr.</td></tr>
+        ))}</tbody>
+      </table>}
+      {lastPage > 1 && <nav class="grant-awards-pages" aria-label="Síður úthlutana">
+        {page > 1 && <a class="btn ghost small" href={link(page - 1)}>Fyrri síða</a>}
+        <span>Síða {page} af {lastPage}</span>
+        {page < lastPage && <a class="btn ghost small" href={link(page + 1)}>Næsta síða</a>}
+      </nav>}
       <details>
-        <summary>Heimildir fyrir {selected.year}</summary>
-        <ul>{selected.sources.map((source: { label: string; url: string; displayUrl?: string }) => (
+        <summary>{year ? `Heimildir fyrir ${year}` : 'Heimildir eftir árum'}</summary>
+        <ul>{sources.flatMap((entry) => entry.sources).map((source: { label: string; url: string; displayUrl?: string }) => (
           <li><a href={source.displayUrl ?? source.url}>{source.label}</a></li>
         ))}</ul>
       </details>
