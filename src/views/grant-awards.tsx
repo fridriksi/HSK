@@ -86,18 +86,24 @@ export function GrantAwardResults({ params }: { params: Record<string, string> }
       <p role="status">{matching.length
         ? `${start + 1}–${start + rows.length} af ${matching.length} styrkveitingum · Samtals ${formatAmount(total)} kr.`
         : 'Engar úthlutanir fundust.'}</p>
-      {rows.length > 0 && <div class="table-wrap" role="region" aria-labelledby="uthlutanir-title" tabindex={0}><table aria-labelledby="uthlutanir-title">
-        <thead><tr>{columns.map(([key, label]) => {
+      {rows.length > 0 && <table class="grant-awards-table" role="table" aria-labelledby="uthlutanir-title">
+        <thead role="rowgroup"><tr role="row">{columns.map(([key, label]) => {
           const active = key === sort;
           const nextDirection = active ? direction === 'asc' ? 'desc' : 'asc' : defaultDirection(key);
-          return <th scope="col" aria-sort={active ? direction === 'asc' ? 'ascending' : 'descending' : undefined}>
+          return <th role="columnheader" id={`grant-column-${key}`} scope="col" aria-sort={active ? direction === 'asc' ? 'ascending' : 'descending' : undefined}>
             <a href={link(1, key, nextDirection)}>{label}<span class="grant-sort-mark" aria-hidden="true"></span></a>
           </th>;
         })}</tr></thead>
-        <tbody>{rows.map(({ recipient, project, amount, year, round }) => (
-          <tr><td>{recipient}</td><td>{project}</td><td>{year}</td><td>{round}</td><td class="num">{formatAmount(amount)} kr.</td></tr>
+        <tbody role="rowgroup">{rows.map(({ recipient, project, amount, year, round }) => (
+          <tr role="row">
+            <td role="cell" headers="grant-column-recipient">{recipient}</td>
+            <td role="cell" headers="grant-column-project">{project}</td>
+            <td role="cell" headers="grant-column-year">{year}</td>
+            <td role="cell" headers="grant-column-round">{round}</td>
+            <td role="cell" headers="grant-column-amount" class="num">{formatAmount(amount)} kr.</td>
+          </tr>
         ))}</tbody>
-      </table></div>}
+      </table>}
       {lastPage > 1 && <nav class="grant-awards-pages" aria-label="Síður úthlutana">
         {page > 1 && <a class="btn ghost small" href={link(page - 1)}>Fyrri síða</a>}
         <span>Síða {page} af {lastPage}</span>
