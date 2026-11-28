@@ -308,3 +308,11 @@ dl.facts dd { margin: 0; }
 .btn:disabled, .btn[disabled] { opacity: .5; cursor: not-allowed; }
 .grant-open-form .check { display: block; margin: 6px 0; }
 .decision-form h2 { grid-column: 1 / -1; margin: 0 0 6px; }
+.ff-list { display: grid; gap: 10px; margin: 14px 0; }
+.ff-row { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 12px 14px; margin: 0; display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.ff-main { flex: 999 1 480px; display: grid; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(110px, 1fr)); gap: 8px 12px; }
+.ff-row [hidden] { display: none; }
+@media (max-width: 700px) { .ff-main { grid-template-columns: 1fr 1fr; } }
+.ff-main .field.wide { grid-column: 1 / -1; }
+.ff-main input, .ff-main select, .ff-main textarea { width: 100%; box-sizing: border-box; }
+.ff-tools { flex: 1 1 120px; display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }

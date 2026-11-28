@@ -268,6 +268,27 @@
     if (msg && !confirm(msg)) e.preventDefault();
   });
 
+  // Umsóknarform Verkefnasjóðs: bæta við, færa og eyða reitum
+  const ffList = document.querySelector('[data-ff-list]');
+  if (ffList) {
+    const tpl = document.querySelector('[data-ff-template]');
+    const wire = (row) => {
+      const type = row.querySelector('[data-ff-type]');
+      const opts = row.querySelector('[data-ff-options]');
+      type?.addEventListener('change', () => { opts.hidden = type.value !== 'select'; });
+      row.querySelector('[data-ff-up]').addEventListener('click', () => { if (row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling); });
+      row.querySelector('[data-ff-down]').addEventListener('click', () => { if (row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row); });
+      row.querySelector('[data-ff-remove]')?.addEventListener('click', () => { if (confirm('Fjarlægja reitinn úr forminu?')) row.remove(); });
+    };
+    ffList.querySelectorAll('[data-ff-row]').forEach(wire);
+    document.querySelector('[data-ff-add]').addEventListener('click', () => {
+      const row = tpl.content.firstElementChild.cloneNode(true);
+      ffList.append(row);
+      wire(row);
+      row.querySelector('input[name=field_label]').focus();
+    });
+  }
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {

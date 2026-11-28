@@ -152,6 +152,30 @@ try {
   await Promise.all([admin.waitForURL(/\?m=/), admin.click('.grant-open-form button')]);
   ok(closedHtml.includes(`Lokað til vors ${stamp}`) && !closedHtml.includes('Senda umsókn') && closedPost.status === 303
     && (await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text()).includes('Senda umsókn'), 'Lokað fyrir umsóknir felur formið og opnað aftur sýnir það');
+  // Umsóknarform stillt í vefumsjón: nýr fellilisti birtist á vefnum og svarið vistast með umsókninni
+  await admin.goto(`${BASE}/stjorn/umsoknir/form`);
+  await admin.click('[data-ff-add]');
+  const newRow = admin.locator('[data-ff-row]').last();
+  await newRow.locator('input[name=field_label]').fill(`Aldurshópur ${stamp}`);
+  await newRow.locator('select[name=field_type]').selectOption('select');
+  await newRow.locator('textarea[name=field_options]').fill('6–9 ára\n10–12 ára');
+  await newRow.locator('select[name=field_required]').selectOption('1');
+  await Promise.all([admin.waitForURL(/form\?m=/), admin.click('.ff-form button:has-text("Vista form")')]);
+  await gp.goto(`${BASE}/um-hsk/verkefnasjodur`);
+  const newSel = gp.locator(`label:has-text("Aldurshópur ${stamp}")`);
+  ok(await newSel.count() > 0, 'Nýr reitur í umsóknarformi birtist á vefnum');
+  await fill({ ...grant, felag: `Umf. Reitur ${stamp}`, daemi: '5' });
+  await gp.selectOption(`#${await newSel.getAttribute('for')}`, '10–12 ára');
+  await gp.click('button:has-text("Senda umsókn")');
+  await gp.waitForURL(/umsokn=send/);
+  await admin.goto(`${BASE}/stjorn/umsoknir`);
+  await admin.click(`text=Umf. Reitur ${stamp}`);
+  ok(await admin.locator(`dt:has-text("Aldurshópur ${stamp}") + dd:has-text("10–12 ára")`).count() > 0, 'Svar í nýjum reit vistast með umsókninni');
+  await admin.click('button:has-text("Eyða umsókn")');
+  await admin.waitForURL(/m=eytt/);
+  await admin.goto(`${BASE}/stjorn/umsoknir/form`);
+  await Promise.all([admin.waitForURL(/form\?m=/), admin.click('button[name=reset]')]);
+  ok(!(await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text()).includes(`Aldurshópur ${stamp}`), 'Endurstillt umsóknarform fjarlægir nýja reitinn');
   ok(await admin.locator(`text=Umf. Prufa ${stamp}`).count() === 0, 'Umsókn eytt');
 
   // 3d. Ný metaskrá fer á rétt spjald á HSK met eftir flokki og ári

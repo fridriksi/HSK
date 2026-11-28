@@ -531,3 +531,6 @@ details.record[open] { padding-bottom: 12px; }
 
 .record-current { display: flex; align-items: center; gap: 6px; min-height: 40px; white-space: nowrap; font-weight: 600; cursor: pointer; }
 .record-catalogue-form .record-current input { width: auto; min-height: 0; accent-color: var(--blue); }
+.gf .gf-check { display: flex; gap: 8px; align-items: flex-start; font-weight: 600; }
+.gf .gf-check input { width: auto; margin-top: 4px; }
+.gf select { font: inherit; padding: 10px 12px; border: 1px solid #c9d2e6; border-radius: var(--radius); background: #fff; color: var(--ink); width: 100%; }

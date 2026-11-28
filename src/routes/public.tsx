@@ -14,7 +14,7 @@ import { buildCatalogue, mergeCatalogue, type RecordResult } from '../record-cat
 import { archivedRecords } from '../record-catalogue-data';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
-import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
+import { type GrantField, grantForm, saveGrant } from '../grant';
 import { GrantAwards, grantPageIntro, type ExtraAward } from '../views/grant-awards';
 import { asset } from '../static';
 import { RECORD_CATEGORIES, AREAS } from '../content-types';
@@ -537,27 +537,40 @@ app.get('/media/*', async (c) => {
 
 // ---------- Umsókn í Verkefnasjóð ----------
 
-const GrantForm = ({ values = {}, error }: { values?: Record<string, string>; error?: string }) => (
+const GrantForm = ({ fields, intro, values = {}, error }: { fields: GrantField[]; intro?: string; values?: Record<string, string>; error?: string }) => (
   <section class="grant" id="umsokn">
     <h2>Sækja um styrk</h2>
-    <p class="muted">Reitir merktir * eru nauðsynlegir. Umsóknin berst skrifstofu HSK.</p>
+    <p class="muted">{intro || 'Reitir merktir * eru nauðsynlegir. Umsóknin berst skrifstofu HSK.'}</p>
     {error && <p class="form-error" role="alert">{error}</p>}
     <form method="post" action="/umsokn/verkefnasjodur" enctype="multipart/form-data" class="grant-form">
-      {GRANT_FIELDS.map((f) => (
-        <div class={'gf' + (f.half ? ' half' : '')}>
-          <label for={'g-' + f.name}>{f.label}{f.required && ' *'}</label>
-          {f.type === 'textarea'
-            ? <textarea id={'g-' + f.name} name={f.name} rows={6} required={f.required}>{values[f.name] ?? ''}</textarea>
-            : <input id={'g-' + f.name} name={f.name} type={f.type === 'number' ? 'text' : (f.type ?? 'text')} inputmode={f.type === 'number' || f.name === 'kennitala' ? 'numeric' : undefined} value={values[f.name] ?? ''} required={f.required} />}
-          {f.help && <small>{f.help}</small>}
-        </div>
-      ))}
-      {GRANT_FILES.map((f) => (
-        <div class="gf">
-          <label for={'g-' + f.name}>{f.label}</label>
-          <input id={'g-' + f.name} name={f.name} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.jpg,.jpeg,.png" />
-        </div>
-      ))}
+      {fields.map((f) => {
+        const id = 'g-' + f.name;
+        const label = <label for={id}>{f.label}{f.required && ' *'}</label>;
+        let input;
+        switch (f.type) {
+          case 'textarea': input = <textarea id={id} name={f.name} rows={6} required={f.required}>{values[f.name] ?? ''}</textarea>; break;
+          case 'select': input = (
+            <select id={id} name={f.name} required={f.required}>
+              <option value="">Veldu</option>
+              {(f.options ?? []).map((o) => <option value={o} selected={values[f.name] === o}>{o}</option>)}
+            </select>
+          ); break;
+          case 'checkbox': return (
+            <div class={'gf' + (f.half ? ' half' : '')}>
+              <label class="gf-check"><input id={id} name={f.name} type="checkbox" value="1" checked={!!values[f.name]} required={f.required} /> {f.label}{f.required && ' *'}</label>
+              {f.help && <small>{f.help}</small>}
+            </div>
+          );
+          case 'file': input = <input id={id} name={f.name} type="file" required={f.required} accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.jpg,.jpeg,.png" />; break;
+          default: input = <input id={id} name={f.name} type={f.type === 'number' ? 'text' : (f.type ?? 'text')} inputmode={f.type === 'number' || f.name === 'kennitala' ? 'numeric' : undefined} value={values[f.name] ?? ''} required={f.required} />;
+        }
+        return (
+          <div class={'gf' + (f.half ? ' half' : '')}>
+            {label}{input}
+            {f.help && <small>{f.help}</small>}
+          </div>
+        );
+      })}
       <div class="gf hp" aria-hidden="true"><label for="g-vefsida">Vefsíða</label><input id="g-vefsida" name="vefsida" tabindex={-1} autocomplete="off" /></div>
       <div class="gf half">
         <label for="g-daemi">Hver er summan af tveimur og þremur? *</label>
@@ -591,7 +604,7 @@ app.post('/umsokn/verkefnasjodur', async (c) => {
   return render(c, 'Umsókn í Verkefnasjóð', (
     <>
       <PageHead title="Umsókn í Verkefnasjóð" />
-      <div class="wrap block"><GrantForm values={r.values} error={r.error} /></div>
+      <div class="wrap block"><GrantForm fields={await grantForm(c.env.DB)} intro={await getSetting(c.env.DB, 'grant_form_intro', '')} values={r.values} error={r.error} /></div>
     </>
   ), { status: 400 });
 });
@@ -759,7 +772,7 @@ app.get('/*', async (c) => {
       const open = (await getSetting(c.env.DB, 'grant_open', '1')) === '1';
       const application = c.req.query('umsokn') === 'send'
         ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
-        : open ? <GrantForm /> : <GrantClosed text={await getSetting(c.env.DB, 'grant_closed_text', '')} />;
+        : open ? <GrantForm fields={await grantForm(c.env.DB)} intro={await getSetting(c.env.DB, 'grant_form_intro', '')} /> : <GrantClosed text={await getSetting(c.env.DB, 'grant_closed_text', '')} />;
       moduleView = <><GrantAwards params={c.req.query()} script={asset('/js/grant-awards.js')} extra={await grantExtras(c.env.DB)} />{application}</>;
       break;
     }

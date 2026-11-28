@@ -10,7 +10,7 @@ import {
   googleEnabled, googleAuthUrl, googleEmailFromCode, randomId, passwordLogin, hashPassword, verifyPassword,
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
-import { GRANT_FIELDS } from '../grant';
+import { type GrantField, type GrantFieldType, GRANT_FIELD_TYPES, GRANT_CORE, DEFAULT_GRANT_FORM, grantForm } from '../grant';
 import { archivedRecords } from '../record-catalogue-data';
 import { catalogueRows } from '../record-rows';
 import { currentRecords } from '../record-catalogue';
@@ -891,7 +891,7 @@ app.get('/umsoknir', async (c) => {
           <label class="check"><input type="radio" name="open" value="0" checked={!open} /> <strong>Lokað fyrir umsóknir.</strong> Í stað formsins birtast skilaboðin hér fyrir neðan.</label>
           <div class="field wide"><label for="closed_text">Skilaboð þegar lokað er</label>
             <textarea id="closed_text" name="closed_text" rows={2} placeholder="Ekki er tekið við umsóknum í Verkefnasjóð eins og er. Opnað verður fyrir umsóknir fyrir næstu úthlutun og það auglýst hér á vefnum.">{closedText}</textarea></div>
-          <div class="form-actions"><button class="btn">Vista</button><a class="btn ghost" href="/um-hsk/verkefnasjodur#umsokn" target="_blank">Skoða á vef</a></div>
+          <div class="form-actions"><button class="btn">Vista</button><a class="btn ghost" href="/stjorn/umsoknir/form">Breyta umsóknarformi</a><a class="btn ghost" href="/um-hsk/verkefnasjodur#umsokn" target="_blank">Skoða á vef</a></div>
         </form>
       </section>
       <nav class="subtabs">{DECISION_TABS.map(([k, l]) => (
@@ -918,6 +918,92 @@ app.get('/umsoknir', async (c) => {
   ));
 });
 
+// ---------- Umsóknarform Verkefnasjóðs: reitir stilltir í vefumsjón ----------
+app.get('/umsoknir/form', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const fields = await grantForm(c.env.DB);
+  const intro = await getSetting(c.env.DB, 'grant_form_intro', '');
+  const msg = c.req.query('m');
+  const Row = ({ f }: { f: GrantField }) => {
+    const core = f.name in GRANT_CORE;
+    return (
+      <fieldset class="ff-row" data-ff-row>
+        <input type="hidden" name="field_name" value={f.name} />
+        <div class="ff-main">
+          <div class="field"><label>Heiti reits</label><input name="field_label" value={f.label} required /></div>
+          <div class="field"><label>Tegund</label>
+            {core
+              ? <><input type="hidden" name="field_type" value={GRANT_CORE[f.name]} /><select disabled aria-label="Tegund"><option>{GRANT_FIELD_TYPES[GRANT_CORE[f.name]]}</option></select></>
+              : <select name="field_type" data-ff-type>{Object.entries(GRANT_FIELD_TYPES).map(([k, l]) => <option value={k} selected={(f.type ?? 'text') === k}>{l}</option>)}</select>}
+          </div>
+          <div class="field"><label>Skylda</label><select name="field_required"><option value="1" selected={!!f.required}>Já</option><option value="0" selected={!f.required}>Nei</option></select></div>
+          <div class="field"><label>Breidd</label><select name="field_half"><option value="0" selected={!f.half}>Heil lína</option><option value="1" selected={!!f.half}>Hálf lína</option></select></div>
+          <div class="field wide"><label>Hjálpartexti (valfrjálst)</label><input name="field_help" value={f.help ?? ''} /></div>
+          <div class="field wide" data-ff-options hidden={f.type !== 'select'}><label>Valmöguleikar (einn í hverri línu)</label><textarea name="field_options" rows={3}>{(f.options ?? []).join('\n')}</textarea></div>
+        </div>
+        <div class="ff-tools">
+          <button type="button" class="btn small ghost" data-ff-up aria-label="Færa upp">↑</button>
+          <button type="button" class="btn small ghost" data-ff-down aria-label="Færa niður">↓</button>
+          {core ? <span class="muted small" title="Kerfið notar þennan reit">Fastur reitur</span> : <button type="button" class="btn small ghost danger" data-ff-remove>Eyða</button>}
+        </div>
+      </fieldset>
+    );
+  };
+  return page(c, 'Umsóknarform', 'umsoknir', (
+    <>
+      <p><a href="/stjorn/umsoknir">← Umsóknir í Verkefnasjóð</a></p>
+      <h1>Umsóknarform Verkefnasjóðs</h1>
+      {msg && <div class="flash ok" role="status">{msg}</div>}
+      <p class="lead">Reitirnir birtast í þessari röð á síðunni Verkefnasjóður. Breytingar hafa ekki áhrif á umsóknir sem hafa þegar borist. Fastir reitir eru notaðir í kerfinu (heiti umsóknar, upphæð og tölvupóstur til umsækjanda) og þeim er ekki hægt að eyða.</p>
+      <form method="post" action="/stjorn/umsoknir/form" class="ff-form">
+        <div class="field wide"><label for="intro">Texti fyrir ofan formið</label>
+          <input id="intro" name="intro" value={intro} placeholder="Reitir merktir * eru nauðsynlegir. Umsóknin berst skrifstofu HSK." /></div>
+        <div class="ff-list" data-ff-list>{fields.map((f) => <Row f={f} />)}</div>
+        <template data-ff-template><Row f={{ name: '', label: '', type: 'text' }} /></template>
+        <p><button type="button" class="btn ghost" data-ff-add>+ Bæta við reit</button></p>
+        <div class="form-actions">
+          <button class="btn">Vista form</button>
+          <a class="btn ghost" href="/um-hsk/verkefnasjodur#umsokn" target="_blank">Skoða á vef</a>
+          <button class="btn ghost" name="reset" value="1" formnovalidate data-confirm-btn="Setja formið aftur í upphaflega útgáfu? Reitir sem þú hefur bætt við hverfa úr forminu.">Endurstilla sjálfgefið form</button>
+          <a class="btn ghost cancel" href="/stjorn/umsoknir" data-back>Hætta við</a>
+        </div>
+      </form>
+    </>
+  ));
+});
+
+app.post('/umsoknir/form', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const f = await c.req.formData();
+  await setSetting(c.env.DB, 'grant_form_intro', String(f.get('intro') ?? '').trim().slice(0, 500));
+  if (f.get('reset')) {
+    await setSetting(c.env.DB, 'grant_form_fields', '');
+    return c.redirect('/stjorn/umsoknir/form?m=' + encodeURIComponent('Formið var endurstillt.'));
+  }
+  const col = (k: string) => f.getAll(k).map(String);
+  const names = col('field_name'), labels = col('field_label'), types = col('field_type'), req = col('field_required'),
+    half = col('field_half'), help = col('field_help'), opts = col('field_options');
+  const used = new Set(['vefsida', 'daemi']);
+  const out: GrantField[] = [];
+  labels.forEach((label, i) => {
+    label = label.trim().slice(0, 200);
+    if (!label) return;
+    let name = names[i] || slugify(label).replace(/-/g, '_').slice(0, 40) || 'reitur';
+    if (!names[i]) { const base = name; let n = 2; while (used.has(name) || name in GRANT_CORE) name = `${base}_${n++}`; }
+    if (used.has(name)) return;
+    used.add(name);
+    const type = (GRANT_CORE[name] ?? (types[i] in GRANT_FIELD_TYPES ? types[i] : 'text')) as GrantFieldType;
+    const field: GrantField = { name, label, type, required: req[i] === '1', half: half[i] === '1' };
+    if (help[i]?.trim()) field.help = help[i].trim().slice(0, 300);
+    if (type === 'select') field.options = (opts[i] ?? '').split(/\r?\n/).map((o) => o.trim()).filter(Boolean).slice(0, 50);
+    out.push(field);
+  });
+  // Fastir reitir mega ekki hverfa
+  for (const core of Object.keys(GRANT_CORE)) if (!out.some((x) => x.name === core)) out.push(DEFAULT_GRANT_FORM.find((x) => x.name === core)!);
+  await setSetting(c.env.DB, 'grant_form_fields', JSON.stringify(out));
+  return c.redirect('/stjorn/umsoknir/form?m=' + encodeURIComponent('Formið var vistað og birtist strax á vefnum.'));
+});
+
 app.post('/umsoknir/mottaka', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const f = await c.req.formData();
@@ -935,6 +1021,10 @@ app.get('/umsoknir/:id{[0-9]+}', async (c) => {
   const files = JSON.parse(r.files) as { key: string; name: string; label: string }[];
   const decided = r.decision !== '';
   const year = r.award_year ?? new Date().getUTCFullYear();
+  // Reitir eins og formið er núna, og reitir sem voru í forminu þegar umsóknin barst en hafa síðan verið fjarlægðir
+  const current = (await grantForm(c.env.DB)).filter((f) => f.type !== 'file');
+  const fieldList: GrantField[] = [...current, ...Object.keys(d).filter((k) => !current.some((f) => f.name === k))
+    .map((k) => ({ name: k, label: DEFAULT_GRANT_FORM.find((f) => f.name === k)?.label ?? k }))];
   const msg = c.req.query('m');
   const awardFields = (
     <div class="form-grid">
@@ -954,7 +1044,7 @@ app.get('/umsoknir/:id{[0-9]+}', async (c) => {
       <h1>{d.verkefni}</h1>
       <p class="lead">{d.felag} · barst {dateLong(r.created_at)} · <DecisionPill d={r.decision} />{r.decided_at && ` ${dateLong(r.decided_at)}`}</p>
       <dl class="app-data">
-        {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${fmtNum(Number(d[f.name] || 0))} kr.` : d[f.name] || '—'}</dd></>)}
+        {fieldList.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.type === 'number' && d[f.name] ? `${fmtNum(Number(d[f.name] || 0))}${f.name === 'upphaed' ? ' kr.' : ''}` : d[f.name] || '—'}</dd></>)}
         <dt>Fylgiskjöl</dt>
         <dd>{files.length ? files.map((f, i) => <div><a href={`/stjorn/umsoknir/${r.id}/skra/${i}`}>{f.name}</a> <span class="muted small">({f.label})</span></div>) : '—'}</dd>
       </dl>
