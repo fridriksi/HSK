@@ -1,4 +1,5 @@
 import archive from '../data/grant-awards.json';
+import { YearFilter } from './filters';
 
 const archiveFiles = new Set(archive.flatMap((year) => year.sources.map((source) => source.url)));
 function formatAmount(value: number) {
@@ -144,13 +145,7 @@ export function GrantAwards({ params, script, extra = [] }: { params: Record<str
           <label for="grant-query">Leit</label>
           <input type="search" id="grant-query" name="q" placeholder="Styrkþegi eða verkefni" value={term} maxlength={100} />
         </div>
-        <div class="filter-field">
-          <label for="grant-year">Ár</label>
-          <select id="grant-year" name="ar">
-            <option value="">Öll ár</option>
-            {years(extra).map((y) => <option value={y} selected={y === year}>{y}</option>)}
-          </select>
-        </div>
+        <YearFilter id="grant-year" years={years(extra)} year={year} />
         <div class="filter-field">
           <label for="grant-round">Úthlutun</label>
           <select id="grant-round" name="uthlutun">

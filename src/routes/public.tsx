@@ -12,7 +12,7 @@ import { RecordBookView, recordBook, recordEditions, recordLink } from '../views
 import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
 import { buildCatalogue, mergeCatalogue, type RecordResult } from '../record-catalogue';
 import { archivedRecords } from '../record-catalogue-data';
-import { FilterField, FilterOptions } from '../views/filters';
+import { FilterField, YearFilter } from '../views/filters';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
 import { type GrantField, grantForm, saveGrant } from '../grant';
@@ -342,18 +342,10 @@ async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
 const NewsListing = ({ data, base }: { data: Awaited<ReturnType<typeof newsList>>; base: string }) => (
   <>
     <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita í fréttum og greinum" data-section-search>
-      {data.year && <input type="hidden" name="ar" value={data.year} />}
       <SectionSearchField term={data.term} placeholder="Titill, efni eða höfundur" />
+      {data.years.length > 0 && <YearFilter id="news-year" years={data.years} year={data.year} />}
       <button class="btn">Leita</button>
     </form>
-    {data.years.length > 1 && (
-      <div class="filter-row" data-section-options>
-        <FilterOptions label="Ár">
-          <a href={sectionUrl(base, { q: data.term })} aria-current={!data.year ? 'true' : undefined}>Öll ár</a>
-          {data.years.map((y) => <a href={sectionUrl(base, { ar: y, q: data.term })} aria-current={data.year === y ? 'true' : undefined}>{y}</a>)}
-        </FilterOptions>
-      </div>
-    )}
     <div id="section-results" data-count={data.rows.length}>
       {data.rows.length ? <div class="news-grid">{data.rows.map((n) => <NewsCard n={n} />)}</div> : <p class="muted">Engar fréttir fundust.</p>}
       <Pager page={data.page} hasNext={data.hasNext} base={sectionUrl(base, { ar: data.year, q: data.term })} />
@@ -449,37 +441,33 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
     const k = monthYear(e.starts_at);
     groups.set(k, [...(groups.get(k) ?? []), e]);
   }
-  const q = (p: Record<string, string>) => sectionUrl(base, {
-    tegund: !data.fixed ? data.kind ?? undefined : undefined, grein: data.sport, lidid: data.past ? '1' : '', q: data.term, ...p,
-  });
   return (
     <>
-      <div class="filter-row" data-section-options>
-        <FilterOptions label="Tímabil">
-          <a href={q({ lidid: '' })} aria-current={!data.past ? 'true' : undefined}>Framundan</a>
-          <a href={q({ lidid: '1' })} aria-current={data.past ? 'true' : undefined}>Liðið</a>
-        </FilterOptions>
-        {!data.fixed && (
-          <FilterOptions label="Tegund">
-            <a href={q({ tegund: '' })} aria-current={!data.kind ? 'true' : undefined}>Allt</a>
-            <a href={q({ tegund: 'mot' })} aria-current={data.kind === 'mot' ? 'true' : undefined}><span class="kind-dot mot"></span>Mót</a>
-            <a href={q({ tegund: 'vidburdur' })} aria-current={data.kind === 'vidburdur' ? 'true' : undefined}><span class="kind-dot"></span>Viðburðir</a>
-          </FilterOptions>
-        )}
-        <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
-      </div>
-      <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita að mótum og viðburðum" data-section-search>
-        {data.past && <input type="hidden" name="lidid" value="1" />}
-        {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
+      <form action={base} method="get" class="filter-row" role="search" aria-label="Leita að mótum og viðburðum" data-section-search>
         <SectionSearchField term={data.term} placeholder="Heiti, íþróttagrein eða staður" />
-        {data.sports.length > 0 && (
-            <FilterField id="grein" label="Íþróttagrein">
-              <select id="grein" name="grein">
-                <option value="">Allar greinar</option>
-                {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
-              </select>
-            </FilterField>
+        <FilterField id="event-period" label="Tímabil">
+          <select id="event-period" name="lidid">
+            <option value="">Framundan</option>
+            <option value="1" selected={data.past}>Liðið</option>
+          </select>
+        </FilterField>
+        {!data.fixed && (
+          <FilterField id="event-kind" label="Tegund">
+            <select id="event-kind" name="tegund">
+              <option value="">Allar tegundir</option>
+              <option value="mot" selected={data.kind === 'mot'}>Mót</option>
+              <option value="vidburdur" selected={data.kind === 'vidburdur'}>Viðburðir</option>
+            </select>
+          </FilterField>
         )}
+        <FilterField id="grein" label="Íþróttagrein">
+          <select id="grein" name="grein" data-refresh-options>
+            <option value="">Allar greinar</option>
+            {data.sport && !data.sports.includes(data.sport) && <option value={data.sport} selected>{data.sport}</option>}
+            {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
+          </select>
+        </FilterField>
+        <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Bæta við dagatali</a>
         <button class="btn">Leita</button>
       </form>
       <div id="section-results" data-count={data.rows.length}>
@@ -850,12 +838,7 @@ app.get('/*', async (c) => {
         <>
           <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í úrslitum" data-section-search>
             <SectionSearchField term={d.term} placeholder="Mót, íþróttagrein eða nafn" />
-            <FilterField id="ar" label="Ár">
-              <select id="ar" name="ar">
-                {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
-                <option value="oll" selected={d.year === 'oll'}>Öll ár</option>
-              </select>
-            </FilterField>
+            <YearFilter id="ar" years={d.years} year={d.year} all="oll" />
             <FilterField id="grein" label="Íþróttagrein">
               <select id="grein" name="grein">
                 <option value="">Allar greinar</option>
@@ -896,7 +879,7 @@ app.get('/*', async (c) => {
           <details class="acc record-archive">
             <summary>Frumskrár og eldri útgáfur<Icon name="chevronDown" /></summary>
             <div class="acc-body record-grid">
-            {groups.map(([label, list]) => {
+            {groups.map(([label, list], index) => {
               if (label === 'Önnur met') {
                 return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={recordLink(d.file, d.id)}>{d.title}</a></li>)}</ul></div></section>;
               }
@@ -905,7 +888,15 @@ app.get('/*', async (c) => {
                 <section class="record-card">
                   <h2>{label}</h2>
                   <a class="record-latest" href={recordLink(latest.file, latest.id)}><Icon name="chevronRight" />Metaskrá {latest.year ?? ''}</a>
-                  {older.length > 0 && <p class="record-older"><span>Eldri:</span> {older.map((d, i) => <>{i > 0 && ' · '}<a href={recordLink(d.file, d.id)}>{d.year ?? d.title}</a></>)}</p>}
+                  {older.length > 0 && <div class="record-older">
+                    <FilterField id={`record-edition-${index}`} label="Eldri útgáfur">
+                      <select id={`record-edition-${index}`} data-link-select disabled>
+                        <option value="">Veldu ár</option>
+                        {older.map((d) => <option value={recordLink(d.file, d.id)}>{d.year ?? d.title}</option>)}
+                      </select>
+                    </FilterField>
+                    <noscript><ul>{older.map((d) => <li><a href={recordLink(d.file, d.id)}>{d.year ?? d.title}</a></li>)}</ul></noscript>
+                  </div>}
                 </section>
               );
             })}
@@ -1028,12 +1019,15 @@ app.get('/*', async (c) => {
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
       moduleView = (
         <>
-          {shown.length > 1 && <div class="filter-row">
-            <FilterOptions label="Flokkur">
-              <a href={base} aria-current={!cat ? 'true' : undefined}>Allir flokkar</a>
-              {shown.map(([k, v]) => <a href={`${base}?flokkur=${k}`} aria-current={cat === k ? 'true' : undefined}>{v}</a>)}
-            </FilterOptions>
-          </div>}
+          {shown.length > 1 && <form action={base} method="get" class="filter-row filter-compact" aria-label="Sía skjöl">
+            <FilterField id="document-category" label="Flokkur">
+              <select id="document-category" name="flokkur" data-autosubmit>
+                <option value="">Allir flokkar</option>
+                {shown.map(([key, title]) => <option value={key} selected={cat === key}>{title}</option>)}
+              </select>
+            </FilterField>
+            <noscript><button class="btn">Sía</button></noscript>
+          </form>}
           {intro && <div class="cat-intro"><Prose html={intro.body} /></div>}
           <ul class="doc-list">
             {rows.map((d) => (

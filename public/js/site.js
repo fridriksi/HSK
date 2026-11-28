@@ -41,13 +41,23 @@
   // Síur sem uppfærast strax þegar valið er
   document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
 
+  document.querySelectorAll('select[data-link-select]').forEach((select) => {
+    select.value = '';
+    select.disabled = false;
+    select.addEventListener('change', () => {
+      if (!select.value) return;
+      const url = new URL(select.value, location.href);
+      if (url.protocol === 'https:' || url.protocol === 'http:') location.assign(url);
+    });
+  });
+
   const sectionForm = document.querySelector('[data-section-search]');
   const sectionResults = document.getElementById('section-results');
   if (sectionForm && sectionResults) {
     const input = sectionForm.elements.namedItem('q');
     const submit = sectionForm.querySelector('button');
     const status = sectionForm.querySelector('[data-section-status]');
-    const filterLinks = document.querySelectorAll('[data-section-options] .filter-options a');
+    const dynamicSelects = sectionForm.querySelectorAll('select[data-refresh-options]');
     let timer;
     let active;
 
@@ -73,6 +83,12 @@
         const results = html.getElementById('section-results');
         if (!results) throw new Error('Niðurstöður leitar vantar');
         if (controller.signal.aborted) return;
+        for (const select of dynamicSelects) {
+          const next = html.getElementById(select.id);
+          if (next && next.innerHTML !== select.innerHTML) {
+            select.replaceChildren(...next.options);
+          }
+        }
         sectionResults.replaceChildren(...results.childNodes);
         status.classList.add('sr');
         status.textContent = `${results.dataset.count} niðurstöður á síðunni.`;
@@ -90,13 +106,6 @@
 
     const queueSearch = () => {
       cancelSearch();
-      for (const link of filterLinks) {
-        const url = new URL(link.href);
-        const term = input.value.trim();
-        if (term) url.searchParams.set('q', term);
-        else url.searchParams.delete('q');
-        link.href = url;
-      }
       timer = setTimeout(refresh, 160);
     };
     input.addEventListener('input', event => { if (!event.isComposing) queueSearch(); });
