@@ -1,4 +1,4 @@
-import { CATALOGUE_PAGE_SIZE, catalogueSearch, catalogueSource, compareRecords, formatRecordCount } from './record-catalogue';
+import { CATALOGUE_PAGE_SIZE, catalogueSearch, catalogueSource, compareRecords, currentRecords, formatRecordCount } from './record-catalogue';
 
 const catalogue = document.querySelector('[data-record-catalogue]');
 if (catalogue) {
@@ -8,6 +8,8 @@ if (catalogue) {
   const category = controls.elements.namedItem('flokkur');
   const age = controls.elements.namedItem('aldur');
   const year = controls.elements.namedItem('ar');
+  const onlyCurrent = controls.elements.namedItem('gildandi');
+  let current = new Set();
   const body = catalogue.querySelector('tbody');
   const summary = catalogue.querySelector('[data-record-count]');
   const prev = catalogue.querySelector('[data-record-prev]');
@@ -92,7 +94,7 @@ if (catalogue) {
     if (!records) return;
     const words = catalogueSearch(search.value).split(/\s+/).filter(Boolean);
     page = 0;
-    activeRows = records.filter((row) => (!eventFilter.value || row.event === eventFilter.value) &&
+    activeRows = records.filter((row) => (!onlyCurrent.checked || current.has(row)) && (!eventFilter.value || row.event === eventFilter.value) &&
       (!category.value || row.categories.includes(category.value)) && (!age.value || agesOf(row).includes(age.value)) &&
       (!year.value || yearOf(row) === year.value) && words.every((word) => lookup.get(row).includes(word)));
     if (sort !== 'date' || order !== 'desc') activeRows.sort((a, b) => compareRecords(a, b, sort, order));
@@ -107,7 +109,7 @@ if (catalogue) {
 
   let timer;
   search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(filter, 120); });
-  for (const select of [eventFilter, category, age, year]) select.addEventListener('change', filter);
+  for (const select of [eventFilter, category, age, year, onlyCurrent]) select.addEventListener('change', filter);
   controls.addEventListener('submit', (event) => { event.preventDefault(); filter(); });
   controls.addEventListener('reset', () => setTimeout(filter, 0));
   for (const button of sortButtons) button.addEventListener('click', () => {
@@ -131,6 +133,7 @@ if (catalogue) {
     return res.json();
   }).then((data) => {
     records = data;
+    current = currentRecords(records);
     lookup = new Map(records.map((row) => [row, catalogueSearch([row.event, row.athlete, row.teammates, row.place, row.book, ...row.categories, ...row.groups].filter(Boolean).join(' '))]));
     setOptions(eventFilter, records.map((row) => row.event));
     setOptions(category, records.flatMap((row) => row.categories));

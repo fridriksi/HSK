@@ -13,6 +13,7 @@ export function RecordCatalogue({ rows }: { rows: RecordResult[] }) {
         <div class="record-catalogue-field"><label for="records-category">Flokkur</label><select id="records-category" name="flokkur"><option value="">Allir flokkar</option></select></div>
         <div class="record-catalogue-field"><label for="records-age">Aldur</label><select id="records-age" name="aldur"><option value="">Allur aldur</option></select></div>
         <div class="record-catalogue-field"><label for="records-year">Ár mets</label><select id="records-year" name="ar"><option value="">Öll ár</option></select></div>
+        <label class="record-current check"><input type="checkbox" name="gildandi" value="1" /> Aðeins gildandi met</label>
         <button type="reset" class="btn ghost">Hreinsa síur</button>
       </fieldset>
     </form>

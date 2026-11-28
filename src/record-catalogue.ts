@@ -169,3 +169,14 @@ export function compareRecords(a: RecordResult, b: RecordResult, field: RecordSo
   }
   return delta * direction || ICELANDIC.compare(a.event, b.event) || ICELANDIC.compare(a.athlete, b.athlete);
 }
+
+/**
+ * Gildandi met: í hverri grein, flokki og aldursflokki er nýjasta metið (eftir dagsetningu) það sem gildir.
+ * Met sem deila nýjustu dagsetningu teljast öll gildandi. Ef engin dagsetning er til í hópnum gilda öll metin þar.
+ */
+export function currentRecords<T extends Pick<RecordResult, 'event' | 'categories' | 'groups' | 'dateKey'>>(rows: T[]): Set<T> {
+  const combos = (row: T) => row.categories.flatMap((cat) => (row.groups.length ? row.groups : ['']).map((g) => `${lower(row.event)}|${cat}|${lower(g)}`));
+  const latest = new Map<string, number>();
+  for (const row of rows) for (const k of combos(row)) latest.set(k, Math.max(latest.get(k) ?? 0, row.dateKey || 0));
+  return new Set(rows.filter((row) => combos(row).some((k) => (row.dateKey || 0) === latest.get(k))));
+}

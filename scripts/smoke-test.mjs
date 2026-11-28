@@ -219,6 +219,16 @@ try {
   await admin.click('button:has-text("Eyða")');
   await admin.waitForURL(/m=eytt/);
 
+  // 3j. Sía fyrir gildandi met fækkar metum en fjarlægir þau ekki
+  const recPage = await newPage();
+  await recPage.goto(`${BASE}/mot/hsk-met`);
+  await recPage.waitForSelector('fieldset:not([disabled])');
+  const allCount = await recPage.textContent('[data-record-count]');
+  await recPage.check('input[name=gildandi]');
+  const curCount = await recPage.textContent('[data-record-count]');
+  await recPage.uncheck('input[name=gildandi]');
+  ok(curCount !== allCount && (await recPage.textContent('[data-record-count]')) === allCount, 'Sían „Aðeins gildandi met“ fækkar metum og öll birtast aftur án hennar');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
