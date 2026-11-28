@@ -720,6 +720,33 @@ app.get('/*', async (c) => {
         : <GrantForm />;
       break;
     }
+    case 'assemblies': {
+      // Héraðsþing úr vefumsjón (Héraðsþing): nýjasta þingið opið efst, eldri þing í felligluggum
+      const list = await all<{ id: number; slug: string; title: string; date: string | null; location: string; intro: string }>(c.env.DB,
+        "SELECT id, slug, title, date, location, intro FROM assemblies WHERE status = 'published' ORDER BY date DESC, id DESC");
+      const docs = await all<{ assembly_id: number; title: string; file: string }>(c.env.DB, 'SELECT assembly_id, title, file FROM assembly_docs ORDER BY sort, id');
+      const body = (a: (typeof list)[number]) => {
+        const mine = docs.filter((d) => d.assembly_id === a.id);
+        return (
+          <>
+            {a.date && <p class="muted">{dateLong(a.date)}{a.location && ` · ${a.location}`}</p>}
+            {a.intro && <Prose html={a.intro} />}
+            {mine.length > 0
+              ? <div class="prose"><ul class="link-list">{mine.map((d) => <li><a href={d.file}>{d.title}</a></li>)}</ul></div>
+              : <p class="muted">Þinggögn verða birt hér.</p>}
+          </>
+        );
+      };
+      const [latest, ...older] = list;
+      moduleView = latest ? (
+        <>
+          <section class="merged" id={latest.slug}><h2>{latest.title}</h2>{body(latest)}</section>
+          {older.length > 0 && <h2 class="older-h">Eldri þing</h2>}
+          <div class="accordion">{older.map((a) => <details class="acc" id={a.slug}><summary>{a.title}<Icon name="chevronDown" /></summary><div class="acc-body">{body(a)}</div></details>)}</div>
+        </>
+      ) : null;
+      break;
+    }
     case 'sections':
     case 'archive': {
       // Undirsíður birtar á einni síðu: „sections“ með efnisyfirliti, „archive“ með nýjasta opið og eldra í felligluggum

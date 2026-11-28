@@ -141,7 +141,7 @@
   }
 
   // Fjölupphleðsla: myndasafn og albúm
-  document.querySelectorAll('.upload-drop').forEach((drop) => {
+  document.querySelectorAll('.upload-drop:not([data-doc-upload])').forEach((drop) => {
     const input = drop.querySelector('input[type=file]');
     const bar = drop.querySelector('progress');
     const albumId = drop.dataset.album;
@@ -180,6 +180,44 @@
       btn.textContent = open ? 'Fela kafla' : label;
     });
   });
+
+
+  // Héraðsþing: þinggögn sem röð af skjölum (hlaða upp mörgum, breyta heiti, raða, fjarlægja)
+  const docRows = document.querySelector('[data-doc-rows]');
+  if (docRows) {
+    const tpl = document.getElementById('doc-row-tpl');
+    const wire = (row) => {
+      row.querySelector('[data-doc-remove]').addEventListener('click', () => row.remove());
+      row.querySelector('[data-doc-up]').addEventListener('click', () => { if (row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling); });
+      row.querySelector('[data-doc-down]').addEventListener('click', () => { if (row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row); });
+    };
+    docRows.querySelectorAll('.doc-row').forEach(wire);
+    const drop = document.querySelector('[data-doc-upload]');
+    const input = drop.querySelector('input[type=file]');
+    const bar = drop.querySelector('progress');
+    const add = async (files) => {
+      files = [...files];
+      if (!files.length) return;
+      bar.hidden = false; bar.max = files.length; bar.value = 0;
+      for (const f of files) {
+        try {
+          const url = await upload(f);
+          const row = tpl.content.firstElementChild.cloneNode(true);
+          row.querySelector('input[name=doc_title]').value = f.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ');
+          row.querySelector('input[name=doc_file]').value = url;
+          const a = row.querySelector('.doc-file'); a.href = url; a.textContent = f.name;
+          docRows.appendChild(row); wire(row);
+          row.closest('form').dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (e) { alert(`${f.name}: ${e.message}`); }
+        bar.value += 1;
+      }
+      bar.hidden = true; input.value = '';
+    };
+    input.addEventListener('change', () => add(input.files));
+    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); add(e.dataTransfer.files); });
+  }
 
   // Afrita slóð
   document.querySelectorAll('[data-copy]').forEach((btn) => {

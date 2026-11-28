@@ -159,6 +159,22 @@ try {
   await admin.fill('#home_tiles', tilesBefore);
   await admin.click('button:has-text("Vista")');
 
+  // 3f. Héraðsþing: nýtt þing með þinggögnum birtist efst á síðunni Héraðsþing
+  await admin.goto(`${BASE}/stjorn/heradsthing/nytt`);
+  await admin.fill('#title', `Héraðsþing prufa ${stamp}`);
+  await admin.fill('#date', '2099-03-20');
+  await admin.fill('#location', 'Selfoss');
+  await admin.setInputFiles('[data-doc-upload] input[type=file]', { name: 'Dagskra_thing.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 prufa') });
+  await admin.waitForSelector('[data-doc-rows] .doc-row');
+  await admin.fill('[data-doc-rows] .doc-row input[name=doc_title]', 'Dagskrá héraðsþings');
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+  const thingHtml = await (await fetch(`${BASE}/um-hsk/heradsthing`)).text();
+  const firstThing = thingHtml.split('class="merged"')[1]?.split('</section>')[0] ?? '';
+  ok(firstThing.includes(`Héraðsþing prufa ${stamp}`) && firstThing.includes('Dagskrá héraðsþings'), 'Nýtt héraðsþing með þinggögnum birtist efst');
+  await admin.click('button:has-text("Eyða þingi")');
+  await admin.waitForURL(/m=eytt/);
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

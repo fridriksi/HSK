@@ -341,7 +341,7 @@ const MODULES: Record<string, string> = {
   '': 'Engin (venjuleg síða)', news: 'Fréttalisti', articles: 'Greinar (ásamt aðsendum greinum)', submitted: 'Aðsendar greinar (eingöngu)', events: 'Mót og viðburðir', competitions: 'Mótaskrá (eingöngu mót)',
   results: 'Úrslit', records: 'HSK met', clubs: 'Aðildarfélög', committees: 'Stjórn og nefndir', documents: 'Fundargerðir og skjöl', albums: 'Myndasöfn', sponsors: 'Styrktaraðilar',
   subpages: 'Listi yfir undirsíður', laws: 'Lög og reglugerðir (undirsíður í felligluggum, flokkaðar)',
-  sections: 'Undirsíður á einni síðu, hver í felliglugga', grant: 'Umsóknarform Verkefnasjóðs', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
+  sections: 'Undirsíður á einni síðu, hver í felliglugga', grant: 'Umsóknarform Verkefnasjóðs', assemblies: 'Héraðsþing (úr liðnum Héraðsþing í vefumsjón)', archive: 'Undirsíður á einni síðu, nýjasta opin og eldri í felligluggum', first: 'Vísa beint á fyrstu undirsíðu',
 };
 
 function staffOnly(c: Context<AppEnv>) {
@@ -596,6 +596,120 @@ app.post('/adgangur', async (c) => {
   if (pw !== String(f.get('again') || '')) return c.redirect('/stjorn/adgangur?villa=ekki-eins');
   await run(c.env.DB, 'UPDATE users SET password_hash = ?, failed_logins = 0, locked_until = NULL WHERE id = ?', await hashPassword(pw), user.id);
   return c.redirect('/stjorn/adgangur?m=vistad');
+});
+
+// ---------- Héraðsþing ----------
+
+type Assembly = { id: number; slug: string; title: string; date: string | null; location: string; intro: string; status: string };
+
+app.get('/heradsthing', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const rows = await all<Assembly & { docs: number }>(c.env.DB,
+    'SELECT a.*, (SELECT count(*) FROM assembly_docs d WHERE d.assembly_id = a.id) AS docs FROM assemblies a ORDER BY a.date IS NOT NULL, a.date DESC, a.id DESC');
+  return page(c, 'Héraðsþing', 'heradsthing', (
+    <>
+      <div class="title-row"><h1>Héraðsþing</h1><a class="btn" href="/stjorn/heradsthing/nytt">Skrá nýtt þing</a></div>
+      <p class="lead">Þingin birtast á síðunni <a href="/um-hsk/heradsthing" target="_blank">Héraðsþing</a>, nýjasta þingið efst eftir dagsetningu og eldri þing í felligluggum.</p>
+      <table class="tbl">
+        <thead><tr><th>Þing</th><th>Dagsetning</th><th>Þinggögn</th><th>Staða</th></tr></thead>
+        <tbody>{rows.map((a) => (
+          <tr>
+            <td><a href={`/stjorn/heradsthing/${a.id}`}><strong>{a.title}</strong></a>{a.location && <div class="muted small">{a.location}</div>}</td>
+            <td>{a.date ? dateLong(a.date) : <span class="muted">Vantar</span>}</td>
+            <td>{a.docs}</td>
+            <td><StatusPill status={a.status} /></td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </>
+  ));
+});
+
+async function assemblyForm(c: Context<AppEnv>, a: Partial<Assembly>, docs: { title: string; file: string }[], error?: string) {
+  const isNew = !a.id;
+  const docRow = (d: { title: string; file: string }) => (
+    <div class="doc-row">
+      <input name="doc_title" value={d.title} placeholder="Heiti skjals, t.d. Dagskrá héraðsþings" aria-label="Heiti skjals" />
+      <a class="doc-file" href={d.file} target="_blank">{decodeURIComponent(d.file.split('/').pop() ?? '')}</a>
+      <input type="hidden" name="doc_file" value={d.file} />
+      <button type="button" class="icon-btn" data-doc-up title="Færa upp" aria-label="Færa upp"><Icon name="chevronUp" /></button>
+      <button type="button" class="icon-btn" data-doc-down title="Færa niður" aria-label="Færa niður"><Icon name="chevronDown" /></button>
+      <button type="button" class="btn small ghost" data-doc-remove>Fjarlægja</button>
+    </div>
+  );
+  return page(c, isNew ? 'Nýtt héraðsþing' : a.title!, 'heradsthing', (
+    <>
+      <p><a href="/stjorn/heradsthing">← Öll þing</a></p>
+      <h1>{isNew ? 'Nýtt héraðsþing' : a.title}</h1>
+      <form method="post" class="edit-form" action={isNew ? '/stjorn/heradsthing/nytt' : `/stjorn/heradsthing/${a.id}`}>
+        <div class="form-grid">
+          <div class="field wide"><label for="title">Heiti <span class="req">*</span></label><input id="title" name="title" value={a.title ?? ''} required placeholder="T.d. Héraðsþing á Selfossi 18. mars 2027" /></div>
+          <div class="field"><label for="date">Þingdagur <span class="req">*</span></label><input id="date" name="date" type="date" value={a.date ?? ''} required /><small class="help">Ræður röðinni: nýjasta þingið birtist efst.</small></div>
+          <div class="field"><label for="location">Staður</label><input id="location" name="location" value={a.location ?? ''} placeholder="T.d. Selfoss" /></div>
+          <div class="field wide"><label for="intro">Inngangur (valfrjálst)</label><textarea id="intro" name="intro" class="rte rte-small" rows={3}>{a.intro ?? ''}</textarea></div>
+          <div class="field wide">
+            <label>Þinggögn</label>
+            <div class="doc-rows" data-doc-rows>{docs.map(docRow)}</div>
+            <template id="doc-row-tpl">{docRow({ title: '', file: '' })}</template>
+            <div class="upload-drop" data-doc-upload>
+              <p><strong>Dragðu skjöl hingað</strong> eða <label class="linklike">veldu skjöl<input type="file" multiple hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,image/*" /></label>. Heiti skjals er búið til úr skráarnafninu og má breyta.</p>
+              <progress hidden max="100" value="0"></progress>
+            </div>
+          </div>
+          <div class="field"><label class="check"><input type="checkbox" name="published" value="1" checked={(a.status ?? 'published') === 'published'} /> Birta á vefnum</label></div>
+        </div>
+        {error && <p class="flash err">{error}</p>}
+        <div class="form-actions"><button class="btn">Vista</button>{!isNew && <a class="btn ghost" href={`/um-hsk/heradsthing#${a.slug}`} target="_blank">Skoða á vef</a>}</div>
+      </form>
+      {!isNew && (
+        <form method="post" action={`/stjorn/heradsthing/${a.id}/eyda`} class="danger-zone" data-confirm="Eyða þessu þingi af vefnum? Skjölin sjálf haldast í „Myndir og skjöl“.">
+          <button class="btn danger small">Eyða þingi</button>
+        </form>
+      )}
+    </>
+  ));
+}
+
+app.get('/heradsthing/nytt', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  return assemblyForm(c, {}, []);
+});
+
+app.get('/heradsthing/:id{[0-9]+}', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const a = await one<Assembly>(c.env.DB, 'SELECT * FROM assemblies WHERE id = ?', c.req.param('id'));
+  if (!a) return c.notFound();
+  const docs = await all<{ title: string; file: string }>(c.env.DB, 'SELECT title, file FROM assembly_docs WHERE assembly_id = ? ORDER BY sort, id', a.id);
+  return assemblyForm(c, a, docs);
+});
+
+async function saveAssembly(c: Context<AppEnv>, id: number | null) {
+  const f = await c.req.formData();
+  const title = String(f.get('title') ?? '').trim();
+  const date = String(f.get('date') ?? '').trim();
+  const titles = f.getAll('doc_title').map(String);
+  const docs = f.getAll('doc_file').map(String).map((file, i) => ({ file, title: (titles[i] ?? '').trim() || decodeURIComponent(file.split('/').pop() ?? 'Skjal') })).filter((d) => d.file);
+  const a: Partial<Assembly> = { id: id ?? undefined, title, date: date || null, location: String(f.get('location') ?? '').trim(), intro: sanitizeHtml(String(f.get('intro') ?? '')), status: f.get('published') ? 'published' : 'draft' };
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return assemblyForm(c, a, docs, 'Heiti og þingdagur eru nauðsynleg.');
+  const db = c.env.DB;
+  if (id) {
+    await run(db, "UPDATE assemblies SET title = ?, date = ?, location = ?, intro = ?, status = ?, updated_at = datetime('now') WHERE id = ?", title, date, a.location, a.intro, a.status, id);
+  } else {
+    const slug = await uniqueSlug(db, 'assemblies', title);
+    id = Number((await run(db, 'INSERT INTO assemblies (slug, title, date, location, intro, status) VALUES (?, ?, ?, ?, ?, ?)', slug, title, date, a.location, a.intro, a.status)).meta.last_row_id);
+  }
+  await run(db, 'DELETE FROM assembly_docs WHERE assembly_id = ?', id);
+  for (const [i, d] of docs.entries()) await run(db, 'INSERT INTO assembly_docs (assembly_id, title, file, sort) VALUES (?, ?, ?, ?)', id, d.title, d.file, i * 10);
+  await logRevision(db, 'assemblies', id, c.get('user')!.id, 'update', { ...a, docs });
+  return c.redirect(`/stjorn/heradsthing/${id}?m=vistad`);
+}
+
+app.post('/heradsthing/nytt', async (c) => { const deny = staffOnly(c); if (deny) return deny; return saveAssembly(c, null); });
+app.post('/heradsthing/:id{[0-9]+}', async (c) => { const deny = staffOnly(c); if (deny) return deny; return saveAssembly(c, Number(c.req.param('id'))); });
+app.post('/heradsthing/:id{[0-9]+}/eyda', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  await run(c.env.DB, 'DELETE FROM assemblies WHERE id = ?', c.req.param('id'));
+  return c.redirect('/stjorn/heradsthing?m=eytt');
 });
 
 // ---------- Umsóknir (Verkefnasjóður) ----------

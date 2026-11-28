@@ -53,6 +53,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     <ul>
                       {link('/stjorn/nefndir', 'Stjórn, nefndir og ráð', 'nefndir')}
                       {link('/stjorn/skjol', 'Fundargerðir og skjöl', 'skjol')}
+                      {link('/stjorn/heradsthing', 'Héraðsþing', 'heradsthing')}
                       {link('/stjorn/umsoknir', 'Umsóknir í Verkefnasjóð', 'umsoknir', applications)}
                     </ul>
                     <h3 class="side-h">Vefurinn</h3>

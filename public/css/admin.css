@@ -149,3 +149,7 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 .side nav ul + .side-h, .side-h { font: 600 .78rem var(--body); color: var(--muted); margin: 10px 18px 0; letter-spacing: .02em; }
 .side nav ul { padding: 4px 0; }
 @media (max-width: 900px) { .side-h { display: none; } }
+.doc-rows { display: grid; gap: 6px; margin-bottom: 10px; }
+.doc-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) auto auto auto; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.doc-row .doc-file { font-size: .85rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 700px) { .doc-row { grid-template-columns: 1fr auto auto auto; } .doc-row .doc-file { grid-column: 1 / -1; order: 5; } }
