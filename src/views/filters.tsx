@@ -4,9 +4,11 @@ export function FilterField({ id, label, children }: { id: string; label: string
   return <div class="filter-field"><label for={id}>{label}</label>{children}</div>;
 }
 
-export function FilterOptions({ label, children }: { label: string; children: Child }) {
-  return <nav class="filter-options" aria-label={label}>
-    <span class="filter-label" aria-hidden="true">{label}</span>
-    <div>{children}</div>
-  </nav>;
+export function YearFilter({ id, years, year, all = '' }: { id: string; years: readonly (string | number)[]; year?: string | number; all?: string }) {
+  return <FilterField id={id} label="Ár">
+    <select id={id} name="ar">
+      <option value={all}>Öll ár</option>
+      {years.map((value) => <option value={value} selected={String(value) === String(year)}>{value}</option>)}
+    </select>
+  </FilterField>;
 }

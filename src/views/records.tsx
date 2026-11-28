@@ -68,12 +68,12 @@ export function RecordBookView({ book, sheetParam, query }: { book: RecordBook; 
     <section class="record-book wrap block">
       <div class="record-book-tools">
         <form class="filter-row record-book-filters" action={detailPath} method="get" role="search" aria-label="Leita í metaskrá">
+          <FilterField id="record-query" label="Leit"><input id="record-query" type="search" name="q" value={term} maxlength={100} placeholder="Nafn eða grein" /></FilterField>
           <FilterField id="record-sheet" label="Vinnublað">
             <select id="record-sheet" name="blad">
               {book.sheets.map((item, i) => <option value={i} selected={i === index}>{sheetLabel(item)}</option>)}
             </select>
           </FilterField>
-          <FilterField id="record-query" label="Leit"><input id="record-query" type="search" name="q" value={term} maxlength={100} placeholder="Nafn eða grein" /></FilterField>
           <button class="btn" type="submit">Sía</button>
           {term && <a class="btn ghost" href={`${detailPath}?blad=${index}`}>Hreinsa leit</a>}
         </form>
