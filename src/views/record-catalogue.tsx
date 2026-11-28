@@ -7,12 +7,12 @@ const columns: [RecordSort, string][] = [['event', 'Grein'], ['result', 'Árangu
 export function RecordCatalogue({ rows, admin = false }: { rows: RecordResult[]; admin?: boolean }) {
   return <section class="record-catalogue" aria-label="Öll HSK met" data-record-catalogue={`${RECORDS_PATH}/gogn`} data-record-admin={admin ? '1' : undefined}>
     <form class="record-catalogue-form" role="search" aria-label="Leita og sía HSK met">
-      <fieldset disabled>
-        <div class="record-catalogue-field"><label for="records-search">Leit</label><input id="records-search" name="leit" type="search" placeholder="Nafn, grein eða staður" /></div>
-        <div class="record-catalogue-field"><label for="records-event">Grein</label><select id="records-event" name="grein"><option value="">Allar greinar</option></select></div>
-        <div class="record-catalogue-field"><label for="records-category">Flokkur</label><select id="records-category" name="flokkur"><option value="">Allir flokkar</option></select></div>
-        <div class="record-catalogue-field"><label for="records-age">Aldur</label><select id="records-age" name="aldur"><option value="">Allur aldur</option></select></div>
-        <div class="record-catalogue-field"><label for="records-year">Ár mets</label><select id="records-year" name="ar"><option value="">Öll ár</option></select></div>
+      <fieldset class="filter-row" disabled>
+        <div class="record-catalogue-field filter-field"><label for="records-search">Leit</label><input id="records-search" name="leit" type="search" placeholder="Nafn, grein eða staður" /></div>
+        <div class="record-catalogue-field filter-field"><label for="records-event">Íþróttagrein</label><select id="records-event" name="grein"><option value="">Allar greinar</option></select></div>
+        <div class="record-catalogue-field filter-field"><label for="records-category">Flokkur</label><select id="records-category" name="flokkur"><option value="">Allir flokkar</option></select></div>
+        <div class="record-catalogue-field filter-field"><label for="records-age">Aldur</label><select id="records-age" name="aldur"><option value="">Allur aldur</option></select></div>
+        <div class="record-catalogue-field filter-field"><label for="records-year">Ár mets</label><select id="records-year" name="ar"><option value="">Öll ár</option></select></div>
         <label class="record-current check"><input type="checkbox" name="gildandi" value="1" /> Aðeins gild met</label>
         <button type="reset" class="btn ghost">Hreinsa síur</button>
       </fieldset>

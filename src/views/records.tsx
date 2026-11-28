@@ -1,3 +1,4 @@
+import { FilterField } from './filters';
 import recordBooks from '../data/hsk-record-books.json';
 import { Icon } from './icons';
 import { dateLong, MONTHS } from '../lib';
@@ -66,15 +67,15 @@ export function RecordBookView({ book, sheetParam, query }: { book: RecordBook; 
   return (
     <section class="record-book wrap block">
       <div class="record-book-tools">
-        <form class="inline-form record-book-filters" action={detailPath} method="get" role="search" aria-label="Leita í metaskrá">
-          <label for="record-sheet">Vinnublað</label>
-          <select id="record-sheet" name="blad" aria-label="Vinnublað">
-            {book.sheets.map((item, i) => <option value={i} selected={i === index}>{sheetLabel(item)}</option>)}
-          </select>
-          <label for="record-query">Leit</label>
-          <input id="record-query" type="search" name="q" value={term} maxlength={100} placeholder="Nafn eða grein" />
+        <form class="filter-row record-book-filters" action={detailPath} method="get" role="search" aria-label="Leita í metaskrá">
+          <FilterField id="record-sheet" label="Vinnublað">
+            <select id="record-sheet" name="blad">
+              {book.sheets.map((item, i) => <option value={i} selected={i === index}>{sheetLabel(item)}</option>)}
+            </select>
+          </FilterField>
+          <FilterField id="record-query" label="Leit"><input id="record-query" type="search" name="q" value={term} maxlength={100} placeholder="Nafn eða grein" /></FilterField>
           <button class="btn" type="submit">Sía</button>
-          {term && <a href={`${detailPath}?blad=${index}`}>Hreinsa leit</a>}
+          {term && <a class="btn ghost" href={`${detailPath}?blad=${index}`}>Hreinsa leit</a>}
         </form>
         <a class="record-source" href={book.source}><Icon name="file" /> Upprunaleg Excel-skrá</a>
       </div>

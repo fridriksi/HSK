@@ -12,6 +12,7 @@ import { RecordBookView, recordBook, recordEditions, recordLink } from '../views
 import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
 import { buildCatalogue, mergeCatalogue, type RecordResult } from '../record-catalogue';
 import { archivedRecords } from '../record-catalogue-data';
+import { FilterField, FilterOptions } from '../views/filters';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
 import { type GrantField, grantForm, saveGrant } from '../grant';
@@ -196,20 +197,21 @@ app.get('/', async (c) => {
           <h2>Finndu félag</h2>
           <p>{clubCount} íþrótta- og ungmennafélög á Suðurlandi eru aðilar að HSK. Leitaðu eftir nafni, íþróttagrein eða heimabyggð.</p>
         </div>
-        <form action="/adildarfelog" method="get" class="h2-find" role="search">
-          <label class="sr" for="ff-q">Leitarorð</label>
-          <input id="ff-q" name="q" type="search" placeholder="T.d. Hamar, sund eða Hella" />
-          <label class="sr" for="ff-g">Íþróttagrein</label>
-          <select id="ff-g" data-fill-q>
-            <option value="">Velja íþróttagrein</option>
-            {sports.map((sp) => <option value={sp}>{sp}</option>)}
-          </select>
-          <label class="sr" for="ff-s">Sveitarfélag</label>
-          <select id="ff-s" data-fill-q>
-            <option value="">Velja sveitarfélag</option>
-            {AREAS.map((a) => <option value={a}>{a}</option>)}
-          </select>
-          <button class="btn-hero">Leita</button>
+        <form action="/adildarfelog" method="get" class="filter-row h2-find" role="search" aria-label="Finndu félag">
+          <FilterField id="ff-q" label="Leit"><input id="ff-q" name="q" type="search" placeholder="T.d. Hamar, sund eða Hella" /></FilterField>
+          <FilterField id="ff-g" label="Íþróttagrein">
+            <select id="ff-g" data-fill-q>
+              <option value="">Allar greinar</option>
+              {sports.map((sp) => <option value={sp}>{sp}</option>)}
+            </select>
+          </FilterField>
+          <FilterField id="ff-s" label="Sveitarfélag">
+            <select id="ff-s" data-fill-q>
+              <option value="">Öll sveitarfélög</option>
+              {AREAS.map((a) => <option value={a}>{a}</option>)}
+            </select>
+          </FilterField>
+          <button class="btn">Leita</button>
         </form>
       </section>
 
@@ -309,10 +311,12 @@ async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
 const NewsListing = ({ data, base }: { data: Awaited<ReturnType<typeof newsList>>; base: string }) => (
   <>
     {data.years.length > 1 && (
-      <nav class="year-filter" aria-label="Ár">
-        <a href={base} class={!data.year ? 'on' : ''}>Allt</a>
-        {data.years.map((y) => <a href={`${base}?ar=${y}`} class={data.year === y ? 'on' : ''}>{y}</a>)}
-      </nav>
+      <div class="filter-row">
+        <FilterOptions label="Ár">
+          <a href={base} aria-current={!data.year ? 'true' : undefined}>Öll ár</a>
+          {data.years.map((y) => <a href={`${base}?ar=${y}`} aria-current={data.year === y ? 'true' : undefined}>{y}</a>)}
+        </FilterOptions>
+      </div>
     )}
     {data.rows.length ? <div class="news-grid">{data.rows.map((n) => <NewsCard n={n} />)}</div> : <p class="muted">Engar fréttir fundust.</p>}
     <Pager page={data.page} hasNext={data.hasNext} base={data.year ? `${base}?ar=${data.year}` : base} />
@@ -413,28 +417,29 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
   };
   return (
     <>
-      <div class="filters">
-        <nav class="year-filter">
-          <a href={q({ lidid: '' })} class={!data.past ? 'on' : ''}>Framundan</a>
-          <a href={q({ lidid: '1' })} class={data.past ? 'on' : ''}>Liðið</a>
-        </nav>
+      <div class="filter-row">
+        <FilterOptions label="Tímabil">
+          <a href={q({ lidid: '' })} aria-current={!data.past ? 'true' : undefined}>Framundan</a>
+          <a href={q({ lidid: '1' })} aria-current={data.past ? 'true' : undefined}>Liðið</a>
+        </FilterOptions>
         {!data.fixed && (
-          <nav class="year-filter kind-filter" aria-label="Tegund">
-            <a href={q({ tegund: '' })} class={!data.kind ? 'on' : ''}>Allt</a>
-            <a href={q({ tegund: 'mot' })} class={data.kind === 'mot' ? 'on' : ''}><span class="kind-dot mot"></span>Mót</a>
-            <a href={q({ tegund: 'vidburdur' })} class={data.kind === 'vidburdur' ? 'on' : ''}><span class="kind-dot"></span>Viðburðir</a>
-          </nav>
+          <FilterOptions label="Tegund">
+            <a href={q({ tegund: '' })} aria-current={!data.kind ? 'true' : undefined}>Allt</a>
+            <a href={q({ tegund: 'mot' })} aria-current={data.kind === 'mot' ? 'true' : undefined}><span class="kind-dot mot"></span>Mót</a>
+            <a href={q({ tegund: 'vidburdur' })} aria-current={data.kind === 'vidburdur' ? 'true' : undefined}><span class="kind-dot"></span>Viðburðir</a>
+          </FilterOptions>
         )}
         {data.sports.length > 0 && (
-          <form method="get" class="inline-form">
+          <form method="get" class="filter-row filter-sport" aria-label="Sía eftir íþróttagrein">
             {data.past && <input type="hidden" name="lidid" value="1" />}
             {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
-            <label for="grein">Íþróttagrein</label>
-            <select id="grein" name="grein" data-autosubmit>
-              <option value="">Allar greinar</option>
-              {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
-            </select>
-            <noscript><button>Sía</button></noscript>
+            <FilterField id="grein" label="Íþróttagrein">
+              <select id="grein" name="grein" data-autosubmit>
+                <option value="">Allar greinar</option>
+                {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
+              </select>
+            </FilterField>
+            <noscript><button class="btn">Sía</button></noscript>
           </form>
         )}
         <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
@@ -571,9 +576,8 @@ app.get('/leit', async (c) => {
     <>
       <PageHead title="Leit" />
       <div class="wrap block narrow">
-        <form action="/leit" method="get" class="search-big" role="search">
-          <label class="sr" for="q">Leitarorð</label>
-          <input id="q" name="q" type="search" value={q} placeholder="Hverju ertu að leita að?" autofocus />
+        <form action="/leit" method="get" class="filter-row search-big" role="search" aria-label="Leita á vefnum">
+          <FilterField id="q" label="Leit"><input id="q" name="q" type="search" value={q} placeholder="Hverju ertu að leita að?" autofocus /></FilterField>
           <button class="btn">Leita</button>
         </form>
         {q.length >= 2 && <p class="muted">{hits.length} niðurstöður fyrir „{q}“</p>}
@@ -803,15 +807,20 @@ app.get('/*', async (c) => {
       for (const r of d.rows) { const k = monthYear(r.date); groups.set(k, [...(groups.get(k) ?? []), r]); }
       moduleView = (
         <>
-          <form method="get" class="filters inline-form">
-            <label for="ar">Ár</label>
-            <select id="ar" name="ar" data-autosubmit>
-              {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
-              <option value="oll" selected={d.year === 'oll'}>Öll ár</option>
-            </select>
-            <label for="grein">Íþróttagrein</label>
-            <select id="grein" name="grein" data-autosubmit><option value="">Allar greinar</option>{d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}</select>
-            <noscript><button class="btn small">Sía</button></noscript>
+          <form method="get" class="filter-row filter-compact" aria-label="Sía úrslit">
+            <FilterField id="ar" label="Ár">
+              <select id="ar" name="ar" data-autosubmit>
+                {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
+                <option value="oll" selected={d.year === 'oll'}>Öll ár</option>
+              </select>
+            </FilterField>
+            <FilterField id="grein" label="Íþróttagrein">
+              <select id="grein" name="grein" data-autosubmit>
+                <option value="">Allar greinar</option>
+                {d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}
+              </select>
+            </FilterField>
+            <noscript><button class="btn">Sía</button></noscript>
           </form>
           {d.rows.length === 0 && <p class="muted">Engin úrslit fundust.</p>}
           {[...groups].map(([month, list]) => (
@@ -924,7 +933,11 @@ app.get('/*', async (c) => {
       const rows = await all<{ slug: string; name: string; logo: string; sports: string; area: string }>(c.env.DB, 'SELECT slug, name, logo, sports, area FROM clubs ORDER BY name');
       moduleView = (
         <>
-          <div class="club-filter"><label class="sr" for="felag-leit">Leita að félagi</label><input id="felag-leit" type="search" placeholder="Leita að félagi, íþróttagrein eða svæði" value={c.req.query('q') ?? ''} data-filter=".club-grid > a" data-empty="#felag-tomt" /></div>
+          <div class="filter-row filter-compact" role="search" aria-label="Leita að félagi">
+            <FilterField id="felag-leit" label="Leit">
+              <input id="felag-leit" type="search" placeholder="Nafn félags, íþróttagrein eða svæði" value={c.req.query('q') ?? ''} data-filter=".club-grid > a" data-empty="#felag-tomt" />
+            </FilterField>
+          </div>
           <p id="felag-tomt" class="filter-empty" hidden>Ekkert félag fannst.</p>
           <div class="club-grid">
             {rows.map((f) => (
@@ -942,7 +955,11 @@ app.get('/*', async (c) => {
       const rows = await all<{ name: string; body: string }>(c.env.DB, 'SELECT name, body FROM committees ORDER BY sort, name');
       moduleView = (
         <>
-          <div class="club-filter"><label class="sr" for="nefnd-leit">Leita í stjórn, nefndum og ráðum</label><input id="nefnd-leit" type="search" placeholder="Leita að nefnd eða nafni" data-filter=".committee-list > details" data-empty="#nefnd-tomt" /></div>
+          <div class="filter-row filter-compact" role="search" aria-label="Leita í stjórn, nefndum og ráðum">
+            <FilterField id="nefnd-leit" label="Leit">
+              <input id="nefnd-leit" type="search" placeholder="Nafn nefndar eða einstaklings" data-filter=".committee-list > details" data-empty="#nefnd-tomt" />
+            </FilterField>
+          </div>
           <p id="nefnd-tomt" class="filter-empty" hidden>Engin nefnd eða manneskja fannst.</p>
           {/* Hver nefnd opnast í felliglugga; leit opnar þær sem passa */}
           <div class="accordion committee-list">{rows.map((r) => (
@@ -967,7 +984,12 @@ app.get('/*', async (c) => {
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
       moduleView = (
         <>
-          {shown.length > 1 && <nav class="year-filter"><a href={base} class={!cat ? 'on' : ''}>Allt</a>{shown.map(([k, v]) => <a href={`${base}?flokkur=${k}`} class={cat === k ? 'on' : ''}>{v}</a>)}</nav>}
+          {shown.length > 1 && <div class="filter-row">
+            <FilterOptions label="Flokkur">
+              <a href={base} aria-current={!cat ? 'true' : undefined}>Allir flokkar</a>
+              {shown.map(([k, v]) => <a href={`${base}?flokkur=${k}`} aria-current={cat === k ? 'true' : undefined}>{v}</a>)}
+            </FilterOptions>
+          </div>}
           {intro && <div class="cat-intro"><Prose html={intro.body} /></div>}
           <ul class="doc-list">
             {rows.map((d) => (
@@ -1070,7 +1092,10 @@ export async function notFound(c: Context<AppEnv>) {
       <PageHead title="Síða fannst ekki" />
       <div class="wrap block narrow">
         <p>Síðan sem þú leitaðir að er ekki til eða hefur verið færð.</p>
-        <form action="/leit" method="get" class="search-big"><label class="sr" for="q404">Leita</label><input id="q404" name="q" type="search" placeholder="Leita á vefnum…" /><button class="btn">Leita</button></form>
+        <form action="/leit" method="get" class="filter-row search-big" role="search" aria-label="Leita á vefnum">
+          <FilterField id="q404" label="Leit"><input id="q404" name="q" type="search" placeholder="Leita á vefnum…" /></FilterField>
+          <button class="btn">Leita</button>
+        </form>
         <p><a href="/"><Icon name="chevronLeft" />Forsíða</a></p>
       </div>
     </>
