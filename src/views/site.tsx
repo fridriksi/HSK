@@ -100,16 +100,31 @@ export const Layout: FC<{
           )}
           <div class="footer-main">
             <div class="wrap footer-grid">
-              <div>
-                <strong>Héraðssambandið Skarphéðinn</strong>
-                <p>{chrome.contact.address}</p>
+              <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                  <span class="footer-badge"><img src="/img/hsk-merki.svg" alt="" width="40" height="40" /></span>
+                  <span>Héraðssambandið<br />Skarphéðinn</span>
+                </a>
+                <p class="footer-address"><Icon name="pin" />{chrome.contact.address}</p>
               </div>
               <div>
-                <p>Sími <a href={'tel:' + chrome.contact.phone.replace(/\s/g, '')}>{chrome.contact.phone}</a></p>
-                <p><a href={'mailto:' + chrome.contact.email}>{chrome.contact.email}</a></p>
+                <h2 class="footer-h">Hafðu samband</h2>
+                <ul class="footer-list">
+                  {chrome.contact.phone && <li><Icon name="phone" /><a href={'tel:' + chrome.contact.phone.replace(/\s/g, '')}>{chrome.contact.phone}</a></li>}
+                  {chrome.contact.email && <li><Icon name="mail" /><a href={'mailto:' + chrome.contact.email}>{chrome.contact.email}</a></li>}
+                </ul>
               </div>
-              <div>
-                <p><a href="/en">English</a> · <a href="/rss.xml">RSS</a> · <a href="/stjorn">Innskráning</a></p>
+              <nav aria-label="Flýtileiðir">
+                <h2 class="footer-h">Flýtileiðir</h2>
+                <ul class="footer-list footer-links">
+                  {chrome.menu.map((m) => <li><a href={'/' + m.path}>{m.title}</a></li>)}
+                </ul>
+              </nav>
+            </div>
+            <div class="wrap">
+              <div class="footer-bottom">
+                <span>© {new Date().getUTCFullYear()} Héraðssambandið Skarphéðinn</span>
+                <span class="footer-meta"><a href="/en">English</a><a href="/rss.xml">RSS</a><a href="/stjorn">Innskráning</a></span>
               </div>
             </div>
           </div>
