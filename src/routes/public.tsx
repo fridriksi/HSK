@@ -15,6 +15,8 @@ import { archivedRecords } from '../record-catalogue-data';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { catalogueRows } from '../record-rows';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
+import { GrantAwards, grantPageIntro } from '../views/grant-awards';
+import { asset } from '../static';
 import { RECORD_CATEGORIES, AREAS } from '../content-types';
 
 const app = new Hono<AppEnv>();
@@ -738,9 +740,10 @@ app.get('/*', async (c) => {
       break;
     }
     case 'grant': {
-      moduleView = c.req.query('umsokn') === 'send'
+      const application = c.req.query('umsokn') === 'send'
         ? <section class="grant" id="umsokn"><h2>Umsókn móttekin</h2><p class="form-ok" role="status">Takk fyrir. Umsóknin hefur borist skrifstofu HSK og verður tekin fyrir við næstu úthlutun.</p></section>
         : <GrantForm />;
+      moduleView = <><GrantAwards params={c.req.query()} script={asset('/js/grant-awards.js')} />{application}</>;
       break;
     }
     case 'assemblies': {
@@ -919,6 +922,7 @@ app.get('/*', async (c) => {
   const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
   const inNav = new Set(section.map((x) => x.path));
   const extra = p.module ? [] : children.filter((ch) => !linked.has(ch.path) && !inNav.has(ch.path));
+  const body = p.module === 'grant' ? grantPageIntro(p.body) : p.body;
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />
@@ -926,7 +930,7 @@ app.get('/*', async (c) => {
         overview={topModule !== 'first' ? top.path : undefined} />
       <div class="wrap block page-layout">
         <div class="page-main">
-          {p.body && <Prose html={p.body} />}
+          {body && <Prose html={body} />}
           {moduleView}
           {extra.length > 0 && <div class="prose"><ul class="link-list">{extra.map((ch) => <li><a href={'/' + ch.path}>{ch.title}</a></li>)}</ul></div>}
         </div>
