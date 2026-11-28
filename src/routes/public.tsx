@@ -397,7 +397,7 @@ async function resultList(c: Context<AppEnv>) {
 // ---------- Félög, myndir ----------
 
 app.get('/felag/:slug', async (c) => {
-  const f = await one<{ id: number; name: string; logo: string; sports: string; area: string; contact_name: string; email: string; phone: string; website: string; facebook: string; description: string }>(c.env.DB,
+  const f = await one<{ id: number; name: string; logo: string; sports: string; area: string; contact_name: string; email: string; phone: string; website: string; facebook: string; instagram: string; tiktok: string; youtube: string; kennitala: string; description: string }>(c.env.DB,
     'SELECT * FROM clubs WHERE slug = ?', c.req.param('slug'));
   if (!f) return notFound(c);
   const news = await all<NewsRow>(c.env.DB, "SELECT slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE club_id = ? AND status = 'published' ORDER BY published_at DESC LIMIT 6", f.id);
@@ -410,12 +410,17 @@ app.get('/felag/:slug', async (c) => {
           {f.logo && <img src={f.logo} alt={'Merki ' + f.name} />}
           <dl class="facts-list">
             {f.sports && <div><dt>Íþróttagreinar</dt><dd>{f.sports}</dd></div>}
-            {f.area && <div><dt>Svæði</dt><dd>{f.area}</dd></div>}
+            {f.area && <div><dt>Sveitarfélag</dt><dd>{f.area}</dd></div>}
             {f.contact_name && <div><dt>Formaður / tengiliður</dt><dd>{f.contact_name}</dd></div>}
             {f.email && <div><dt>Netfang</dt><dd><a href={'mailto:' + f.email}>{f.email}</a></dd></div>}
             {f.phone && <div><dt>Sími</dt><dd>{f.phone}</dd></div>}
             {f.website && <div><dt>Vefur</dt><dd><a href={f.website} rel="noopener">{f.website.replace(/^https?:\/\//, '')}</a></dd></div>}
-            {f.facebook && <div><dt>Facebook</dt><dd><a href={f.facebook} rel="noopener">Facebook-síða</a></dd></div>}
+            {f.kennitala && <div><dt>Kennitala</dt><dd>{f.kennitala}</dd></div>}
+            {(f.facebook || f.instagram || f.tiktok || f.youtube) && (
+              <div><dt>Samfélagsmiðlar</dt><dd class="social">
+                {[['Facebook', f.facebook], ['Instagram', f.instagram], ['TikTok', f.tiktok], ['YouTube', f.youtube]].filter(([, u]) => u).map(([l, u]) => <a href={u} rel="noopener">{l}</a>)}
+              </dd></div>
+            )}
           </dl>
         </aside>
         <div class="article-body">

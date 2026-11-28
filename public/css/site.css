@@ -440,3 +440,4 @@ details.record[open] { padding-bottom: 12px; }
 @media (max-width: 720px) { .grant-form { grid-template-columns: 1fr; } .gf.half { grid-column: 1 / -1; } }
 .h2-band .datebox, .h2-band .kind-tag { background: var(--white); }
 @media (max-width: 720px) { .sponsors ul { gap: 16px 28px; } .sponsors img { max-height: 44px; max-width: 110px; } }
+.facts-list .social { display: flex; flex-wrap: wrap; gap: 4px 14px; }
