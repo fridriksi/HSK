@@ -659,6 +659,7 @@ app.get('/stillingar', async (c) => {
   const tilesRaw = await s('home_tiles', DEFAULT_TILES);
   // Síður sem hægt er að velja fyrir flýtireiti (birtar síður, efstu tvö stigin)
   const tilePages = await all<{ path: string; title: string }>(db, "SELECT path, title FROM pages WHERE status = 'published' AND (parent_id IS NULL OR parent_id IN (SELECT id FROM pages WHERE parent_id IS NULL)) ORDER BY path");
+  const heroEvents = await all<{ id: number; title: string; starts_at: string }>(db, "SELECT id, title, starts_at FROM events WHERE COALESCE(ends_at, starts_at) >= date('now') ORDER BY starts_at LIMIT 40");
   return page(c, 'Forsíða og stillingar', 'stillingar', (
     <>
       <h1>Forsíða og stillingar</h1>
@@ -668,7 +669,9 @@ app.get('/stillingar', async (c) => {
           <div class="field"><label for="hero_title">Fyrirsögn</label><input id="hero_title" name="hero_title" value={await s('hero_title')} placeholder="T.d. Unglingalandsmót UMFÍ 2027" /></div>
           <div class="field"><label for="hero_button">Texti á hnappi</label><input id="hero_button" name="hero_button" value={await s('hero_button')} placeholder="Nánar" /></div>
           <div class="field wide"><label for="hero_text">Stuttur texti</label><textarea id="hero_text" name="hero_text" rows={2}>{await s('hero_text')}</textarea></div>
-          <div class="field"><label for="hero_link">Slóð hnapps</label><input id="hero_link" name="hero_link" value={await s('hero_link')} placeholder="/vidburdur/123 eða https://…" /></div>
+          <div class="field"><label for="hero_link">Slóð hnapps</label><input id="hero_link" name="hero_link" value={await s('hero_link')} list="hero-links" placeholder="Veldu síðu eða viðburð, eða skrifaðu slóð" />
+            <datalist id="hero-links">{heroEvents.map((e) => <option value={'/vidburdur/' + e.id}>{e.title} ({e.starts_at.slice(8, 10)}.{e.starts_at.slice(5, 7)}.{e.starts_at.slice(0, 4)})</option>)}{tilePages.map((p) => <option value={'/' + p.path}>{p.title}</option>)}</datalist>
+            <small class="help">Veldu úr listanum eða skrifaðu slóð, t.d. https://…</small></div>
           <div class="field wide"><label for="hero_image">Mynd</label>
             <div class="upload-field" data-kind="image">
               <img class="preview" src={(await s('hero_image')) || undefined} alt="" hidden={!(await s('hero_image'))} />
