@@ -559,6 +559,7 @@ async function pageForm(c: Context<AppEnv>, p: Partial<PageRow>, error?: string)
           <button class="btn" name="status" value="published">{isNew ? 'Birta síðu' : 'Vista og birta'}</button>
           <button class="btn ghost" name="status" value="draft">Vista sem drög</button>
           {!isNew && <a class="btn ghost" href={`/stjorn/saga/pages/${p.id}`}>Breytingasaga</a>}
+          <a class="btn ghost cancel" href="/stjorn/sidur" data-back>Hætta við</a>
         </div>
       </form>
       {!isNew && (
@@ -799,7 +800,7 @@ async function assemblyForm(c: Context<AppEnv>, a: Partial<Assembly>, docs: { ti
           <div class="field"><label class="check"><input type="checkbox" name="published" value="1" checked={(a.status ?? 'published') === 'published'} /> Birta á vefnum</label></div>
         </div>
         {error && <p class="flash err">{error}</p>}
-        <div class="form-actions"><button class="btn">Vista</button>{!isNew && <a class="btn ghost" href={`/um-hsk/heradsthing#${a.slug}`} target="_blank">Skoða á vef</a>}</div>
+        <div class="form-actions"><button class="btn">Vista</button>{!isNew && <a class="btn ghost" href={`/um-hsk/heradsthing#${a.slug}`} target="_blank">Skoða á vef</a>}<a class="btn ghost cancel" href="/stjorn/heradsthing" data-back>Hætta við</a></div>
       </form>
       {!isNew && (
         <form method="post" action={`/stjorn/heradsthing/${a.id}/eyda`} class="danger-zone" data-confirm="Eyða þessu þingi af vefnum? Skjölin sjálf haldast í „Myndir og skjöl“.">
@@ -904,6 +905,7 @@ app.get('/umsoknir/:id{[0-9]+}', async (c) => {
         <div class="form-actions">
           <button class="btn" name="status" value={r.status === 'ny' ? 'afgreidd' : 'ny'}>{r.status === 'ny' ? 'Merkja afgreidda' : 'Merkja sem nýja'}</button>
           <button class="btn ghost" name="status" value={r.status}>Vista athugasemd</button>
+          <a class="btn ghost cancel" href="/stjorn/umsoknir" data-back>Til baka</a>
         </div>
       </form>
       <form method="post" action={`/stjorn/umsoknir/${r.id}/eyda`} class="danger-zone" data-confirm="Eyða umsókninni og fylgiskjölum hennar fyrir fullt og allt?">
@@ -1319,6 +1321,7 @@ async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | 
             </>
           )}
           {!isNew && isStaff(user) && <a class="btn ghost" href={`/stjorn/saga/${t.table}/${row!.id}`}>Breytingasaga</a>}
+          <a class="btn ghost cancel" href={isStaff(user) || !t.clubOwnRecord ? `/stjorn/${t.key}` : '/stjorn'} data-back>Hætta við</a>
         </div>
       </form>
       {t.table === 'albums' && row?.id && (

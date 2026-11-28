@@ -192,6 +192,18 @@
     });
   }
 
+  // „Hætta við“: aftur á fyrri lista. Ef komið var af listanum er farið til baka svo síur og blaðsíða haldist.
+  document.querySelectorAll('a[data-back]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      let ref = null;
+      try { ref = document.referrer ? new URL(document.referrer) : null; } catch { ref = null; }
+      if (ref && ref.origin === location.origin && ref.pathname === a.getAttribute('href') && history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  });
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {

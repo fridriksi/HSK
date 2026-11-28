@@ -281,6 +281,14 @@ try {
   await admin.waitForURL(/m=birt/);
   ok((await (await fetch(`${BASE}/mot/dagskra?tegund=mot`)).text()).includes(`Héraðsmót ${stamp}`), 'Mót birtist í Mót og viðburðir (sía: mót)');
 
+  // 4a. Hætta við: fer aftur á listann og heldur síum
+  await admin.goto(`${BASE}/stjorn/vidburdir?q=${encodeURIComponent('Héraðsmót')}`);
+  await Promise.all([admin.waitForURL(`${BASE}/stjorn/vidburdir/nytt`), admin.click('a[href="/stjorn/vidburdir/nytt"]')]);
+  await Promise.all([admin.waitForURL(/\/stjorn\/vidburdir\?q=/), admin.click('.form-actions a[data-back]')]);
+  await admin.goto(`${BASE}/stjorn/frettir/nytt`);
+  await Promise.all([admin.waitForURL(`${BASE}/stjorn/frettir`), admin.click('.form-actions a[data-back]')]);
+  ok(true, 'Hætta við fer aftur á listann (og heldur síum ef komið var þaðan)');
+
   // 4b. Skrá úrslit: val á móti úr Mót og viðburðir fyllir út heiti, dagsetningu og grein
   await admin.goto(`${BASE}/stjorn/urslit/nytt`);
   const evVal = await admin.$eval('#f_event_id', (sel, t) => [...sel.options].find((o) => o.textContent.includes(t))?.value, `Héraðsmót ${stamp}`);
