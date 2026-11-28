@@ -102,6 +102,13 @@ app.get('/', async (c) => {
   const tiles = (await getSetting(db, 'home_tiles', DEFAULT_TILES)).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[2]);
   const photos = await all<{ src: string; slug: string; title: string }>(db, "SELECT coalesce(nullif(a.cover, ''), (SELECT src FROM photos p WHERE p.album_id = a.id ORDER BY sort LIMIT 1)) AS src, a.slug, a.title FROM albums a ORDER BY a.date DESC, a.id DESC LIMIT 6").then((r) => r.filter((x) => x.src));
 
+  // Auglýsingar: ein af handahófi í hverju plássi af þeim sem eru virkar í dag
+  const adRows = await all<Ad & { slot: string }>(db,
+    `SELECT slot, title, image, url FROM ads WHERE active = 'birt' AND image <> ''
+       AND (active_from IS NULL OR active_from = '' OR active_from <= ?) AND (active_to IS NULL OR active_to = '' OR active_to >= ?)
+     ORDER BY random()`, today(), today());
+  const ad = (slot: string) => adRows.find((a) => a.slot === slot);
+
   return render(c, 'Forsíða', (
     <div class="home2">
       {hero.title && (
@@ -117,6 +124,8 @@ app.get('/', async (c) => {
         </section>
       )}
 
+      <div class="home2-body">
+      {ad('forsida-hlid') && <aside class="ad-side" aria-label="Auglýsing"><div class="ad-side-in"><AdBanner ad={ad('forsida-hlid')!} /></div></aside>}
       {lead && (
         <section class="wrap h2-block">
           <div class="h2-head"><h2>Fréttir</h2><a href="/frettir">Allar fréttir</a></div>
@@ -141,6 +150,8 @@ app.get('/', async (c) => {
           </div>
         </section>
       )}
+
+      {ad('forsida-midja') && <div class="wrap ad-row"><AdBanner ad={ad('forsida-midja')!} /></div>}
 
       <section class="wrap h2-block">
         <div class="h2-head"><h2>Framundan</h2><a href="/mot/dagskra">Viðburðadagatal</a></div>
@@ -172,6 +183,8 @@ app.get('/', async (c) => {
           </div>
         </div>
       </section>
+
+      {ad('forsida-nedri') && <div class="wrap ad-row"><AdBanner ad={ad('forsida-nedri')!} /></div>}
 
       <section class="wrap h2-block h2-finder">
         <div>
@@ -209,9 +222,22 @@ app.get('/', async (c) => {
           {tiles.map(([t, txt, url]) => <a href={url}><strong>{t}</strong><span>{txt}</span></a>)}
         </section>
       )}
+      </div>
     </div>
   ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
 });
+
+type Ad = { title: string; image: string; url: string };
+
+/** Auglýsing: mynd með tengli, merkt sem auglýsing */
+const AdBanner = ({ ad }: { ad: Ad }) => (
+  <div class="ad">
+    <span class="ad-label">Auglýsing</span>
+    {ad.url
+      ? <a href={ad.url} target="_blank" rel="noopener sponsored"><img src={ad.image} alt={ad.title} loading="lazy" /></a>
+      : <img src={ad.image} alt={ad.title} loading="lazy" />}
+  </div>
+);
 
 // ---------- Fréttir ----------
 

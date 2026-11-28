@@ -361,6 +361,19 @@ try {
   ok(withSocial.includes('social-band') && withSocial.includes('https://www.instagram.com/hsk.prufa') && !(await (await fetch(`${BASE}/`)).text()).includes('social-band'),
     'Samfélagsmiðlar birtast í röð fyrir ofan fótinn aðeins þegar slóð er skráð');
 
+  // 3p. Auglýsingar: auglýsing í plássi 1 birtist á forsíðu og hverfur þegar hún er falin
+  await admin.goto(`${BASE}/stjorn/auglysingar/nytt`);
+  await admin.fill('#f_title', `Prufuauglýsing ${stamp}`);
+  await admin.selectOption('#f_slot', 'forsida-midja');
+  await admin.fill('#f_image', `/img/hsk-merki-512.png?ad=${stamp}`);
+  await admin.fill('#f_url', 'https://example.com/auglysing');
+  await Promise.all([admin.waitForURL(/auglysingar\/\d+\?m=/), admin.click('.form-actions button:has-text("Vista")')]);
+  const adHome = await (await fetch(`${BASE}/`)).text();
+  await admin.selectOption('#f_active', 'falin');
+  await Promise.all([admin.waitForURL(/auglysingar\/\d+\?m=/), admin.click('.form-actions button:has-text("Vista")')]);
+  ok(adHome.includes(`ad=${stamp}`) && adHome.includes('ad-row') && !(await (await fetch(`${BASE}/`)).text()).includes(`ad=${stamp}`),
+    'Auglýsing birtist í auglýsingaplássi á forsíðu og hverfur þegar hún er falin');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

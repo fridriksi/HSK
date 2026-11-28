@@ -47,6 +47,13 @@ export const SPORTS = ['Almenningsíþróttir', 'Blak', 'Borðtennis', 'Bogfimi'
 const sportOptions = Object.fromEntries(SPORTS.map((s) => [s, s]));
 
 /** Sveitarfélög á sambandssvæði HSK (Árnessýsla og Rangárvallasýsla) */
+/** Auglýsingapláss á forsíðu og stærð myndar sem passar í hvert */
+export const AD_SLOTS: Record<string, string> = {
+  'forsida-midja': 'Forsíða 1: borði milli frétta og Framundan (1200 × 200 px)',
+  'forsida-hlid': 'Forsíða 2: hliðarborði meðfram síðunni, breiðir skjáir (160 × 600 px)',
+  'forsida-nedri': 'Forsíða 3: borði neðar á síðunni, fyrir ofan félagaleit (1200 × 200 px)',
+};
+
 export const AREAS = ['Ásahreppur', 'Bláskógabyggð', 'Flóahreppur', 'Grímsnes- og Grafningshreppur', 'Hrunamannahreppur', 'Hveragerðisbær', 'Rangárþing eystra', 'Rangárþing ytra', 'Skeiða- og Gnúpverjahreppur', 'Sveitarfélagið Árborg', 'Sveitarfélagið Ölfus'];
 const areaOptions = Object.fromEntries(AREAS.map((a) => [a, a]));
 
@@ -206,6 +213,20 @@ export const contentTypes: ContentType[] = [
     ],
     listColumns: [{ field: 'name', label: 'Nafn' }, { field: 'tier', label: 'Flokkur', format: 'option' }, { field: 'active_to', label: 'Til', format: 'date' }],
     searchFields: ['name'],
+  },
+  {
+    key: 'auglysingar', table: 'ads', label: 'Auglýsingar', singular: 'auglýsingu', titleField: 'title', order: 'slot, title',
+    fields: [
+      { name: 'title', label: 'Heiti (sést ekki á vefnum)', type: 'text', required: true, help: 'T.d. „Arion banki – vetur 2026“' },
+      { name: 'slot', label: 'Auglýsingapláss', type: 'select', options: AD_SLOTS, help: 'Myndin þarf að vera í stærðinni sem plássið gefur upp, eða í sömu hlutföllum. Ef fleiri en ein auglýsing er í sama plássi birtist ein þeirra af handahófi.' },
+      { name: 'image', label: 'Auglýsing (mynd)', type: 'image', required: true },
+      { name: 'url', label: 'Tengill', type: 'url', help: 'Slóð sem opnast þegar smellt er á auglýsinguna.' },
+      { name: 'active', label: 'Birta', type: 'select', options: { birt: 'Já', falin: 'Nei (falin)' } },
+      { name: 'active_from', label: 'Birtist frá', type: 'date' },
+      { name: 'active_to', label: 'Birtist til', type: 'date', help: 'Tómt = ótímabundið' },
+    ],
+    listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'slot', label: 'Pláss', format: 'option' }, { field: 'active', label: 'Birt', format: 'option' }, { field: 'active_to', label: 'Til', format: 'date' }],
+    searchFields: ['title'],
   },
   {
     key: 'myndasofn', table: 'albums', label: 'Myndasöfn', singular: 'albúm', titleField: 'title', dateField: 'date', order: 'date DESC', slug: true,

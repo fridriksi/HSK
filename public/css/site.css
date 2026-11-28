@@ -578,3 +578,21 @@ details.record[open] { padding-bottom: 12px; }
   .hn .news-card.big h3 { font-size: 1.3rem; }
   .hn-row a { grid-template-columns: 112px minmax(0, 1fr); }
 }
+
+/* Auglýsingar á forsíðu */
+.home2-body { position: relative; }
+.ad { display: grid; gap: 4px; justify-items: center; }
+.ad-label { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ad img { display: block; max-width: 100%; height: auto; border-radius: var(--radius); }
+.ad-row { margin-block: 8px 0; }
+.ad-row img { width: 100%; max-width: 1200px; aspect-ratio: 6 / 1; object-fit: cover; }
+/* Hliðarborði: í auðu plássi hægra megin við efnið, fylgir þegar skrunað er; aðeins á breiðum skjám */
+.ad-side { display: none; }
+@media (min-width: 1560px) {
+  .ad-side { display: block; position: absolute; top: 40px; bottom: 40px; right: calc((100% - var(--wrap)) / 2 - 188px); width: 160px; }
+  .ad-side-in { position: sticky; top: 110px; }
+  .ad-side img { width: 160px; aspect-ratio: 160 / 600; object-fit: cover; }
+}
+.ad-row .ad { justify-items: stretch; }
+.ad-row .ad-label { justify-self: center; }
+.ad-row .ad a { display: block; }
