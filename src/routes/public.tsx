@@ -582,6 +582,21 @@ const GrantForm = ({ fields, intro, values = {}, error }: { fields: GrantField[]
   </section>
 );
 
+/** Tengill sem stendur einn í málsgrein og vísar á kafla á annarri síðu (t.d. reglugerð í Lögum og reglugerðum,
+ *  „/um-hsk/log-og-reglugerdir#reglugerd-…“) birtist sem fellilisti með texta kaflans á staðnum. */
+async function inlineSections(db: D1Database, html: string): Promise<string> {
+  const re = /<p>\s*<a href="\/([^"#?]+?)\/?#([a-z0-9-]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/p>/g;
+  const hits = [...html.matchAll(re)];
+  if (!hits.length) return html;
+  const chevron = (<Icon name="chevronDown" />).toString();
+  for (const m of hits) {
+    const ch = await one<{ body: string }>(db, "SELECT body FROM pages WHERE path = ? AND status = 'published'", `${m[1]}/${m[2]}`);
+    if (!ch?.body) continue;
+    html = html.replace(m[0], `<div class="accordion inline-acc"><details class="acc" id="${m[2]}"><summary>${m[3]}${chevron}</summary><div class="acc-body">${ch.body}</div></details></div>`);
+  }
+  return html;
+}
+
 /** Úthlutanir sem voru samþykktar og birtar í vefumsjón; bætast við töfluna úr gamla vefnum */
 async function grantExtras(db: D1Database): Promise<ExtraAward[]> {
   return all<ExtraAward>(db,
@@ -952,7 +967,7 @@ app.get('/*', async (c) => {
   const linked = new Set([...p.body.matchAll(/href="\/?([^"#?]+)/g)].map((m) => m[1].replace(/\/$/, '')));
   const inNav = new Set(section.map((x) => x.path));
   const extra = p.module ? [] : children.filter((ch) => !linked.has(ch.path) && !inNav.has(ch.path));
-  const body = p.module === 'grant' ? grantPageIntro(p.body) : p.body;
+  const body = await inlineSections(c.env.DB, p.module === 'grant' ? grantPageIntro(p.body) : p.body);
   return render(c, p.title, (
     <>
       <PageHead title={p.title} crumbs={crumbs} />

@@ -152,6 +152,8 @@ try {
   await Promise.all([admin.waitForURL(/\?m=/), admin.click('.grant-open-form button')]);
   ok(closedHtml.includes(`Lokað til vors ${stamp}`) && !closedHtml.includes('Senda umsókn') && closedPost.status === 303
     && (await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text()).includes('Senda umsókn'), 'Lokað fyrir umsóknir felur formið og opnað aftur sýnir það');
+  const grantPage = await (await fetch(`${BASE}/um-hsk/verkefnasjodur`)).text();
+  ok(!grantPage.includes('Reglugerð fyrir Verkefnasjóð') || /inline-acc[\s\S]*?<summary>Reglugerð fyrir Verkefnasjóð[\s\S]*?1\. gr/.test(grantPage), 'Reglugerð birtist í fellilista á síðu Verkefnasjóðs');
   // Umsóknarform stillt í vefumsjón: nýr fellilisti birtist á vefnum og svarið vistast með umsókninni
   await admin.goto(`${BASE}/stjorn/umsoknir/form`);
   await admin.click('[data-ff-add]');
