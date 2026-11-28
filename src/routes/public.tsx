@@ -76,18 +76,18 @@ app.get('/forsida-ny', (c) => c.redirect('/', 301));
 app.get('/', async (c) => {
   const db = c.env.DB;
   const s = (k: string) => getSetting(db, k, '');
-  const news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 9");
+  const news = await all<NewsRow & { id: number }>(db, "SELECT id, slug, title, excerpt, body, image, published_at, kind, author FROM news WHERE status = 'published' AND published_at <= datetime('now') ORDER BY published_at DESC LIMIT 7");
   // Stóra myndin: stillt í vefumsjón, annars nýjasta fréttin með mynd
   let hero = { title: await s('hero_title'), text: await s('hero_text'), image: await s('hero_image'), link: await s('hero_link'), button: await s('hero_button') };
   if (!hero.title) {
     const n = news.find((x) => x.image) ?? news[0];
     if (n) hero = { title: n.title, text: n.excerpt || plainText(n.body, 160), image: n.image, link: '/frett/' + n.slug, button: 'Lesa frétt' };
   }
-  // Fréttir: ein aðalfrétt, tvær með lítilli mynd og fimm eldri í lista (fréttin í stóru myndinni ekki endurtekin)
+  // Fréttir: ein aðalfrétt, tvær með lítilli mynd og þrjár eldri í lista (jafnhátt aðalfréttinni) (fréttin í stóru myndinni ekki endurtekin)
   const rest = news.filter((n) => '/frett/' + n.slug !== hero.link);
   const [lead, ...others] = rest;
   const side = others.slice(0, 2);
-  const older = others.slice(2, 7);
+  const older = others.slice(2, 5);
   const events = await all<EventRow>(db, "SELECT id, kind, title, starts_at, ends_at, location, sport, image FROM events WHERE status = 'published' AND substr(coalesce(ends_at, starts_at), 1, 10) >= ? ORDER BY starts_at LIMIT 6", today());
   const results = await all<{ id: number; title: string; date: string; sport: string }>(db, "SELECT id, title, date, sport FROM results WHERE status = 'published' ORDER BY date DESC LIMIT 5");
   // Nýjustu metin úr töflunni á síðunni HSK met
