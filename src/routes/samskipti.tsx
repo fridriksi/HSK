@@ -65,7 +65,6 @@ export function samskiptiRoutes(page: PageFn) {
         <div class="title-row">
           <div><h1>Samskipti</h1><p class="lead">Fjölpóstur til tengiliða HSK og aðildarfélaga.</p></div>
           <div class="title-actions">
-            <button class="btn ghost" disabled title="SMS-gátt er ekki tengd enn">Senda SMS</button>
             <form method="post" action="/stjorn/samskipti/nytt" class="inline"><button class="btn">Senda tölvupóst</button></form>
           </div>
         </div>
