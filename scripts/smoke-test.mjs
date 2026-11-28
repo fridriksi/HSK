@@ -216,6 +216,13 @@ try {
   const recs = await (await fetch(`${BASE}/mot/hsk-met/gogn`)).json();
   const mine = recs.find((r) => r.athlete === `Prufa Metsdóttir ${stamp}`);
   ok(mine && mine.result === '6,99' && mine.categories.includes('Innanhúss') && mine.date === '20.11.2026', 'Nýja metið birtist í töflunni á HSK met');
+  const entryUrl = admin.url().split('?')[0];
+  await admin.goto(`${BASE}/stjorn/ny-met`);
+  await admin.waitForSelector('[data-record-catalogue] fieldset:not([disabled])');
+  await admin.fill('#records-search', `Metsdóttir ${stamp}`);
+  await admin.waitForTimeout(400);
+  ok(await admin.locator(`[data-record-catalogue] a[href="${new URL(entryUrl).pathname}"]:has-text("Breyta")`).count() > 0, 'Skráð met birtast í öllu metatöflunni í vefumsjón með tengli til að breyta');
+  await admin.goto(entryUrl);
   await admin.click('button:has-text("Eyða")');
   await admin.waitForURL(/m=eytt/);
 

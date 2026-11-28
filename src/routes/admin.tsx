@@ -12,6 +12,8 @@ import {
 import { sendMail, notifyAdmins } from '../mail';
 import { GRANT_FIELDS } from '../grant';
 import { archivedRecords } from '../record-catalogue-data';
+import { catalogueRows } from '../record-rows';
+import { RecordCatalogue } from '../views/record-catalogue';
 import { DEFAULT_TILES } from '../lib';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
@@ -933,6 +935,23 @@ app.post('/saga/:rev{[0-9]+}/endurheimta', async (c) => {
   await logRevision(db, rev.entity, rev.entity_id, c.get('user')!.id, 'restore', data);
   const t = contentTypes.find((x) => x.table === rev.entity);
   return c.redirect((rev.entity === 'pages' ? `/stjorn/sidur/${rev.entity_id}` : `/stjorn/${t?.key}/${rev.entity_id}`) + '?m=endurheimt');
+});
+
+// ---------- HSK met: öll met í einni töflu ----------
+
+// „Skráð met“ sýnir allar línur úr töflunni á vefnum; met skráð í vefumsjón fá tengilinn „Breyta“
+app.get('/ny-met', async (c) => {
+  const deny = staffOnly(c); if (deny) return deny;
+  const rows = await catalogueRows(c.env);
+  const entries = rows.filter((r) => r.entry).length;
+  return page(c, 'HSK met', 'ny-met', (
+    <>
+      <div class="title-row"><h1>HSK met</h1><a class="btn" href="/stjorn/ny-met/nytt">Skrá nýtt met</a></div>
+      <nav class="subtabs"><a href="/stjorn/ny-met" class="on">Skráð met</a><a href="/stjorn/met">Metaskrár (Excel)</a></nav>
+      <p class="lead">Öll met eins og þau birtast á síðunni <a href="/mot/hsk-met" target="_blank">HSK met</a>. {entries > 0 ? `${entries} met hafa verið skráð hér í vefumsjón og má breyta þeim.` : 'Met sem skráð eru hér birtast strax í töflunni.'} Met úr metaskrám breytast í gegnum metaskrána sjálfa.</p>
+      <RecordCatalogue rows={rows} admin />
+    </>
+  ));
 });
 
 // ---------- Almennar efnistegundir ----------

@@ -169,3 +169,36 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 .filter-bar input, .filter-bar select { min-height: 40px; background: #fff; border-color: #cdd5e4; }
 .filter-bar select { min-width: 170px; }
 .filter-bar .btn { min-height: 40px; }
+
+/* HSK met: sama tafla og á vefnum (afrit úr site.css) */
+.record-table-section { margin-block: 24px 32px; }
+.record-table-section h3 { margin: 0 0 10px; }
+.record-table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+.record-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.record-table th, .record-table td { min-width: 72px; text-align: left; padding: 9px 12px; vertical-align: top; border-bottom: 1px solid var(--line); white-space: pre-line; }
+.record-table th:first-child { min-width: 120px; }
+.record-table thead th, .record-table tbody tr:nth-child(even) { background: var(--tint); }
+.record-table tbody tr:last-child > * { border-bottom: 0; }
+.record-catalogue { margin-bottom: 32px; }
+.record-catalogue-form fieldset { display: grid; grid-template-columns: minmax(160px, 1.3fr) minmax(140px, 1.1fr) minmax(120px, 1fr) minmax(95px, .65fr) minmax(85px, .55fr) auto auto; gap: 12px; align-items: end; padding: 0; margin: 0; border: 0; min-width: 0; }
+.record-catalogue-field { display: grid; gap: 4px; min-width: 0; }
+.record-catalogue-field label { font-weight: 600; }
+.record-catalogue-form input, .record-catalogue-form select { min-width: 0; width: 100%; min-height: 40px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); font: inherit; font-weight: 400; }
+.record-catalogue-pages { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-block: 16px 8px; }
+.record-catalogue-pages p { margin: 0; color: var(--muted); }
+.record-catalogue-pages button:disabled { opacity: .45; cursor: default; }
+.record-catalogue th button { border: 0; padding: 0; background: none; color: var(--ink); font: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
+.record-catalogue th button:not(:disabled):hover { text-decoration: underline; }
+.record-catalogue th button::after { content: ' ↕'; color: var(--muted); }
+.record-catalogue th[aria-sort='ascending'] button::after { content: ' ↑'; color: var(--blue); }
+.record-catalogue th[aria-sort='descending'] button::after { content: ' ↓'; color: var(--blue); }
+.record-catalogue td small { display: block; color: var(--muted); }
+.record-catalogue td:nth-child(5) { white-space: nowrap; }
+.record-current { display: flex; align-items: center; gap: 6px; min-height: 40px; white-space: nowrap; font-weight: 600; cursor: pointer; }
+.record-catalogue-form .record-current input { width: auto; min-height: 0; accent-color: var(--blue); }
+@media (max-width: 900px) {
+  .record-catalogue-form fieldset { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .record-catalogue-form button { justify-self: start; }
+}
+.record-catalogue { background: #fff; padding: 16px; border: 1px solid var(--line); border-radius: 6px; }
+.record-catalogue .muted { color: var(--muted); }

@@ -14,6 +14,8 @@ export type RecordResult = {
   book: string;
   sheet: number;
   teammates?: string;
+  /** Auðkenni mets sem skráð var í vefumsjón (record_entries) */
+  entry?: number;
 };
 
 export const CATALOGUE_PAGE_SIZE = 50;

@@ -4,8 +4,8 @@ import { asset } from '../static';
 
 const columns: [RecordSort, string][] = [['event', 'Grein'], ['result', 'Árangur'], ['athlete', 'Nafn'], ['category', 'Flokkur'], ['date', 'Met sett'], ['place', 'Staður']];
 
-export function RecordCatalogue({ rows }: { rows: RecordResult[] }) {
-  return <section class="record-catalogue" aria-label="Öll HSK met" data-record-catalogue={`${RECORDS_PATH}/gogn`}>
+export function RecordCatalogue({ rows, admin = false }: { rows: RecordResult[]; admin?: boolean }) {
+  return <section class="record-catalogue" aria-label="Öll HSK met" data-record-catalogue={`${RECORDS_PATH}/gogn`} data-record-admin={admin ? '1' : undefined}>
     <form class="record-catalogue-form" role="search" aria-label="Leita og sía HSK met">
       <fieldset disabled>
         <div class="record-catalogue-field"><label for="records-search">Leit</label><input id="records-search" name="leit" type="search" placeholder="Nafn, grein eða staður" /></div>
@@ -31,7 +31,7 @@ export function RecordCatalogue({ rows }: { rows: RecordResult[] }) {
           <td>{row.athlete || '—'}{row.teammates && <small>{row.teammates}</small>}</td>
           <td>{row.categories.join(' · ')}{row.groups.length > 0 && <small>{row.groups.join(' · ')}</small>}</td>
           <td>{row.date || '—'}</td><td>{row.place || '—'}</td>
-          <td>{catalogueSource(row) ? <a href={catalogueSource(row)} aria-label={`Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`}>Heimild</a> : <span class="muted">Nýtt met</span>}</td>
+          <td>{admin && row.entry ? <a href={`/stjorn/ny-met/${row.entry}`}>Breyta</a> : catalogueSource(row) ? <a href={catalogueSource(row)} aria-label={`Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`}>Heimild</a> : <span class="muted">Nýtt met</span>}</td>
         </tr>)}</tbody>
       </table>
     </div>

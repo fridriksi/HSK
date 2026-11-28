@@ -13,6 +13,7 @@ import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } fr
 import { buildCatalogue, mergeCatalogue, type RecordResult } from '../record-catalogue';
 import { archivedRecords } from '../record-catalogue-data';
 import { RecordCatalogue } from '../views/record-catalogue';
+import { catalogueRows } from '../record-rows';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 import { RECORD_CATEGORIES, AREAS } from '../content-types';
 
@@ -607,36 +608,9 @@ async function sectionPages(db: D1Database, path: string) {
     "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", path);
 }
 
-async function catalogueRows(c: Context<AppEnv>) {
-  const rows = await all<{ id: number; category: string; year: number | null; file: string }>(c.env.DB,
-    "SELECT id, category, year, file FROM records WHERE category <> 'reglur' AND file LIKE '/media/uploads/%.xlsx' ORDER BY year DESC, id DESC");
-  const books = await Promise.all(rows.map(async (row) => {
-    const key = uploadedRecordKey(row.file);
-    if (!key) return null;
-    const data = await c.env.MEDIA.get(key);
-    if (!data) return null;
-    return { id: `innflutt-${row.id}`, category: RECORD_CATEGORIES[row.category] ?? RECORD_CATEGORIES.annad, year: row.year, sheets: await data.json<RecordSheet[]>() };
-  }));
-  const available = books.filter((book) => book !== null);
-  // Met skráð í vefumsjón (Ný met)
-  const entries = await all<{ id: number; event: string; result: string; athlete: string; club: string; category: string; age_group: string; date: string; place: string; note: string }>(c.env.DB,
-    'SELECT * FROM record_entries ORDER BY date DESC, id DESC');
-  const added: RecordResult[] = entries.map((e) => {
-    const [y, m, d] = e.date.split('-').map(Number);
-    return {
-      key: JSON.stringify(['vefumsjon', e.id]), event: e.event, result: e.result, athlete: e.athlete, place: e.place,
-      date: `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`, dateKey: y * 10000 + m * 100 + d,
-      categories: [RECORD_CATEGORIES[e.category] ?? RECORD_CATEGORIES.annad], groups: e.age_group ? [e.age_group] : [],
-      book: '', sheet: 0, teammates: [e.club, e.note].filter(Boolean).join(' · ') || undefined,
-    };
-  });
-  const base = available.length ? mergeCatalogue([...buildCatalogue(available).rows, ...archivedRecords]) : archivedRecords;
-  return added.length ? mergeCatalogue([...added, ...base]) : base;
-}
-
 app.get(`${RECORDS_PATH}/gogn`, async (c) => {
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
-  return c.json((await catalogueRows(c)).map(({ key, ...row }) => row));
+  return c.json((await catalogueRows(c.env)).map(({ key, ...row }) => row));
 });
 
 app.get(`${RECORDS_PATH}/skra/:id`, async (c) => {
@@ -739,7 +713,7 @@ app.get('/*', async (c) => {
       const rules = rows.filter((r) => r.category === 'reglur' || (!r.file && r.body));
       moduleView = (
         <>
-          <RecordCatalogue rows={await catalogueRows(c)} />
+          <RecordCatalogue rows={await catalogueRows(c.env)} />
           {rules.length > 0 && <div class="accordion">{rules.map((r) => <details class="acc"><summary>{r.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={r.body} /></div></details>)}</div>}
           <details class="acc record-archive">
             <summary>Frumskrár og eldri útgáfur<Icon name="chevronDown" /></summary>

@@ -55,7 +55,12 @@ if (catalogue) {
     cell(tr, row.place);
     const source = document.createElement('td');
     const href = catalogueSource(row);
-    if (href) {
+    if (catalogue.dataset.recordAdmin && row.entry) {
+      const edit = document.createElement('a');
+      edit.href = `/stjorn/ny-met/${row.entry}`;
+      edit.textContent = 'Breyta';
+      source.append(edit);
+    } else if (href) {
       const link = document.createElement('a');
       link.href = href;
       link.textContent = 'Heimild';
