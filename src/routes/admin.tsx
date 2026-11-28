@@ -1588,10 +1588,12 @@ async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | 
                   <figure>
                     <img src={p.src} alt="" loading="lazy" />
                     <input type="hidden" name="id" value={String(p.id)} />
-                    <input name={`caption_${p.id}`} value={p.caption} placeholder="Myndatexti" aria-label="Myndatexti" />
-                    <div class="photo-tools">
-                      <input name={`sort_${p.id}`} type="number" value={String(p.sort || (i + 1) * 10)} aria-label="Röð" title="Röð" />
-                      <label class="check small"><input type="checkbox" name={`delete_${p.id}`} value="1" /> Eyða</label>
+                    <div class="photo-fields">
+                      <input class="photo-caption" name={`caption_${p.id}`} value={p.caption} placeholder="Myndatexti" aria-label={`Myndatexti myndar ${i + 1}`} />
+                      <div class="photo-tools">
+                        <label class="photo-order">Röð <input name={`sort_${p.id}`} type="number" step="any" value={String(i + 1)} aria-label={`Röð myndar ${i + 1}`} /></label>
+                        <label class="check small"><input type="checkbox" name={`delete_${p.id}`} value="1" /> Eyða</label>
+                      </div>
                     </div>
                   </figure>
                 ))}
@@ -1789,8 +1791,8 @@ app.post('/myndasofn/:id{[0-9]+}/baeta', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const { src, caption } = await c.req.json<{ src: string; caption?: string }>();
   if (!src || !src.startsWith('/media/')) return c.json({ error: 'Ógild slóð' }, 400);
-  const max = await one<{ s: number }>(c.env.DB, 'SELECT coalesce(max(sort), 0) + 10 AS s FROM photos WHERE album_id = ?', id);
-  await run(c.env.DB, 'INSERT INTO photos (album_id, src, caption, sort) VALUES (?, ?, ?, ?)', id, src, caption ?? '', max?.s ?? 10);
+  const max = await one<{ s: number }>(c.env.DB, 'SELECT coalesce(max(sort), 0) + 1 AS s FROM photos WHERE album_id = ?', id);
+  await run(c.env.DB, 'INSERT INTO photos (album_id, src, caption, sort) VALUES (?, ?, ?, ?)', id, src, caption ?? '', max?.s ?? 1);
   await run(c.env.DB, "UPDATE albums SET cover = ? WHERE id = ? AND cover = ''", src, id);
   return c.json({ ok: true });
 });
@@ -1802,15 +1804,22 @@ app.post('/myndasofn/:id{[0-9]+}/myndir', async (c) => {
   const f = await c.req.formData();
   const stmts: D1PreparedStatement[] = [];
   const deleted: string[] = [];
-  for (const raw of f.getAll('id')) {
+  // Röð: raðað eftir tölunum sem voru slegnar inn (jafnar tölur halda fyrri röð) og síðan númerað 1, 2, 3 …
+  const keep: { pid: number; n: number; idx: number }[] = [];
+  for (const [idx, raw] of f.getAll('id').entries()) {
     const pid = parseInt(String(raw), 10);
     if (f.get(`delete_${pid}`)) {
       const ph = await one<{ src: string }>(db, 'SELECT src FROM photos WHERE id = ? AND album_id = ?', pid, albumId);
       if (ph) deleted.push(ph.src);
       stmts.push(db.prepare('DELETE FROM photos WHERE id = ? AND album_id = ?').bind(pid, albumId));
+    } else {
+      const n = parseFloat(String(f.get(`sort_${pid}`) ?? '').replace(',', '.'));
+      keep.push({ pid, n: Number.isFinite(n) ? n : idx + 1, idx });
     }
-    else stmts.push(db.prepare('UPDATE photos SET caption = ?, sort = ? WHERE id = ? AND album_id = ?').bind(String(f.get(`caption_${pid}`) || ''), parseInt(String(f.get(`sort_${pid}`) || '0'), 10) || 0, pid, albumId));
   }
+  keep.sort((a, b) => a.n - b.n || a.idx - b.idx).forEach(({ pid }, rank) => {
+    stmts.push(db.prepare('UPDATE photos SET caption = ?, sort = ? WHERE id = ? AND album_id = ?').bind(String(f.get(`caption_${pid}`) || ''), rank + 1, pid, albumId));
+  });
   if (stmts.length) await db.batch(stmts);
   // Ef forsíðumynd var eytt er fyrsta mynd notuð
   const album = await one<{ cover: string }>(db, 'SELECT cover FROM albums WHERE id = ?', albumId);

@@ -413,6 +413,12 @@ try {
   await admin.setInputFiles('.upload-drop input[type=file]', ['seed/media/ithrottaeldhugi.jpg', 'seed/media/sjalfbodalidar.png']);
   await admin.waitForSelector('.photo-grid figure:nth-child(2)', { timeout: 20000 });
   ok(await admin.locator('.photo-grid figure').count() === 2, 'Tvær myndir hlaðnar í albúm');
+  // Röð mynda er 1, 2, 3 …; mynd sem fær röð 0 fer fremst og síðan er númerað upp á nýtt
+  ok((await admin.inputValue('.photo-grid figure:nth-child(1) input[name^=sort_]')) === '1' && (await admin.inputValue('.photo-grid figure:nth-child(2) input[name^=sort_]')) === '2', 'Röð mynda er númeruð 1, 2');
+  const secondSrc = await admin.getAttribute('.photo-grid figure:nth-child(2) img', 'src');
+  await admin.fill('.photo-grid figure:nth-child(2) input[name^=sort_]', '0');
+  await Promise.all([admin.waitForURL(/m=myndir/), admin.click('button:has-text("Vista myndatexta og röð")')]);
+  ok((await admin.getAttribute('.photo-grid figure:nth-child(1) img', 'src')) === secondSrc && (await admin.inputValue('.photo-grid figure:nth-child(2) input[name^=sort_]')) === '2', 'Breytt röð mynda vistast og er númeruð upp á nýtt');
 
   // 5b. Myndir og skjöl: eyða ónotaðri skrá; skrá sem er notuð í myndasafni er ekki eytt
   const usedSrc = await admin.getAttribute('.photo-grid figure img', 'src');
