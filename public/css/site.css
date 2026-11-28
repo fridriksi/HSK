@@ -175,7 +175,6 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .filter-input::placeholder, .filter-field > input::placeholder { color: var(--muted); opacity: 1; }
 .filter-row .btn { justify-self: start; min-height: 44px; }
 .filter-compact, .search-big { max-width: 480px; }
-.filter-sport { flex: 1 1 10rem; max-width: 260px; }
 .filter-options > div { display: flex; flex-wrap: wrap; gap: 6px; }
 .filter-options a {
   display: inline-flex; align-items: center; min-height: 44px; padding: 6px 12px;
