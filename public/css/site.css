@@ -159,6 +159,8 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .grant-awards { margin-bottom: 2rem; scroll-margin-top: 6rem; }
 .filter-row { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 0 0 20px; min-width: 0; }
 .filter-row > .filter-field { flex: 0 1 var(--filter-width); }
+/* Leitarreitur er breiðari en fellilistar svo leitarorð og leiðbeiningartexti sjáist í heild */
+.filter-row > .filter-field:has(input[type="search"]) { flex: 1 1 22rem; max-width: 34rem; }
 .filter-field { display: grid; gap: 4px; min-width: 0; }
 .filter-field > label { font-weight: 600; }
 .filter-input, .filter-field > :is(input[type="search"], select) {

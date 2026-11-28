@@ -1008,36 +1008,57 @@ app.get('/*', async (c) => {
       break;
     }
     case 'documents': {
+      // Fundargerðir og skjöl: leit í titli og lýsingu, ár og flokkur; skjöl flokkuð eftir árum
       const cat = c.req.query('flokkur') || '';
+      const term = (c.req.query('q') || '').trim().slice(0, 100);
+      const year = /^\d{4}$/.test(c.req.query('ar') || '') ? c.req.query('ar')! : '';
+      const where: string[] = [];
+      const params: unknown[] = [];
+      if (cat) { where.push('category = ?'); params.push(cat); }
+      if (year) { where.push("substr(date, 1, 4) = ?"); params.push(year); }
+      for (const w of term.split(/\s+/).filter(Boolean)) { where.push('(title LIKE ? OR body LIKE ?)'); params.push(`%${w}%`, `%${w}%`); }
       const rows = await all<{ id: number; title: string; category: string; date: string; file: string; body: string }>(c.env.DB,
-        `SELECT * FROM documents ${cat ? 'WHERE category = ?' : ''} ORDER BY date DESC LIMIT 400`, ...(cat ? [cat] : []));
+        `SELECT * FROM documents ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY date DESC LIMIT 500`, ...params);
       const cats: Record<string, string> = { fundargerd: 'Fundargerðir', arsskyrsla: 'Ársskýrslur', log: 'Lög og reglugerðir', eydublad: 'Eyðublöð', aaetlun: 'Stefnur og áætlanir', met: 'Metaskrár', annad: 'Annað' };
       // Inngangstexti flokks: undirsíða skjalasafnsins með sama slóðarheiti og flokkurinn
       const intro = cat ? children.find((ch) => ch.slug === cat) : undefined;
-      // Aðeins flokkar sem innihalda skjöl fá hnapp
+      // Aðeins flokkar og ár sem innihalda skjöl eru í boði
       const used = new Set((await all<{ category: string }>(c.env.DB, 'SELECT DISTINCT category FROM documents')).map((r) => r.category));
       const shown = Object.entries(cats).filter(([k]) => used.has(k));
+      const years = (await all<{ y: string }>(c.env.DB, "SELECT DISTINCT substr(date, 1, 4) AS y FROM documents WHERE date IS NOT NULL AND date <> '' ORDER BY y DESC")).map((r) => r.y).filter(Boolean);
+      const byYear = new Map<string, typeof rows>();
+      for (const d of rows) { const y = (d.date || '').slice(0, 4) || 'Án dagsetningar'; byYear.set(y, [...(byYear.get(y) ?? []), d]); }
       moduleView = (
         <>
-          {shown.length > 1 && <form action={base} method="get" class="filter-row" aria-label="Sía skjöl">
-            <FilterField id="document-category" label="Flokkur">
-              <select id="document-category" name="flokkur" data-autosubmit>
+          <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í fundargerðum og skjölum" data-section-search>
+            <SectionSearchField term={term} placeholder="T.d. stjórnarfundur, ársskýrsla eða frjálsíþróttaráð" />
+            <YearFilter id="ar" years={years} year={year} />
+            {shown.length > 1 && <FilterField id="document-category" label="Flokkur">
+              <select id="document-category" name="flokkur">
                 <option value="">Allir flokkar</option>
                 {shown.map(([key, title]) => <option value={key} selected={cat === key}>{title}</option>)}
               </select>
-            </FilterField>
-            <noscript><button class="btn">Sía</button></noscript>
-          </form>}
-          {intro && <div class="cat-intro"><Prose html={intro.body} /></div>}
-          <ul class="doc-list">
-            {rows.map((d) => (
-              <li>
-                <time>{dateLong(d.date)}</time>
-                {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
-                <span class="muted small">{cats[d.category] ?? d.category}</span>
-              </li>
+            </FilterField>}
+            <button class="btn">Leita</button>
+          </form>
+          <div id="section-results" data-count={rows.length}>
+            {intro && <div class="cat-intro"><Prose html={intro.body} /></div>}
+            {rows.length === 0 && <p class="muted">Engin skjöl fundust. Prófaðu annað leitarorð eða veldu „Öll ár“.</p>}
+            {[...byYear].map(([y, list]) => (
+              <section class="month-group">
+                <h2>{y}</h2>
+                <ul class="doc-list">
+                  {list.map((d) => (
+                    <li>
+                      <time>{dateLong(d.date)}</time>
+                      {d.file ? <div class="doc-main"><a href={d.file}><Icon name="file" />{d.title}</a>{d.body && <div class="doc-desc"><Prose html={d.body} /></div>}</div> : <details><summary>{d.title}</summary><Prose html={d.body} /></details>}
+                      <span class="muted small">{cats[d.category] ?? d.category}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         </>
       );
       break;
