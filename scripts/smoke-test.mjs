@@ -270,6 +270,39 @@ try {
   ok(asClub && await admin.locator('.view-banner').count() === 0 && await admin.locator('a:has-text("Notendur")').count() > 0,
     'Sýn: stjórnandi skoðar sem félagsaðgangur og fer aftur í eigin aðgang');
 
+  // 3n. Samskipti: tengiliðir fluttir inn, útsending búin til, prufupóstur, sending og niðurstöður (þróunarhamur sendir ekki í raun)
+  await admin.goto(`${BASE}/stjorn/samskipti/tengilidir`);
+  const campClub = await admin.$eval('#c-club option:nth-child(2)', (o) => ({ id: o.value, name: o.textContent.trim() }));
+  await admin.fill('textarea[name=rows]', [
+    `Anna Prófa\tanna.${stamp}@example.com\t8881111\tformaður\t${campClub.name}`,
+    `Bjarni Prófa\tbjarni.${stamp}@example.com\t\tfélagi\t${campClub.name}`,
+    `Án Netfangs ${stamp}\t\t\tfélagi\t${campClub.name}`,
+  ].join('\n'));
+  await Promise.all([admin.waitForURL(/tengilidir\?m=/), admin.click('form[action$="innflutningur"] button')]);
+  ok((await admin.textContent('.flash')).includes('3 tengiliðum bætt við'), 'Samskipti: tengiliðir fluttir inn úr Excel');
+  await admin.goto(`${BASE}/stjorn/samskipti`);
+  await Promise.all([admin.waitForURL(/samskipti\/\d+$/), admin.click('button:has-text("Senda tölvupóst")')]);
+  const campUrl = admin.url();
+  await admin.fill('input[name=internal_name]', `Prufuútsending ${stamp}`);
+  await admin.check(`input[name=aud_clubs][value="${campClub.id}"]`);
+  await admin.fill('input[name=subject]', `Fréttabréf ${stamp}`);
+  await setRte(admin, '<p>Halló félagar, <a href="https://hsk.is">sjá vefinn</a>.</p>');
+  await admin.waitForFunction(() => /\d+ í hópi · \d+ hægt að senda á/.test(document.querySelector('[data-aud-count]').textContent), null, { timeout: 15000 });
+  const countText = await admin.textContent('[data-aud-count]');
+  await Promise.all([admin.waitForURL(/\?m=/), admin.click('button:has-text("Senda prufupóst")')]);
+  const [, inGroup, canSend] = countText.replace(/\./g, '').match(/(\d+) í hópi · (\d+) hægt/) || [];
+  ok((await admin.textContent('.flash')).includes('Prufupóstur sendur') && Number(inGroup) >= 3 && Number(inGroup) - Number(canSend) >= 1,
+    'Samskipti: viðtakendur taldir og prufupóstur sendur');
+  await Promise.all([admin.waitForURL(/nidurstodur/), admin.click('[data-send]')]);
+  await admin.waitForTimeout(800);
+  await admin.reload();
+  const res = await admin.textContent('main');
+  ok(res.includes('Ekkert netfang') && res.includes(`Án Netfangs ${stamp}`) && /Afhent\s*[1-9]/.test(res), 'Samskipti: útsending send og niðurstöður sýna afhent og ástæðu');
+  await admin.goto(`${BASE}/stjorn/samskipti?tab=sent`);
+  ok((await admin.textContent('main')).includes(`Fréttabréf ${stamp}`), 'Samskipti: send útsending birtist í yfirliti');
+  ok((await fetch(`${BASE}/afskra?t=ogilt.tak`)).status === 400 && (await fetch(`${BASE}/postmark/webhook/rangt`, { method: 'POST', body: '{}' })).status === 403,
+    'Samskipti: ógildur afskráningartengill og óheimil stöðutilkynning hafnað');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

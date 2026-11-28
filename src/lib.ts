@@ -14,6 +14,12 @@ export type Env = {
   IMPORT_TOKEN?: string;
   LOGIN_KEY?: string;
   RESEND_API_KEY?: string;
+  // Postmark: þjónslykill, leynilykill í slóð stöðutilkynninga og heiti strauma (kerfispóstur / fjöldapóstur)
+  POSTMARK_SERVER_TOKEN?: string;
+  POSTMARK_WEBHOOK_KEY?: string;
+  POSTMARK_STREAM?: string;
+  POSTMARK_BROADCAST_STREAM?: string;
+  UNSUBSCRIBE_SECRET?: string;
 };
 
 export type Role = 'admin' | 'editor' | 'club';

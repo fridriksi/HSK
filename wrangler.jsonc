@@ -15,9 +15,14 @@
     "STAFF_DOMAIN": "hsk.is",
     // Sendandi kerfispósts. Til bráðabirgða frá hostly.is (Resend) þar til hsk.is er komið á Cloudflare
     "EMAIL_FROM": "vefur-hsk@hostly.is",
+    // Postmark: heiti strauma fyrir kerfispóst og fjöldapóst
+    "POSTMARK_STREAM": "outbound",
+    "POSTMARK_BROADCAST_STREAM": "broadcast",
     // Aðeins í þróun (.dev.vars): innskráningartengill birtist á skjánum
     "DEV_LOGIN_LINKS": "false"
-    // Leyndarmál (wrangler secret put): ADMIN_EMAILS, LOGIN_KEY, IMPORT_TOKEN, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY
+    // Leyndarmál (wrangler secret put): ADMIN_EMAILS, LOGIN_KEY, IMPORT_TOKEN, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY, POSTMARK_SERVER_TOKEN, POSTMARK_WEBHOOK_KEY, UNSUBSCRIBE_SECRET
   },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Samskipti: sendir tímasettar útsendingar og lotur úr biðröð
+  "triggers": { "crons": ["* * * * *"] }
 }

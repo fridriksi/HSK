@@ -23,11 +23,29 @@ function htmlFromText(text: string): string {
 
 /**
  * Sendir tölvupóst úr kerfinu (boð, innskráningartenglar, tilkynningar).
- * Notar Resend ef RESEND_API_KEY er stillt, annars Cloudflare Email Service (binding "EMAIL").
+ * Notar Postmark ef POSTMARK_SERVER_TOKEN er stillt, annars Resend (RESEND_API_KEY),
+ * annars Cloudflare Email Service (binding "EMAIL").
  * Ef hvorugt er stillt skilar fallið false, og í þróun birtist tengillinn þá á skjánum.
  */
 export async function sendMail(env: Env, to: string, subject: string, text: string, html?: string): Promise<boolean> {
   const content = html ?? htmlFromText(text);
+  if (env.POSTMARK_SERVER_TOKEN && env.EMAIL_FROM) {
+    try {
+      const res = await fetch('https://api.postmarkapp.com/email', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Postmark-Server-Token': env.POSTMARK_SERVER_TOKEN },
+        body: JSON.stringify({ From: `${FROM_NAME} <${env.EMAIL_FROM}>`, To: to, Subject: subject, TextBody: text, HtmlBody: content, MessageStream: env.POSTMARK_STREAM || 'outbound' }),
+      });
+      if (!res.ok) {
+        console.error('Póstsending (Postmark) mistókst', res.status, await res.text());
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Póstsending (Postmark) mistókst', e);
+      return false;
+    }
+  }
   if (env.RESEND_API_KEY && env.EMAIL_FROM) {
     try {
       const res = await fetch('https://api.resend.com/emails', {

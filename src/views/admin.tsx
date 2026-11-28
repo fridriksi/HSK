@@ -48,6 +48,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     <h3 class="side-h">Aðildarfélög</h3>
                     <ul>
                       {link('/stjorn/felog', 'Aðildarfélög', 'felog')}
+                      {link('/stjorn/samskipti', 'Samskipti', 'samskipti')}
                     </ul>
                     <h3 class="side-h">Um HSK</h3>
                     <ul>
@@ -70,6 +71,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     {link('/stjorn', 'Yfirlit', 'home')}
                     {contentTypes.filter((t) => t.clubSubmit || t.clubOwnRecord).map((t) =>
                       link(t.clubOwnRecord ? `/stjorn/${t.key}/${user.club_id ?? 0}` : `/stjorn/${t.key}`, t.clubOwnRecord ? 'Mitt félag' : t.label, t.key))}
+                    {link('/stjorn/samskipti', 'Samskipti', 'samskipti')}
                     {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
                   </ul>
                 )}

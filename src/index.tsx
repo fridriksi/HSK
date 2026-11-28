@@ -3,6 +3,8 @@ import type { AppEnv } from './lib';
 import { one } from './lib';
 import admin from './routes/admin';
 import site, { notFound } from './routes/public';
+import postur from './routes/postur';
+import { processQueue } from './campaigns';
 import { staticFile } from './static';
 
 const app = new Hono<AppEnv>();
@@ -29,6 +31,7 @@ app.get('/js/*', (c) => staticFile(new URL(c.req.url).pathname) ?? c.notFound())
 app.get('/img/*', (c) => staticFile(new URL(c.req.url).pathname) ?? c.notFound());
 
 app.route('/stjorn', admin);
+app.route('/', postur);
 app.route('/', site);
 app.notFound((c) => notFound(c));
 app.onError((err, c) => {
@@ -36,4 +39,10 @@ app.onError((err, c) => {
   return c.text('Villa kom upp. Reyndu aftur eftir smá stund.', 500);
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  // Á mínútu fresti: sendir tímasettar útsendingar og næstu lotur úr biðröð
+  async scheduled(_event: ScheduledController, env: AppEnv['Bindings'], ctx: ExecutionContext) {
+    ctx.waitUntil(processQueue(env));
+  },
+} satisfies ExportedHandler<AppEnv['Bindings']>;

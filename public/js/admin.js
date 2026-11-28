@@ -204,6 +204,64 @@
     });
   });
 
+  // Samskipti: ritill fyrir útsendingu (sjálfvirk vistun, flipar, viðtakendur, staðfesting)
+  const camp = document.querySelector('form.camp-editor');
+  if (camp) {
+    const id = camp.dataset.campaign;
+    const savedEl = camp.querySelector('[data-saved]');
+    const countEl = camp.querySelector('[data-aud-count]');
+    const sendBtn = camp.querySelector('[data-send]');
+    const fmt = (n) => Number(n).toLocaleString('de-DE');
+    let timer = null;
+    let saving = Promise.resolve();
+    const save = () => {
+      if (camp.querySelector('[name=subject]')?.disabled) return saving;
+      window.tinymce?.triggerSave?.();
+      saving = fetch(`/stjorn/samskipti/${id}/vista`, { method: 'POST', body: new FormData(camp), credentials: 'same-origin' })
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => {
+          if (!d) return;
+          savedEl.textContent = `Vistað kl. ${d.saved}`;
+          countEl.textContent = d.empty ? 'Enginn hópur valinn' : `${fmt(d.total)} í hópi · ${fmt(d.sendable)} hægt að senda á`;
+          if (sendBtn && !sendBtn.textContent.startsWith('Senda til')) sendBtn.textContent = `Senda á ${fmt(d.sendable)} viðtakendur`;
+          if (sendBtn) sendBtn.dataset.confirmClick = `Senda á ${d.sendable} viðtakendur?`;
+        }).catch(() => {});
+      return saving;
+    };
+    const schedule = () => { clearTimeout(timer); savedEl.textContent = 'Óvistaðar breytingar…'; timer = setTimeout(save, 1200); };
+    camp.addEventListener('input', (e) => { if (!e.target.closest('.aud-search')) schedule(); });
+    camp.addEventListener('change', (e) => { if (!e.target.closest('.aud-search') && e.target.name !== 'source') schedule(); });
+    window.tinymce?.on?.('AddEditor', ({ editor }) => editor.on('input change', schedule));
+
+    // Skrifa / Forskoða
+    camp.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', async () => {
+      camp.querySelectorAll('[data-tab]').forEach((x) => x.classList.toggle('on', x === b));
+      camp.querySelectorAll('[data-pane]').forEach((p) => { p.hidden = p.dataset.pane !== b.dataset.tab; });
+      if (b.dataset.tab === 'forskoda') {
+        await save();
+        const frame = camp.querySelector('.camp-preview');
+        frame.src = frame.dataset.src + '?t=' + Date.now();
+      }
+    }));
+
+    // Leit í félögum og Allir / Fjarlægja
+    const search = camp.querySelector('.aud-search');
+    const items = [...camp.querySelectorAll('.aud-list .check')];
+    search?.addEventListener('input', () => { const q = search.value.trim().toLowerCase(); items.forEach((l) => { l.hidden = !!q && !l.dataset.name.includes(q); }); });
+    camp.querySelector('[data-aud-all]')?.addEventListener('click', () => { items.filter((l) => !l.hidden).forEach((l) => { l.querySelector('input').checked = true; }); schedule(); });
+    camp.querySelector('[data-aud-none]')?.addEventListener('click', () => { items.forEach((l) => { l.querySelector('input').checked = false; }); schedule(); });
+
+    // Staðfesting á hnöppum (sending, eyðing, sækja efni). Vistar fyrst svo ekkert glatist.
+    camp.addEventListener('submit', (e) => {
+      const b = e.submitter;
+      window.tinymce?.triggerSave?.();
+      if (b?.dataset.confirmClick && !confirm(b.dataset.confirmClick)) e.preventDefault();
+    });
+    // Enter í reit á ekki að senda formið (sjálfvirk vistun sér um það)
+    camp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); save(); } });
+    camp.querySelector('[data-aud-csv]')?.addEventListener('click', async (e) => { e.preventDefault(); await save(); location.href = e.target.href; });
+  }
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {

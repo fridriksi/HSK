@@ -237,3 +237,72 @@ a.file-icon { text-decoration: none; }
 .media-select-bar[hidden] { display: none; }
 .media-select-bar [data-selected-count] { font-weight: 700; margin-right: auto; }
 .kept-list { margin: 8px 0 0; padding-left: 20px; }
+
+/* ---------- Samskipti ---------- */
+.title-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 16px 0 20px; }
+.kpi { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+.kpi span { font-size: .85rem; color: var(--muted); font-weight: 600; }
+.kpi strong { font: 800 1.7rem var(--display); color: var(--ink); }
+.kpi small { color: var(--muted); }
+.camp-cards { display: grid; gap: 12px; }
+.camp-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 6px; }
+.camp-card p { margin: 0; }
+.camp-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.camp-card-head h2 { font-size: 1.1rem; margin: 0 auto 0 0; }
+.camp-card-head h2 a { color: var(--ink); text-decoration: none; }
+.camp-card-head h2 a:hover { text-decoration: underline; }
+.tag { font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--tint); color: var(--blue); }
+.tag.st-sent { background: #e3f4ea; color: var(--ok); }
+.tag.st-drog { background: #eef0f4; color: #4a5470; }
+.tag.st-timasett, .tag.st-i_sendingu { background: #e8eefc; color: var(--blue); }
+.tag.st-bidur_samthykktar { background: #fff4dd; color: var(--warn); }
+.small { font-size: .88rem; }
+.bar { height: 6px; background: var(--tint); border-radius: 99px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--ok); }
+.crumbs { font-size: .9rem; color: var(--muted); margin: 0 0 10px; }
+.camp-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.camp-name { flex: 1 1 320px; font: 800 1.5rem var(--display); border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; background: transparent; color: var(--ink); }
+.camp-name:hover, .camp-name:focus { border-color: var(--line); background: #fff; }
+details.menu { position: relative; }
+details.menu > summary { list-style: none; cursor: pointer; }
+details.menu > summary::-webkit-details-marker { display: none; }
+.menu-items { position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px; display: grid; min-width: 200px; box-shadow: 0 8px 24px rgba(22,32,63,.12); }
+.menu-items .linklike { text-align: left; padding: 8px 10px; border-radius: 6px; }
+.menu-items .linklike:hover { background: var(--tint); }
+.linklike.danger { color: var(--danger); }
+details.notes { margin-bottom: 14px; }
+details.notes summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+details.notes textarea, details.notes input { width: 100%; margin-top: 6px; font: inherit; }
+.camp-grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.camp-main { flex: 999 1 520px; min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.camp-steps { flex: 1 1 320px; display: grid; gap: 10px; position: sticky; top: 12px; }
+.camp-steps > details { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.camp-steps > details > summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.camp-steps > details[open] > summary { margin-bottom: 10px; }
+.camp-steps input:not([type=checkbox]):not([type=radio]), .camp-steps select, .camp-steps textarea { width: 100%; font: inherit; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; }
+.camp-steps label.small { display: grid; gap: 4px; margin-top: 6px; }
+.step-ok { margin-left: auto; font-size: .75rem; font-weight: 700; color: var(--ok); background: #e3f4ea; border-radius: 999px; padding: 2px 8px; }
+.aud h4 { margin: 10px 0 6px; font-size: .9rem; }
+.aud-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; display: grid; gap: 2px; }
+.aud-list .check[hidden] { display: none; }
+.aud-inline { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.aud-tools { font-size: .85rem; margin-bottom: 6px; }
+.aud-more { margin-top: 8px; }
+.aud-more summary { cursor: pointer; font-weight: 600; font-size: .9rem; }
+.aud-count { margin: 12px 0 4px; padding: 8px 10px; background: var(--tint); border-radius: 6px; font-weight: 700; }
+.camp-start { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.camp-start label { font-weight: 600; }
+.camp-start select { flex: 1 1 200px; font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+.camp-tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.camp-tabs button { font: inherit; font-weight: 600; background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 12px; cursor: pointer; color: var(--muted); }
+.camp-tabs button.on { color: var(--blue); border-bottom-color: var(--blue); }
+.camp-preview { width: 100%; height: 640px; border: 1px solid var(--line); border-radius: 8px; background: #f2f5fb; }
+details.reason { border-top: 1px solid var(--line); padding: 10px 0; }
+details.reason summary { cursor: pointer; }
+details.reason ul { margin: 8px 0 0; columns: 2; font-size: .9rem; }
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; }
+dl.facts dt { font-weight: 700; }
+dl.facts dd { margin: 0; }
+.title-row > div:first-child { margin-right: auto; }
+.btn:disabled, .btn[disabled] { opacity: .5; cursor: not-allowed; }

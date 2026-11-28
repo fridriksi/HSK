@@ -22,6 +22,7 @@ import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
 import { Icon } from '../views/icons';
 import { MAX_RECORD_FILE, uploadedRecordKey, validateRecordSheets } from '../record-books';
 import { asset } from '../static';
+import { samskiptiRoutes } from './samskipti';
 
 const app = new Hono<AppEnv>();
 type Row = Record<string, unknown> & { id: number };
@@ -198,6 +199,9 @@ app.post('/utskra', async (c) => {
 
 // Allt hér fyrir neðan krefst innskráningar
 app.use('*', requireUser);
+
+// Samskipti: fjöldapóstur (útsendingar, tengiliðir, niðurstöður)
+app.route('/samskipti', samskiptiRoutes(page));
 
 // „Sýn“: stjórnandi skoðar vefumsjónina sem ritstjóri eða félagsaðgangur tiltekins félags
 app.post('/syn', async (c) => {
