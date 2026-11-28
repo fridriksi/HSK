@@ -174,3 +174,8 @@ export const DEFAULT_TILES = [
   'Fyrir félögin | Lög, reglugerðir, eyðublöð og innskráning formanna | /um-hsk/log-og-reglugerdir',
   'Um HSK | Saga, stjórn, nefndir og starfsfólk | /um-hsk',
 ].join('\n');
+
+/** 6345 → „6.345“ (íslensk þúsundaskil, óháð stillingum þjónsins) */
+export function fmtNum(n: number): string {
+  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}

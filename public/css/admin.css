@@ -202,3 +202,5 @@ a .icon:last-child:not(:first-child) { margin-left: .3em; }
 }
 .record-catalogue { background: #fff; padding: 16px; border: 1px solid var(--line); border-radius: 6px; }
 .record-catalogue .muted { color: var(--muted); }
+.pager-admin { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+a.file-icon { text-decoration: none; }

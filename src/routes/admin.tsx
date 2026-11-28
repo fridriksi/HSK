@@ -3,7 +3,7 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { Child } from 'hono/jsx';
 import {
   type AppEnv, type User, all, one, run, sanitizeHtml, uniqueSlug, slugify, logRevision, getSetting, setSetting,
-  dateLong, dateTime, nowIso, plainText,
+  dateLong, dateTime, nowIso, plainText, fmtNum,
 } from '../lib';
 import {
   loadUser, requireUser, resolveLoginUser, createLoginToken, consumeLoginToken, startSession, endSession, can,
@@ -308,9 +308,25 @@ app.post('/upload', async (c) => {
 
 app.get('/skrar', async (c) => {
   const user = c.get('user')!;
-  const q = c.req.query('q') || '';
+  const q = (c.req.query('q') || '').trim();
+  const kind = c.req.query('tegund') || '';
+  const source = c.req.query('uppruni') || '';
+  const pageNo = Math.max(1, parseInt(c.req.query('s') || '1', 10) || 1);
+  const PER = 120;
+  const where = ['filename LIKE ?'];
+  const params: unknown[] = [`%${q}%`];
+  if (!isStaff(user)) { where.push('uploaded_by = ?'); params.push(user.id); }
+  if (kind === 'myndir') where.push("content_type LIKE 'image/%'");
+  if (kind === 'skjol') where.push("content_type NOT LIKE 'image/%'");
+  // Skrár af gamla vefnum eru geymdar undir old/
+  if (source === 'gamli') where.push("key LIKE 'old/%'");
+  if (source === 'nyjar') where.push("key NOT LIKE 'old/%'");
+  const w = where.join(' AND ');
+  const total = (await one<{ n: number }>(c.env.DB, `SELECT count(*) AS n FROM media WHERE ${w}`, ...params))?.n ?? 0;
   const rows = await all<{ key: string; filename: string; content_type: string; size: number; created_at: string }>(c.env.DB,
-    `SELECT key, filename, content_type, size, created_at FROM media WHERE filename LIKE ? ${isStaff(user) ? '' : 'AND uploaded_by = ' + user.id} ORDER BY id DESC LIMIT 200`, `%${q}%`);
+    `SELECT key, filename, content_type, size, created_at FROM media WHERE ${w} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`, ...params, PER, (pageNo - 1) * PER);
+  const qs = (extra: Record<string, string>) => '?' + new URLSearchParams(Object.entries({ q, tegund: kind, uppruni: source, ...extra }).filter(([, v]) => v));
+  const pages = Math.max(1, Math.ceil(total / PER));
   return page(c, 'Myndir og skjöl', 'skrar', (
     <>
       <h1>Myndir og skjöl</h1>
@@ -318,11 +334,21 @@ app.get('/skrar', async (c) => {
         <p><strong>Dragðu skrár hingað</strong> eða <label class="linklike">veldu skrár<input type="file" multiple hidden /></label>. Myndir eru minnkaðar sjálfkrafa.</p>
         <progress hidden max="100" value="0"></progress>
       </div>
-      <form method="get" class="toolbar"><input name="q" type="search" value={q} placeholder="Leita að skráarheiti…" /><button class="btn small">Leita</button></form>
+      <form method="get" class="toolbar filter-bar">
+        <div class="fb-field"><label for="sk-q">Leit</label><input id="sk-q" name="q" type="search" value={q} placeholder="Leita að skráarheiti…" /></div>
+        <div class="fb-field"><label for="sk-t">Tegund</label><select id="sk-t" name="tegund" data-autosubmit>
+          <option value="">Allt</option><option value="myndir" selected={kind === 'myndir'}>Myndir</option><option value="skjol" selected={kind === 'skjol'}>Skjöl</option>
+        </select></div>
+        <div class="fb-field"><label for="sk-u">Uppruni</label><select id="sk-u" name="uppruni" data-autosubmit>
+          <option value="">Allt</option><option value="nyjar" selected={source === 'nyjar'}>Hlaðið upp á nýja vefnum</option><option value="gamli" selected={source === 'gamli'}>Af gamla vefnum</option>
+        </select></div>
+        <button class="btn small">Leita</button>
+      </form>
+      <p class="muted">{fmtNum(total)} {total === 1 ? 'skrá' : 'skrár'}{pages > 1 && ` · síða ${pageNo} af ${pages}`}</p>
       <div class="media-grid">
         {rows.map((m) => (
           <figure>
-            {m.content_type.startsWith('image/') ? <img src={'/media/' + m.key} alt="" loading="lazy" /> : <div class="file-icon">{m.filename.split('.').pop()?.toUpperCase()}</div>}
+            {m.content_type.startsWith('image/') ? <a href={'/media/' + m.key} target="_blank"><img src={'/media/' + m.key} alt="" loading="lazy" /></a> : <a class="file-icon" href={'/media/' + m.key} target="_blank">{m.filename.split('.').pop()?.toUpperCase()}</a>}
             <figcaption>
               <span title={m.filename}>{m.filename}</span>
               <button type="button" class="btn small ghost" data-copy={'/media/' + m.key}>Afrita slóð</button>
@@ -330,6 +356,13 @@ app.get('/skrar', async (c) => {
           </figure>
         ))}
       </div>
+      {pages > 1 && (
+        <nav class="pager-admin">
+          {pageNo > 1 ? <a class="btn small ghost" href={qs({ s: String(pageNo - 1) })}>Fyrri síða</a> : <span></span>}
+          <span class="muted">Síða {pageNo} af {pages}</span>
+          {pageNo < pages ? <a class="btn small ghost" href={qs({ s: String(pageNo + 1) })}>Næsta síða</a> : <span></span>}
+        </nav>
+      )}
     </>
   ));
 });
@@ -734,7 +767,7 @@ app.get('/umsoknir', async (c) => {
             return (
               <tr>
                 <td><a href={`/stjorn/umsoknir/${r.id}`}><strong>{d.felag}</strong></a><div class="muted small">{d.verkefni}</div></td>
-                <td>{Number(d.upphaed || 0).toLocaleString('is-IS')} kr.</td>
+                <td>{fmtNum(Number(d.upphaed || 0))} kr.</td>
                 <td>{dateLong(r.created_at)}</td>
                 <td>{r.status === 'ny' ? <span class="pill pending">Ný</span> : <span class="pill published">Afgreidd</span>}</td>
               </tr>
@@ -758,7 +791,7 @@ app.get('/umsoknir/:id{[0-9]+}', async (c) => {
       <h1>{d.verkefni}</h1>
       <p class="lead">{d.felag} · barst {dateLong(r.created_at)} · {r.status === 'ny' ? 'Ný' : 'Afgreidd'}</p>
       <dl class="app-data">
-        {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${Number(d[f.name] || 0).toLocaleString('is-IS')} kr.` : d[f.name] || '—'}</dd></>)}
+        {GRANT_FIELDS.map((f) => <><dt>{f.label}</dt><dd style="white-space: pre-wrap">{f.name === 'upphaed' ? `${fmtNum(Number(d[f.name] || 0))} kr.` : d[f.name] || '—'}</dd></>)}
         <dt>Fylgiskjöl</dt>
         <dd>{files.length ? files.map((f, i) => <div><a href={`/stjorn/umsoknir/${r.id}/skra/${i}`}>{f.name}</a> <span class="muted small">({f.label})</span></div>) : '—'}</dd>
       </dl>
