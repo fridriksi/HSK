@@ -227,7 +227,7 @@ try {
   await recPage.check('input[name=gildandi]');
   const curCount = await recPage.textContent('[data-record-count]');
   await recPage.uncheck('input[name=gildandi]');
-  ok(curCount !== allCount && (await recPage.textContent('[data-record-count]')) === allCount, 'Sían „Aðeins gildandi met“ fækkar metum og öll birtast aftur án hennar');
+  ok(curCount !== allCount && (await recPage.textContent('[data-record-count]')) === allCount, 'Sían „Aðeins gild met“ fækkar metum og öll birtast aftur án hennar');
 
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
