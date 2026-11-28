@@ -6,7 +6,7 @@ import {
   dateLong, dateTime, nowIso, plainText, fmtNum,
 } from '../lib';
 import {
-  loadUser, requireUser, resolveLoginUser, createLoginToken, consumeLoginToken, startSession, endSession, can,
+  loadUser, requireUser, VIEW_COOKIE, resolveLoginUser, createLoginToken, consumeLoginToken, startSession, endSession, can,
   googleEnabled, googleAuthUrl, googleEmailFromCode, randomId, passwordLogin, hashPassword, verifyPassword,
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
@@ -45,10 +45,19 @@ async function page(c: Context<AppEnv>, title: string, active: string, body: Chi
     const r = await one<{ n: number }>(c.env.DB, "SELECT (SELECT count(*) FROM news WHERE status = 'pending') + (SELECT count(*) FROM events WHERE status = 'pending') AS n");
     pending = r?.n ?? 0;
   }
+  // Sýn: aðeins raunverulegur stjórnandi fær valið
+  const realUser = c.get('realUser') ?? null;
+  let viewAs: { current: string; label: string; clubs: { id: number; name: string }[] } | undefined;
+  if (realUser || user?.role === 'admin') {
+    const clubs = await all<{ id: number; name: string }>(c.env.DB, 'SELECT id, name FROM clubs ORDER BY name');
+    const current = !realUser ? '' : user!.role === 'club' ? `club:${user!.club_id}` : 'editor';
+    const label = !realUser ? '' : user!.role === 'club' ? `félagsaðgangur – ${clubs.find((cl) => cl.id === user!.club_id)?.name ?? 'óþekkt félag'}` : 'ritstjóri';
+    viewAs = { current, label, clubs };
+  }
   const flash = MESSAGES[c.req.query('m') || ''];
   c.header('Cache-Control', 'no-store');
   return c.html('<!doctype html>' + (
-    <AdminLayout title={title} user={user} active={active} flash={flash} error={opts.error} pending={pending} applications={applications}>{body}</AdminLayout>
+    <AdminLayout title={title} user={user} active={active} flash={flash} error={opts.error} pending={pending} applications={applications} viewAs={viewAs}>{body}</AdminLayout>
   ).toString(), (opts.status ?? 200) as 200);
 }
 
@@ -188,6 +197,18 @@ app.post('/utskra', async (c) => {
 
 // Allt hér fyrir neðan krefst innskráningar
 app.use('*', requireUser);
+
+// „Sýn“: stjórnandi skoðar vefumsjónina sem ritstjóri eða félagsaðgangur tiltekins félags
+app.post('/syn', async (c) => {
+  const real = c.get('realUser') ?? c.get('user')!;
+  if (real.role !== 'admin') return c.text('Þú hefur ekki aðgang að þessu.', 403);
+  const v = String((await c.req.formData()).get('syn') ?? '');
+  const club = v.match(/^club:(\d+)$/);
+  if (v === 'editor' || (club && await one(c.env.DB, 'SELECT id FROM clubs WHERE id = ?', Number(club[1])))) {
+    setCookie(c, VIEW_COOKIE, v, { httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 60 * 60 * 8, secure: c.env.SITE_URL.startsWith('https') });
+  } else deleteCookie(c, VIEW_COOKIE, { path: '/' });
+  return c.redirect('/stjorn');
+});
 
 // ---------- Yfirlit ----------
 

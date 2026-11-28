@@ -78,6 +78,8 @@ export async function endSession(c: Context<AppEnv>) {
 }
 
 /** Les notanda úr setu (ef einhver er) */
+export const VIEW_COOKIE = 'hsk_syn';
+
 export const loadUser: MiddlewareHandler<AppEnv> = async (c, next) => {
   const id = getCookie(c, SESSION_COOKIE);
   let user: User | null = null;
@@ -85,6 +87,16 @@ export const loadUser: MiddlewareHandler<AppEnv> = async (c, next) => {
     user = await one<User>(c.env.DB,
       `SELECT u.id, u.email, u.name, u.role, u.club_id FROM sessions s JOIN users u ON u.id = s.user_id
        WHERE s.id = ? AND s.expires_at > datetime('now') AND u.active = 1`, await sha256(id));
+  }
+  // „Sýn“: stjórnandi getur skoðað vefumsjónina sem ritstjóri eða félagsaðgangur. Réttindi minnka aðeins;
+  // notandinn er sá sami svo allar aðgerðir eru áfram skráðar á stjórnandann.
+  const view = getCookie(c, VIEW_COOKIE);
+  if (user?.role === 'admin' && view) {
+    const m = view.match(/^(editor|club:(\d+))$/);
+    if (m) {
+      c.set('realUser', user);
+      user = m[2] ? { ...user, role: 'club', club_id: Number(m[2]) } : { ...user, role: 'editor', club_id: null };
+    }
   }
   c.set('user', user);
   await next();

@@ -259,6 +259,17 @@ try {
   ok(aiVals.join('|') === 'Aldursflokkamót HSK í sundi|mot|Sund|2027-03-08T10:00|2027-03-09T00:00|Sundhöll Selfoss|2027-03-01|https://hsk.is/sund|11-12 ára, 13-14 ára'
     && await admin.locator('.field.ai-filled').count() >= 9, 'Lesa úr texta fyllir út reiti og merkir þá');
 
+  // 3m. Sýn: stjórnandi skoðar vefumsjónina sem félagsaðgangur og fer aftur í eigin aðgang
+  await admin.goto(`${BASE}/stjorn`);
+  const clubOpt = await admin.$eval('#syn optgroup option', (o) => ({ v: o.value, t: o.textContent.trim() }));
+  await Promise.all([admin.waitForURL(`${BASE}/stjorn`), admin.selectOption('#syn', clubOpt.v)]);
+  await admin.waitForSelector('.view-banner');
+  const asClub = (await admin.textContent('.view-banner')).includes(clubOpt.t) && await admin.locator('.side a:has-text("Mitt félag")').count() > 0
+    && (await admin.request.get(`${BASE}/stjorn/notendur`)).status() === 403;
+  await Promise.all([admin.waitForURL(`${BASE}/stjorn`), admin.click('.view-banner button')]);
+  ok(asClub && await admin.locator('.view-banner').count() === 0 && await admin.locator('a:has-text("Notendur")').count() > 0,
+    'Sýn: stjórnandi skoðar sem félagsaðgangur og fer aftur í eigin aðgang');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

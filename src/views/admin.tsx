@@ -6,7 +6,7 @@ import { contentTypes } from '../content-types';
 
 const ROLE_LABEL: Record<string, string> = { admin: 'Stjórnandi', editor: 'Ritstjóri', club: 'Félagsaðgangur' };
 
-export const AdminLayout: FC<{ title: string; user: User | null; active?: string; flash?: string; error?: string; pending?: number; applications?: number; children?: Child }> = ({ title, user, active, flash, error, pending, applications, children }) => {
+export const AdminLayout: FC<{ title: string; user: User | null; active?: string; flash?: string; error?: string; pending?: number; applications?: number; viewAs?: { current: string; label: string; clubs: { id: number; name: string }[] }; children?: Child }> = ({ title, user, active, flash, error, pending, applications, viewAs, children }) => {
   const staff = user && (user.role === 'admin' || user.role === 'editor');
   const link = (href: string, label: string, key: string | string[], badge?: number) => (
     <li><a href={href} class={([] as string[]).concat(key).includes(active ?? '') ? 'on' : ''}>{label}{badge ? <span class="badge">{badge}</span> : null}</a></li>
@@ -77,10 +77,29 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
               <div class="side-user">
                 <span>{user.name || user.email}</span>
                 <small>{ROLE_LABEL[user.role]}</small>
+                {viewAs && (
+                  <form method="post" action="/stjorn/syn" class="view-as">
+                    <label for="syn">Sýn</label>
+                    <select id="syn" name="syn" data-autosubmit>
+                      <option value="" selected={!viewAs.current}>Stjórnandi (eigin aðgangur)</option>
+                      <option value="editor" selected={viewAs.current === 'editor'}>Ritstjóri</option>
+                      <optgroup label="Félagsaðgangur">
+                        {viewAs.clubs.map((cl) => <option value={`club:${cl.id}`} selected={viewAs.current === `club:${cl.id}`}>{cl.name}</option>)}
+                      </optgroup>
+                    </select>
+                    <noscript><button class="btn small ghost">Skipta</button></noscript>
+                  </form>
+                )}
                 <div><a href="/stjorn/adgangur">Lykilorð</a> · <a href="/" target="_blank">Skoða vef</a> · <form method="post" action="/stjorn/utskra" class="inline"><button class="linklike">Skrá út</button></form></div>
               </div>
             </aside>
             <main class="main">
+              {viewAs?.current && (
+                <div class="view-banner" role="status">
+                  <span>Þú skoðar vefumsjónina sem <strong>{viewAs.label}</strong>. Réttindi eru takmörkuð og allar aðgerðir eru skráðar á þig.</span>
+                  <form method="post" action="/stjorn/syn" class="inline"><input type="hidden" name="syn" value="" /><button class="btn small">Hætta</button></form>
+                </div>
+              )}
               {flash && <div class="flash ok" role="status">{flash}</div>}
               {error && <div class="flash err" role="alert">{error}</div>}
               {children}

@@ -220,3 +220,9 @@ a.file-icon { text-decoration: none; }
 .ai-fill-msg.ok { color: var(--ok); }
 .ai-fill-msg.bad { color: var(--danger); }
 .field.ai-filled input, .field.ai-filled select, .field.ai-filled .tox-tinymce { box-shadow: 0 0 0 2px #fde68a; }
+
+/* Sýn: stjórnandi skoðar vefumsjónina sem annað hlutverk */
+.view-as { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 6px; }
+.view-as label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.view-as select { width: 100%; font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
+.view-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #fff7e0; border: 1px solid #f2d48a; color: #5c3d00; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }

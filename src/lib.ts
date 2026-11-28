@@ -18,7 +18,8 @@ export type Env = {
 export type Role = 'admin' | 'editor' | 'club';
 export type User = { id: number; email: string; name: string; role: Role; club_id: number | null };
 
-export type AppEnv = { Bindings: Env; Variables: { user: User | null } };
+// realUser: stjórnandi sem skoðar vefumsjónina sem annað hlutverk („Sýn“); user er þá takmarkaða hlutverkið
+export type AppEnv = { Bindings: Env; Variables: { user: User | null; realUser?: User | null } };
 
 // ---------- Texti og slóðir ----------
 
