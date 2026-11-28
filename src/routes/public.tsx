@@ -10,6 +10,9 @@ import {
 import { Icon } from '../views/icons';
 import { RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
 import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
+import { buildCatalogue, mergeCatalogue } from '../record-catalogue';
+import { archivedRecords } from '../record-catalogue-data';
+import { RecordCatalogue } from '../views/record-catalogue';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
 import { RECORD_CATEGORIES } from '../content-types';
 
@@ -594,6 +597,25 @@ async function sectionPages(db: D1Database, path: string) {
     "SELECT title, path FROM pages WHERE parent_id = (SELECT id FROM pages WHERE path = ?) AND in_menu = 1 AND status = 'published' ORDER BY sort, title COLLATE NOCASE", path);
 }
 
+async function catalogueRows(c: Context<AppEnv>) {
+  const rows = await all<{ id: number; category: string; year: number | null; file: string }>(c.env.DB,
+    "SELECT id, category, year, file FROM records WHERE category <> 'reglur' AND file LIKE '/media/uploads/%.xlsx' ORDER BY year DESC, id DESC");
+  const books = await Promise.all(rows.map(async (row) => {
+    const key = uploadedRecordKey(row.file);
+    if (!key) return null;
+    const data = await c.env.MEDIA.get(key);
+    if (!data) return null;
+    return { id: `innflutt-${row.id}`, category: RECORD_CATEGORIES[row.category] ?? RECORD_CATEGORIES.annad, year: row.year, sheets: await data.json<RecordSheet[]>() };
+  }));
+  const available = books.filter((book) => book !== null);
+  return available.length ? mergeCatalogue([...buildCatalogue(available).rows, ...archivedRecords]) : archivedRecords;
+}
+
+app.get(`${RECORDS_PATH}/gogn`, async (c) => {
+  c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+  return c.json((await catalogueRows(c)).map(({ key, ...row }) => row));
+});
+
 app.get(`${RECORDS_PATH}/skra/:id`, async (c) => {
   const id = c.req.param('id');
   const db = c.env.DB;
@@ -694,8 +716,11 @@ app.get('/*', async (c) => {
       const rules = rows.filter((r) => r.category === 'reglur' || (!r.file && r.body));
       moduleView = (
         <>
+          <RecordCatalogue rows={await catalogueRows(c)} />
           {rules.length > 0 && <div class="accordion">{rules.map((r) => <details class="acc"><summary>{r.title}<Icon name="chevronDown" /></summary><div class="acc-body"><Prose html={r.body} /></div></details>)}</div>}
-          <div class="record-grid">
+          <details class="acc record-archive">
+            <summary>Frumskrár og eldri útgáfur<Icon name="chevronDown" /></summary>
+            <div class="acc-body record-grid">
             {groups.map(([label, list]) => {
               if (label === 'Önnur met') {
                 return <section class="record-card"><h2>{label}</h2><div class="prose"><ul class="link-list">{list.map((d) => <li><a href={recordLink(d.file, d.id)}>{d.title}</a></li>)}</ul></div></section>;
@@ -709,7 +734,8 @@ app.get('/*', async (c) => {
                 </section>
               );
             })}
-          </div>
+            </div>
+          </details>
         </>
       );
       break;
