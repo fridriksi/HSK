@@ -41,6 +41,76 @@
   // Síur sem uppfærast strax þegar valið er
   document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
 
+  const sectionForm = document.querySelector('[data-section-search]');
+  const sectionResults = document.getElementById('section-results');
+  if (sectionForm && sectionResults) {
+    const input = sectionForm.elements.namedItem('q');
+    const submit = sectionForm.querySelector('button');
+    const status = sectionForm.querySelector('[data-section-status]');
+    const filterLinks = document.querySelectorAll('[data-section-options] .filter-options a');
+    let timer;
+    let active;
+
+    const cancelSearch = () => {
+      clearTimeout(timer);
+      active?.abort();
+      sectionResults.removeAttribute('aria-busy');
+    };
+
+    async function refresh() {
+      cancelSearch();
+      const controller = new AbortController();
+      active = controller;
+      const url = new URL(sectionForm.action);
+      for (const [name, value] of new FormData(sectionForm)) {
+        if (value.trim()) url.searchParams.set(name, value.trim());
+      }
+      sectionResults.setAttribute('aria-busy', 'true');
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error('Leit tókst ekki');
+        const html = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const results = html.getElementById('section-results');
+        if (!results) throw new Error('Niðurstöður leitar vantar');
+        if (controller.signal.aborted) return;
+        sectionResults.replaceChildren(...results.childNodes);
+        status.classList.add('sr');
+        status.textContent = `${results.dataset.count} niðurstöður á síðunni.`;
+        submit.hidden = true;
+        history.replaceState(history.state, '', url);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        status.classList.remove('sr');
+        status.textContent = 'Ekki tókst að uppfæra leitina. Ýttu á Leita til að reyna aftur.';
+        submit.hidden = false;
+      } finally {
+        if (active === controller) sectionResults.removeAttribute('aria-busy');
+      }
+    }
+
+    const queueSearch = () => {
+      cancelSearch();
+      for (const link of filterLinks) {
+        const url = new URL(link.href);
+        const term = input.value.trim();
+        if (term) url.searchParams.set('q', term);
+        else url.searchParams.delete('q');
+        link.href = url;
+      }
+      timer = setTimeout(refresh, 160);
+    };
+    input.addEventListener('input', event => { if (!event.isComposing) queueSearch(); });
+    input.addEventListener('compositionstart', cancelSearch);
+    input.addEventListener('compositionend', queueSearch);
+    sectionForm.querySelectorAll('select').forEach(select => select.addEventListener('change', refresh));
+    sectionForm.addEventListener('submit', event => {
+      if (!submit.hidden) return;
+      event.preventDefault();
+      refresh();
+    });
+    submit.hidden = true;
+  }
+
   // Opna fellikafla sem vísað er á með # (t.d. eldra héraðsþing)
   const openHash = () => { const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); } };
   openHash(); window.addEventListener('hashchange', openHash);

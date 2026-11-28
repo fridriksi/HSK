@@ -316,9 +316,12 @@ function sectionUrl(base: string, filters: Record<string, string | undefined>) {
 }
 
 function SectionSearchField({ term, placeholder }: { term: string; placeholder: string }) {
-  return <FilterField id="section-search" label="Leit">
-    <input id="section-search" name="q" type="search" value={term} maxlength={100} placeholder={placeholder} />
-  </FilterField>;
+  return <>
+    <FilterField id="section-search" label="Leit">
+      <input id="section-search" name="q" type="search" value={term} maxlength={100} placeholder={placeholder} />
+    </FilterField>
+    <span class="sr" role="status" data-section-status></span>
+  </>;
 }
 
 async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
@@ -338,21 +341,23 @@ async function newsList(c: Context<AppEnv>, kind?: string | string[]) {
 
 const NewsListing = ({ data, base }: { data: Awaited<ReturnType<typeof newsList>>; base: string }) => (
   <>
-    <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita í fréttum og greinum">
+    <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita í fréttum og greinum" data-section-search>
       {data.year && <input type="hidden" name="ar" value={data.year} />}
       <SectionSearchField term={data.term} placeholder="Titill, efni eða höfundur" />
       <button class="btn">Leita</button>
     </form>
     {data.years.length > 1 && (
-      <div class="filter-row">
+      <div class="filter-row" data-section-options>
         <FilterOptions label="Ár">
           <a href={sectionUrl(base, { q: data.term })} aria-current={!data.year ? 'true' : undefined}>Öll ár</a>
           {data.years.map((y) => <a href={sectionUrl(base, { ar: y, q: data.term })} aria-current={data.year === y ? 'true' : undefined}>{y}</a>)}
         </FilterOptions>
       </div>
     )}
-    {data.rows.length ? <div class="news-grid">{data.rows.map((n) => <NewsCard n={n} />)}</div> : <p class="muted">Engar fréttir fundust.</p>}
-    <Pager page={data.page} hasNext={data.hasNext} base={sectionUrl(base, { ar: data.year, q: data.term })} />
+    <div id="section-results" data-count={data.rows.length}>
+      {data.rows.length ? <div class="news-grid">{data.rows.map((n) => <NewsCard n={n} />)}</div> : <p class="muted">Engar fréttir fundust.</p>}
+      <Pager page={data.page} hasNext={data.hasNext} base={sectionUrl(base, { ar: data.year, q: data.term })} />
+    </div>
   </>
 );
 
@@ -449,7 +454,7 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
   });
   return (
     <>
-      <div class="filter-row">
+      <div class="filter-row" data-section-options>
         <FilterOptions label="Tímabil">
           <a href={q({ lidid: '' })} aria-current={!data.past ? 'true' : undefined}>Framundan</a>
           <a href={q({ lidid: '1' })} aria-current={data.past ? 'true' : undefined}>Liðið</a>
@@ -463,13 +468,13 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
         )}
         <a class="ics-link" href="/dagatal.ics"><Icon name="calendar" />Setja dagatalið í símann eða tölvuna</a>
       </div>
-      <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita að mótum og viðburðum">
+      <form action={base} method="get" class="filter-row filter-compact" role="search" aria-label="Leita að mótum og viðburðum" data-section-search>
         {data.past && <input type="hidden" name="lidid" value="1" />}
         {!data.fixed && data.kind && <input type="hidden" name="tegund" value={data.kind} />}
         <SectionSearchField term={data.term} placeholder="Heiti, íþróttagrein eða staður" />
         {data.sports.length > 0 && (
             <FilterField id="grein" label="Íþróttagrein">
-              <select id="grein" name="grein" data-autosubmit>
+              <select id="grein" name="grein">
                 <option value="">Allar greinar</option>
                 {data.sports.map((s) => <option value={s} selected={s === data.sport}>{s}</option>)}
               </select>
@@ -477,13 +482,15 @@ const EventListing = ({ data, base }: { data: Awaited<ReturnType<typeof eventLis
         )}
         <button class="btn">Leita</button>
       </form>
-      {data.rows.length === 0 && <p class="muted">{data.term ? 'Engin mót eða viðburðir fundust.' : 'Ekkert skráð.'}</p>}
-      {[...groups].map(([month, list]) => (
-        <section class="month-group">
-          <h2>{month}</h2>
-          <ul class="event-list wide">{list.map((e) => <EventItem e={e} />)}</ul>
-        </section>
-      ))}
+      <div id="section-results" data-count={data.rows.length}>
+        {data.rows.length === 0 && <p class="muted">{data.term ? 'Engin mót eða viðburðir fundust.' : 'Ekkert skráð.'}</p>}
+        {[...groups].map(([month, list]) => (
+          <section class="month-group">
+            <h2>{month}</h2>
+            <ul class="event-list wide">{list.map((e) => <EventItem e={e} />)}</ul>
+          </section>
+        ))}
+      </div>
     </>
   );
 };
@@ -841,29 +848,31 @@ app.get('/*', async (c) => {
       for (const r of d.rows) { const k = monthYear(r.date); groups.set(k, [...(groups.get(k) ?? []), r]); }
       moduleView = (
         <>
-          <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í úrslitum">
+          <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í úrslitum" data-section-search>
             <SectionSearchField term={d.term} placeholder="Mót, íþróttagrein eða nafn" />
             <FilterField id="ar" label="Ár">
-              <select id="ar" name="ar" data-autosubmit>
+              <select id="ar" name="ar">
                 {d.years.map((y) => <option selected={y === d.year}>{y}</option>)}
                 <option value="oll" selected={d.year === 'oll'}>Öll ár</option>
               </select>
             </FilterField>
             <FilterField id="grein" label="Íþróttagrein">
-              <select id="grein" name="grein" data-autosubmit>
+              <select id="grein" name="grein">
                 <option value="">Allar greinar</option>
                 {d.sports.map((s) => <option selected={s === d.sport}>{s}</option>)}
               </select>
             </FilterField>
             <button class="btn">Leita</button>
           </form>
-          {d.rows.length === 0 && <p class="muted">Engin úrslit fundust.</p>}
-          {[...groups].map(([month, list]) => (
-            <section class="month-group">
-              <h2>{month}</h2>
-              <ul class="event-list wide">{list.map((r) => <ResultItem r={r} />)}</ul>
-            </section>
-          ))}
+          <div id="section-results" data-count={d.rows.length}>
+            {d.rows.length === 0 && <p class="muted">Engin úrslit fundust.</p>}
+            {[...groups].map(([month, list]) => (
+              <section class="month-group">
+                <h2>{month}</h2>
+                <ul class="event-list wide">{list.map((r) => <ResultItem r={r} />)}</ul>
+              </section>
+            ))}
+          </div>
         </>
       );
       break;
