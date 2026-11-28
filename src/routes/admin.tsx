@@ -1473,6 +1473,15 @@ app.get('/:type', async (c) => {
           <nav class="subtabs"><a href="/stjorn/ny-met" class={t.key === 'ny-met' ? 'on' : ''}>Skráð met</a><a href="/stjorn/met" class={t.key === 'met' ? 'on' : ''}>Metaskrár (Excel)</a></nav>
           <p class="lead">{t.key === 'ny-met' ? 'Stök met sem skráð eru hér birtast strax í töflunni á síðunni HSK met.' : 'Heilar metaskrár í Excel. Metin í þeim birtast í sömu töflu á síðunni HSK met.'}</p>
         </>
+      ) : (t.key === 'styrktaradilar' || t.key === 'auglysingar') ? (
+        // Styrktaraðilar og auglýsingar: ein síða í vefumsjón með flipum; aðskilið á vefnum
+        <>
+          <div class="title-row"><h1>Styrktaraðilar og auglýsingar</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{t.key === 'styrktaradilar' ? 'Skrá styrktaraðila' : 'Skrá auglýsingu'}</a></div>
+          <nav class="subtabs"><a href="/stjorn/styrktaradilar" class={t.key === 'styrktaradilar' ? 'on' : ''}>Styrktaraðilar</a><a href="/stjorn/auglysingar" class={t.key === 'auglysingar' ? 'on' : ''}>Auglýsingar</a></nav>
+          <p class="lead">{t.key === 'styrktaradilar'
+            ? 'Merki styrktar- og samstarfsaðila birtast neðst á öllum síðum vefsins, í þeirri röð sem hér er.'
+            : 'Auglýsingar birtast í auglýsingaplássum á forsíðunni. Veldu pláss og hladdu upp mynd í stærðinni sem plássið gefur upp.'}</p>
+        </>
       ) : (
         <div class="title-row"><h1>{t.label}</h1><a class="btn" href={`/stjorn/${t.key}/nytt`}>{isStaff(user) ? `Skrá ${t.singular}` : `Senda inn ${t.singular}`}</a></div>
       )}

@@ -61,8 +61,7 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     <ul>
                       {link('/stjorn/sidur', 'Síður og valmynd', 'sidur')}
                       {link('/stjorn/stillingar', 'Forsíða og stillingar', 'stillingar')}
-                      {link('/stjorn/styrktaradilar', 'Styrktaraðilar', 'styrktaradilar')}
-                      {link('/stjorn/auglysingar', 'Auglýsingar', 'auglysingar')}
+                      {link('/stjorn/styrktaradilar', 'Styrktaraðilar og auglýsingar', ['styrktaradilar', 'auglysingar'])}
                       {link('/stjorn/skrar', 'Myndir og skjöl', 'skrar')}
                       {user.role === 'admin' && link('/stjorn/notendur', 'Notendur', 'notendur')}
                     </ul>
