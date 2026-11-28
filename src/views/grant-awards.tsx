@@ -86,7 +86,7 @@ export function GrantAwardResults({ params }: { params: Record<string, string> }
       <p role="status">{matching.length
         ? `${start + 1}–${start + rows.length} af ${matching.length} styrkveitingum · Samtals ${formatAmount(total)} kr.`
         : 'Engar úthlutanir fundust.'}</p>
-      {rows.length > 0 && <table aria-labelledby="uthlutanir-title">
+      {rows.length > 0 && <div class="table-wrap" role="region" aria-labelledby="uthlutanir-title" tabindex={0}><table aria-labelledby="uthlutanir-title">
         <thead><tr>{columns.map(([key, label]) => {
           const active = key === sort;
           const nextDirection = active ? direction === 'asc' ? 'desc' : 'asc' : defaultDirection(key);
@@ -97,7 +97,7 @@ export function GrantAwardResults({ params }: { params: Record<string, string> }
         <tbody>{rows.map(({ recipient, project, amount, year, round }) => (
           <tr><td>{recipient}</td><td>{project}</td><td>{year}</td><td>{round}</td><td class="num">{formatAmount(amount)} kr.</td></tr>
         ))}</tbody>
-      </table>}
+      </table></div>}
       {lastPage > 1 && <nav class="grant-awards-pages" aria-label="Síður úthlutana">
         {page > 1 && <a class="btn ghost small" href={link(page - 1)}>Fyrri síða</a>}
         <span>Síða {page} af {lastPage}</span>
@@ -119,7 +119,7 @@ export function GrantAwards({ params, script }: { params: Record<string, string>
     <section class="prose grant-awards" id="uthlutanir" aria-labelledby="uthlutanir-title">
       <h2 id="uthlutanir-title">Úthlutanir fyrri ára</h2>
       <form method="get" action="#uthlutanir" class="grant-awards-filter" role="search" aria-label="Leita í úthlutunum">
-        <div class="gf grant-awards-search">
+        <div class="gf">
           <label for="grant-query">Styrkþegi eða verkefni</label>
           <input type="search" id="grant-query" name="q" value={term} maxlength={100} />
         </div>
