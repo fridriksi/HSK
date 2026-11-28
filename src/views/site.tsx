@@ -71,7 +71,7 @@ export const Layout: FC<{
                   <form action="/leit" method="get" class="nav-search" role="search">
                     <label class="sr" for="leit-q">Leita</label>
                     <Icon name="search" />
-                    <input id="leit-q" name="q" type="search" placeholder="Leita" />
+                    <input class="filter-input" id="leit-q" name="q" type="search" placeholder="Leita" />
                   </form>
                 </li>
               </ul>

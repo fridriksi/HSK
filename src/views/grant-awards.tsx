@@ -139,19 +139,19 @@ export function GrantAwards({ params, script, extra = [] }: { params: Record<str
   return (
     <section class="prose grant-awards" id="uthlutanir" aria-labelledby="uthlutanir-title">
       <h2 id="uthlutanir-title">Úthlutanir fyrri ára</h2>
-      <form method="get" action="#uthlutanir" class="grant-awards-filter" role="search" aria-label="Leita í úthlutunum">
-        <div class="gf">
-          <label for="grant-query">Styrkþegi eða verkefni</label>
-          <input type="search" id="grant-query" name="q" value={term} maxlength={100} />
+      <form method="get" action="#uthlutanir" class="filter-row grant-awards-filter" role="search" aria-label="Leita í úthlutunum">
+        <div class="filter-field">
+          <label for="grant-query">Leit</label>
+          <input type="search" id="grant-query" name="q" placeholder="Styrkþegi eða verkefni" value={term} maxlength={100} />
         </div>
-        <div class="gf">
+        <div class="filter-field">
           <label for="grant-year">Ár</label>
           <select id="grant-year" name="ar">
             <option value="">Öll ár</option>
             {years(extra).map((y) => <option value={y} selected={y === year}>{y}</option>)}
           </select>
         </div>
-        <div class="gf">
+        <div class="filter-field">
           <label for="grant-round">Úthlutun</label>
           <select id="grant-round" name="uthlutun">
             <option value="">Allar úthlutanir</option>
