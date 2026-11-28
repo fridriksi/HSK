@@ -229,7 +229,122 @@
     document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target)) d.open = false; });
   });
 
-  // Mót og viðburðir: líma inn texta (boðsbréf, tölvupóst) og láta gervigreind fylla út reitina
+  // Mót og viðburðir: líma inn texta (boðsbréf, tölvupóst) og fylla reitina út eftir reglum. Allt gerist í vafranum.
+  const MONTHS = ['jan', 'feb', 'mar', 'apr', 'maí', 'jún', 'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'];
+  const SPORT_WORDS = [
+    [/frjáls|langstökk|hástökk|kúluvarp|spjótkast|kringlukast|hlaup/i, 'Frjálsíþróttir'], [/\bsund/i, 'Sund'], [/glím/i, 'Glíma'],
+    [/golf/i, 'Golf'], [/knattspyrn|fótbolt/i, 'Knattspyrna'], [/körfu/i, 'Körfuknattleikur'], [/handknatt|handbolt/i, 'Handknattleikur'],
+    [/blak/i, 'Blak'], [/borðtenn/i, 'Borðtennis'], [/bogfim/i, 'Bogfimi'], [/fimleik/i, 'Fimleikar'], [/hesta|reiðmennsk|tölt/i, 'Hestaíþróttir'],
+    [/júdó/i, 'Júdó'], [/motocross/i, 'Motocross'], [/pílu/i, 'Pílukast'], [/\bskák/i, 'Skák'], [/skotfimi|skotíþrótt/i, 'Skotíþróttir'],
+    [/starfsíþrótt/i, 'Starfsíþróttir'], [/taekwondo/i, 'Taekwondo'], [/almenningshlaup|almenningsíþrótt|hreyfivika/i, 'Almenningsíþróttir'],
+  ];
+  const PLACES = ['Selfoss', 'Hveragerði', 'Þorlákshöfn', 'Hella', 'Hellu', 'Hvolsvöll', 'Laugarvatn', 'Flúðum', 'Flúðir', 'Reykholt', 'Borg',
+    'Árnes', 'Stokkseyri', 'Eyrarbakka', 'Laugaland', 'Aratung', 'Þjórsárver', 'Brautarholt', 'Sandvík', 'Kirkjubæjarklaustr', 'Vík', 'Hvoli', 'Vesturbyggð'];
+  const pad = (n) => String(n).padStart(2, '0');
+  const escHtml = (t) => t.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // Allar dagsetningar í línu: „14. mars 2027“, „14.–15. mars“, „14.3.2027“, „14/3“
+  function datesIn(line) {
+    const out = [];
+    const monthRe = /(\d{1,2})\.?\s*(?:[–-]\s*(\d{1,2})\.?\s*)?(jan|feb|mar|apr|maí|mai|jún|jun|júl|jul|ágú|ag|sep|okt|nóv|nov|des)[a-zúíáéóöæþð]*\.?(?:\s+(\d{4}))?/gi;
+    let m;
+    while ((m = monthRe.exec(line))) {
+      const key = m[3].toLowerCase().replace('mai', 'maí').replace('jun', 'jún').replace('jul', 'júl').replace(/^ag$/, 'ágú').replace('nov', 'nóv');
+      const mo = MONTHS.indexOf(key.slice(0, 3)) + 1;
+      if (mo) out.push({ day: +m[1], end: m[2] ? +m[2] : 0, month: mo, year: m[4] ? +m[4] : 0, at: m.index });
+    }
+    const numRe = /\b(\d{1,2})[./](\d{1,2})(?:[./](\d{4}))?\b(?!\s*(?:km|m\b|ára|kr))/g;
+    while ((m = numRe.exec(line))) {
+      if (+m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31 && (m[3] || /[./]/.test(m[0]))) {
+        if (!m[3] && /kl\.?\s*$/i.test(line.slice(0, m.index))) continue; // „kl. 10.30“ er tími
+        out.push({ day: +m[1], end: 0, month: +m[2], year: m[3] ? +m[3] : 0, at: m.index });
+      }
+    }
+    return out.sort((a, b) => a.at - b.at);
+  }
+  function isoDate(d, today) {
+    let y = d.year || today.getFullYear();
+    if (!d.year && new Date(y, d.month - 1, d.day) < new Date(today.getFullYear(), today.getMonth(), today.getDate())) y++;
+    return `${y}-${pad(d.month)}-${pad(d.day)}`;
+  }
+  const timeIn = (line) => {
+    const m = line.match(/(?:kl\.?|klukkan)\s*(\d{1,2})(?:[.:](\d{2}))?/i) || line.match(/\b(\d{1,2})[:](\d{2})\b/);
+    return m && +m[1] < 24 ? `${pad(m[1])}:${m[2] || '00'}` : '';
+  };
+
+  function parseEvent(text, clubs) {
+    const today = new Date();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const f = {};
+    const label = (re) => { for (const l of lines) { const m = l.match(new RegExp('^(?:' + re + ')\\s*[:–-]\\s*(.+)$', 'i')); if (m) return m[1].trim(); } return ''; };
+
+    // Heiti: fyrsta lína ef hún er stutt, annars fyrsta setning
+    const first = lines[0] || '';
+    f.title = (first.length <= 90 ? first : first.split(/[.!?](\s|$)/)[0]).replace(/[.:]$/, '').slice(0, 120);
+
+    // Dagsetningar: skráningarfrestur úr línu sem nefnir skráningu/frest, annars fyrsta dagsetning er upphaf
+    let start = null; let deadline = null; let startLine = '';
+    for (const l of lines) {
+      const ds = datesIn(l);
+      if (!ds.length) continue;
+      if (/skráning\w*\s*(lýkur|frest)|frest\w*|skrá\w* (fyrir|í síðasta lagi|eigi síðar)|síðasti skráningardagur/i.test(l)) { if (!deadline) deadline = ds[ds.length - 1]; continue; }
+      if (!start) { start = ds[0]; startLine = l; if (ds[1] && !start.end) start.endDate = ds[1]; }
+    }
+    if (start) {
+      const t = timeIn(startLine) || timeIn(label('tími|klukkan|hefst|keppni hefst'));
+      f.starts_at = `${isoDate(start, today)}T${t || '00:00'}`;
+      const endD = start.end ? { ...start, day: start.end } : start.endDate;
+      if (endD) {
+        const ts = startLine.match(/(\d{1,2})(?:[.:](\d{2}))?\s*[–-]\s*(\d{1,2})(?:[.:](\d{2}))?/);
+        f.ends_at = `${isoDate({ ...endD, year: endD.year || start.year }, today)}T${ts && +ts[3] < 24 && !start.end ? pad(ts[3]) + ':' + (ts[4] || '00') : '00:00'}`;
+      } else {
+        const range = startLine.match(/(?:kl\.?|klukkan)\s*\d{1,2}(?:[.:]\d{2})?\s*[–-]\s*(\d{1,2})(?:[.:](\d{2}))?/i);
+        if (range && +range[1] < 24) f.ends_at = `${isoDate(start, today)}T${pad(range[1])}:${range[2] || '00'}`;
+      }
+    }
+    if (deadline) f.reg_deadline = isoDate(deadline, today);
+
+    // Tengill: helst sá sem tengist skráningu
+    const urls = text.match(/https?:\/\/[^\s<>()"]+[^\s<>()".,;:!?]/gi) || [];
+    const www = text.match(/\bwww\.[^\s<>()"]+[^\s<>()".,;:!?]/gi) || [];
+    const all = [...urls, ...www.map((u) => 'https://' + u)];
+    f.url = all.find((u) => /skra|skraning|sportabler|netskraning|abler|forms|mot/i.test(u)) || all[0] || '';
+
+    // Tegund og íþróttagrein
+    f.kind = /námskeið|fundur|fundi|þing\b|ársþing|héraðsþing|ráðstefn|hátíð|fyrirlest|vinnustof|æfingabúð/i.test(f.title)
+      ? 'vidburdur' : /mót|keppni|leikar|meistara|bikar|hlaup|deild/i.test(text) ? 'mot' : 'vidburdur';
+    const sport = SPORT_WORDS.find(([re]) => re.test(f.title)) || SPORT_WORDS.find(([re]) => re.test(text));
+    f.sport = sport ? sport[1] : '';
+
+    // Staður: merktur reitur, annars „í/á <Staður>“ eða þekkt staðarheiti
+    f.location = label('staður|staðsetning|keppnisstaður|vettvangur');
+    if (!f.location) {
+      const m = text.match(/(?:haldi[nð]\w*|fer fram|verður)\s[^.\n]*?\s(?:í|á)\s+((?:[A-ZÁÐÉÍÓÚÝÞÆÖ][\wáðéíóúýþæö-]*)(?:\s+(?:[A-ZÁÐÉÍÓÚÝÞÆÖ][\wáðéíóúýþæö-]*|á|í|við))*)/);
+      if (m) f.location = m[1].replace(/\s+(á|í|við)$/, '');
+      else { const p = PLACES.find((pl) => new RegExp('\\b' + pl, 'i').test(text)); if (p) f.location = text.match(new RegExp('\\b' + p + '\\w*', 'i'))[0]; }
+    }
+
+    // Aldursflokkar
+    f.age_groups = label('aldur|aldursflokk\\w*|keppnisflokk\\w*|flokkar');
+    if (!f.age_groups) {
+      const ages = [...text.matchAll(/\b\d{1,2}\s*(?:[–-]\s*\d{1,2}\s*)?ára(?:\s+og\s+(?:eldri|yngri))?|\bU-?\d{2}\b|fullorðn\w*|öldung\w*|\d{1,2}\.\s*flokk\w*/gi)].map((m) => m[0].replace(/\s+/g, ' '));
+      f.age_groups = [...new Set(ages.map((a) => a.toLowerCase()))].slice(0, 6).join(', ');
+    }
+
+    // Félag og mótshaldari
+    const norm = (s) => s.toLowerCase().replace(/ungmennafélagið|ungmennafélag|umf\.?|íþróttafélagið|íf\.?|golfklúbburinn|gk\.?|hestamannafélagið|hmf\.?/g, '').replace(/[^a-záðéíóúýþæö0-9 ]/g, '').trim();
+    const lower = text.toLowerCase();
+    const club = clubs.find((c) => lower.includes(c.label.toLowerCase()))
+      || clubs.find((c) => { const n = norm(c.label); return n.length > 3 && new RegExp('(umf\\.?|ungmennafélag\\w*|íþróttafélag\\w*|golfklúbb\\w*|hestamannafélag\\w*|félag\\w*)\\s+' + n.replace(/ /g, '\\s+') + '\\b', 'i').test(text); });
+    f.club_id = club ? club.value : '';
+    f.organizer = label('mótshaldari|umsjón|skipuleggjandi|framkvæmd|haldari') || (club ? club.label : /\bHSK\b|Héraðssamband/i.test(text) ? 'HSK' : '');
+
+    // Lýsing: allur textinn sem málsgreinar, tenglar virkir
+    f.description = text.trim().split(/\n\s*\n/).map((p) => '<p>' + escHtml(p.trim()).replace(/\n/g, '<br>')
+      .replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1">$1</a>') + '</p>').join('\n');
+    return f;
+  }
+
   const evForm = document.querySelector('form.edit-form[action^="/stjorn/vidburdir/"]');
   if (evForm && document.getElementById('f_starts_at')) {
     const isNew = evForm.getAttribute('action').endsWith('/nytt');
@@ -237,41 +352,34 @@
     panel.className = 'ai-fill';
     panel.open = isNew;
     panel.innerHTML = '<summary>Lesa úr texta</summary>'
-      + '<p class="help">Límdu inn boðsbréf, tölvupóst eða frétt um mótið. Gervigreind les textann og fyllir út reitina hér fyrir neðan. Farðu yfir allt áður en þú vistar.</p>'
+      + '<p class="help">Límdu inn boðsbréf, tölvupóst eða frétt um mótið. Kerfið les dagsetningar, tíma, stað, skráningarfrest, tengla, íþróttagrein og félag úr textanum og fyllir út reitina hér fyrir neðan. Farðu yfir allt áður en þú vistar.</p>'
       + '<textarea rows="7" placeholder="Límdu textann hér…"></textarea>'
       + '<div class="ai-fill-row"><button type="button" class="btn">Fylla út reiti</button><span class="ai-fill-msg" role="status"></span></div>';
     evForm.prepend(panel);
     const area = panel.querySelector('textarea');
-    const btn = panel.querySelector('button');
     const msg = panel.querySelector('.ai-fill-msg');
-    btn.addEventListener('click', async () => {
+    panel.querySelector('button').addEventListener('click', () => {
       const text = area.value.trim();
-      if (!text) { msg.textContent = 'Límdu fyrst inn texta.'; return; }
-      btn.disabled = true;
       msg.className = 'ai-fill-msg';
-      msg.textContent = 'Les textann… þetta tekur nokkrar sekúndur.';
-      try {
-        const res = await fetch('/stjorn/vidburdir/lesa', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        const d = await res.json().catch(() => ({ error: 'Óvænt svar frá þjóninum.' }));
-        if (!res.ok || !d.fields) throw new Error(d.error || 'Ekki tókst að lesa textann.');
-        let n = 0;
-        for (const [name, value] of Object.entries(d.fields)) {
-          if (!value) continue;
-          const el = document.getElementById('f_' + name);
-          if (!el) continue;
-          if (name === 'description' && window.tinymce?.get('f_description')) window.tinymce.get('f_description').setContent(value);
-          else if (el.tagName === 'SELECT') { if (![...el.options].some((o) => o.value === value)) continue; el.value = value; }
-          else el.value = value;
-          el.dispatchEvent(new Event('change', { bubbles: true }));
-          (el.closest('.field') || el).classList.add('ai-filled');
-          n++;
-        }
-        msg.classList.add('ok');
-        msg.textContent = n ? `${n} reitir fylltir út og merktir. Farðu yfir þá og vistaðu.` : 'Engar upplýsingar fundust í textanum.';
-      } catch (e) {
-        msg.classList.add('bad');
-        msg.textContent = e.message;
-      } finally { btn.disabled = false; }
+      if (!text) { msg.textContent = 'Límdu fyrst inn texta.'; return; }
+      const clubSel = document.getElementById('f_club_id');
+      const clubs = clubSel ? [...clubSel.options].filter((o) => o.value).map((o) => ({ value: o.value, label: o.textContent.trim() })) : [];
+      const fields = parseEvent(text, clubs);
+      document.querySelectorAll('.field.ai-filled').forEach((el) => el.classList.remove('ai-filled'));
+      let n = 0;
+      for (const [name, value] of Object.entries(fields)) {
+        if (!value) continue;
+        const el = document.getElementById('f_' + name);
+        if (!el) continue;
+        if (name === 'description' && window.tinymce?.get('f_description')) window.tinymce.get('f_description').setContent(value);
+        else if (el.tagName === 'SELECT') { if (![...el.options].some((o) => o.value === value)) continue; el.value = value; }
+        else el.value = value;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        (el.closest('.field') || el).classList.add('ai-filled');
+        n++;
+      }
+      msg.classList.add(n ? 'ok' : 'bad');
+      msg.textContent = n ? `${n} reitir fylltir út og merktir með gulu. Farðu yfir þá, lagaðu ef þarf og vistaðu.` : 'Engar upplýsingar fundust í textanum.';
     });
   }
 

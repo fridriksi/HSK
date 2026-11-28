@@ -250,24 +250,14 @@ try {
   await admin.waitForSelector('.record-check.info');
   ok((await admin.inputValue('#f_age_group')) === 'Piltar 11 ára', 'Varað við óþekktum aldursflokki og hægt að velja réttan');
 
-  // 3l. Mót og viðburðir: Lesa úr texta. Án API-lykils kemur skýr villa; með svari fyllast reitir út
+  // 3l. Mót og viðburðir: Lesa úr texta fyllir út reiti eftir reglum (dagsetning, tími, staður, frestur, tengill, grein)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
-  await admin.fill('.ai-fill textarea', 'Héraðsmót HSK í sundi verður haldið í Sundhöll Selfoss 14. mars kl. 10.');
-  await admin.click('.ai-fill button');
-  await admin.waitForSelector('.ai-fill-msg.bad, .ai-fill-msg.ok', { timeout: 60000 });
-  const aiLive = await admin.locator('.ai-fill-msg.ok').count() > 0;
-  if (!aiLive) ok((await admin.textContent('.ai-fill-msg')).includes('API-lykil'), 'Lesa úr texta: skýr villa þegar lykil vantar');
-  await admin.route('**/stjorn/vidburdir/lesa', (r) => r.fulfill({ json: { fields: {
-    title: 'Héraðsmót HSK í sundi', kind: 'mot', sport: 'Sund', starts_at: '2027-03-14T10:00', ends_at: '', location: 'Sundhöll Selfoss',
-    age_groups: '', organizer: 'HSK', reg_deadline: '2027-03-07', url: '', club_id: '', description: '<p>Keppt í öllum greinum.</p>' } } }));
-  await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
-  await admin.fill('.ai-fill textarea', 'Héraðsmót HSK í sundi verður haldið í Sundhöll Selfoss 14. mars kl. 10.');
+  await admin.fill('.ai-fill textarea', 'Aldursflokkamót HSK í sundi\nStaður: Sundhöll Selfoss\nDagsetning: 8.–9. mars 2027 kl. 10\nAldur: 11-12 ára, 13-14 ára\nSkráning í síðasta lagi 1. mars 2027. Nánar á https://hsk.is/sund');
   await admin.click('.ai-fill button');
   await admin.waitForSelector('.ai-fill-msg.ok');
-  ok((await admin.inputValue('#f_title')) === 'Héraðsmót HSK í sundi' && (await admin.inputValue('#f_sport')) === 'Sund'
-    && (await admin.inputValue('#f_starts_at')) === '2027-03-14T10:00' && await admin.locator('.field.ai-filled').count() >= 6,
-    'Lesa úr texta fyllir út reiti og merkir þá');
-  await admin.unroute('**/stjorn/vidburdir/lesa');
+  const aiVals = await Promise.all(['title', 'kind', 'sport', 'starts_at', 'ends_at', 'location', 'reg_deadline', 'url', 'age_groups'].map((n) => admin.inputValue('#f_' + n)));
+  ok(aiVals.join('|') === 'Aldursflokkamót HSK í sundi|mot|Sund|2027-03-08T10:00|2027-03-09T00:00|Sundhöll Selfoss|2027-03-01|https://hsk.is/sund|11-12 ára, 13-14 ára'
+    && await admin.locator('.field.ai-filled').count() >= 9, 'Lesa úr texta fyllir út reiti og merkir þá');
 
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
