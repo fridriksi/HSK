@@ -684,7 +684,7 @@ app.get('/stillingar', async (c) => {
           <div class="field"><label for="contact_phone">Sími</label><input id="contact_phone" name="contact_phone" value={await s('contact_phone', '482 1189')} /></div>
           <div class="field"><label for="contact_email">Netfang</label><input id="contact_email" name="contact_email" type="email" value={await s('contact_email', 'hsk@hsk.is')} /></div>
         </div>
-        <div class="form-actions"><button class="btn">Vista</button></div>
+        <div class="form-actions"><button class="btn">Vista</button><a class="btn ghost cancel" href="/stjorn" data-back>Hætta við</a></div>
       </form>
     </>
   ));

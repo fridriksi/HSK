@@ -287,6 +287,8 @@ try {
   await Promise.all([admin.waitForURL(/\/stjorn\/vidburdir\?q=/), admin.click('.form-actions a[data-back]')]);
   await admin.goto(`${BASE}/stjorn/frettir/nytt`);
   await Promise.all([admin.waitForURL(`${BASE}/stjorn/frettir`), admin.click('.form-actions a[data-back]')]);
+  await admin.goto(`${BASE}/stjorn/stillingar`);
+  await Promise.all([admin.waitForURL(`${BASE}/stjorn`), admin.click('.form-actions a[data-back]')]);
   ok(true, 'Hætta við fer aftur á listann (og heldur síum ef komið var þaðan)');
 
   // 4b. Skrá úrslit: val á móti úr Mót og viðburðir fyllir út heiti, dagsetningu og grein
@@ -313,7 +315,7 @@ try {
   await Promise.all([admin.waitForURL(/eytt=1/), admin.click('.media-grid figure:first-child button[name=key]')]);
   const gone = (await fetch(`${BASE}/media/${newest}`)).status === 404;
   const usedKey = usedSrc.replace(/^\/media\//, '');
-  await admin.goto(`${BASE}/stjorn/skrar?uppruni=nyjar&q=${encodeURIComponent(usedKey.split('/').pop().replace(/^[^-]+-/, ''))}`);
+  await admin.goto(`${BASE}/stjorn/skrar?uppruni=nyjar`);
   await admin.check(`input[name=keys][value="${usedKey}"]`);
   await Promise.all([admin.waitForURL(/eytt=0/), admin.click('.media-select-bar button[name=bulk]')]);
   ok(gone && (await admin.textContent('.flash')).includes(`Albúm ${stamp}`) && (await fetch(`${BASE}${usedSrc}`)).status === 200,
