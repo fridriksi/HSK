@@ -173,12 +173,15 @@ app.get('/', async (c) => {
           </div>
           <div>
             <div class="h2-head"><h2>Nýjustu HSK met</h2><a href="/mot/hsk-met">Öll met</a></div>
-            <ul class="rec-list">
+            <ul class="event-list rec-list">
               {records.map((r) => (
-                <li><a href="/mot/hsk-met">
-                  <span class="rec-result">{r.result}</span>
-                  <span class="rec-main"><strong>{r.event}</strong>{[...r.groups, ...r.categories].length > 0 && <small> · {[...r.groups, ...r.categories].join(' · ')}</small>}</span>
-                  <span class="rec-meta">{[r.athlete, dateLong(`${Math.floor(r.dateKey / 10000)}-${String(Math.floor(r.dateKey / 100) % 100).padStart(2, '0')}-${String(r.dateKey % 100).padStart(2, '0')}`)].filter(Boolean).join(' · ')}</span>
+                <li class="event-item"><a href="/mot/hsk-met">
+                  <DateBox d={recordIso(r.dateKey)} />
+                  <span class="ev-txt">
+                    {r.groups.length > 0 && <span class="kind-tag">{r.groups.join(' · ')}</span>}
+                    <strong>{r.event}</strong>
+                    <small class="rec-line"><b>{recordResult(r.event, r.result)}</b>{r.athlete && ` · ${r.athlete}`}{r.categories.length > 0 && ` · ${r.categories.join(', ')}`}</small>
+                  </span>
                 </a></li>
               ))}
             </ul>
@@ -228,6 +231,18 @@ app.get('/', async (c) => {
     </div>
   ), { description: 'Héraðssambandið Skarphéðinn (HSK) er héraðssamband íþrótta- og ungmennafélaga á Suðurlandi, stofnað 1910.' });
 });
+
+const recordIso = (k: number) => `${Math.floor(k / 10000)}-${String(Math.floor(k / 100) % 100).padStart(2, '0')}-${String(k % 100).padStart(2, '0')}`;
+
+/** Árangur með einingu: tími í hlaupum og sundi, metrar í köstum og stökkum, stig í þrautum */
+function recordResult(event: string, result: string): string {
+  const r = result.trim();
+  if (!r || /[a-záðéíóúýþæö]/i.test(r)) return r;          // eining þegar í árangri
+  if (/þraut/i.test(event)) return `${r} stig`;
+  if (/kast|varp|stökk/i.test(event)) return `${r} m`;
+  if (/hlaup|grind|ganga|sund|skrið|bak|bringa|flug|fjór|boð/i.test(event)) return r.includes(':') ? `${r} mín.` : `${r} sek.`;
+  return r;
+}
 
 /** Fimm nýjustu metin (eftir dagsetningu) úr töflunni HSK met; geymd í minni í 5 mínútur svo forsíðan sé hröð */
 let recentCache: { at: number; rows: RecordResult[] } | null = null;
