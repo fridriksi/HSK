@@ -11,7 +11,7 @@ import { Icon } from '../views/icons';
 import { RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
 import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
-import { RECORD_CATEGORIES } from '../content-types';
+import { RECORD_CATEGORIES, AREAS } from '../content-types';
 
 const app = new Hono<AppEnv>();
 const PER_PAGE = 12;
@@ -153,6 +153,11 @@ app.get('/', async (c) => {
           <select id="ff-g" data-fill-q>
             <option value="">Velja íþróttagrein</option>
             {sports.map((sp) => <option value={sp}>{sp}</option>)}
+          </select>
+          <label class="sr" for="ff-s">Sveitarfélag</label>
+          <select id="ff-s" data-fill-q>
+            <option value="">Velja sveitarfélag</option>
+            {AREAS.map((a) => <option value={a}>{a}</option>)}
           </select>
           <button class="btn-hero">Leita</button>
         </form>

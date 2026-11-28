@@ -128,7 +128,7 @@ export const FieldInput: FC<{ f: Field; value: unknown; options?: { id: number; 
       const opts = { ...(f.options ?? {}), ...Object.fromEntries(picked.filter((p) => !(p in (f.options ?? {}))).map((p) => [p, p])) };
       input = (
         <details class="multi" id={id} data-multi>
-          <summary><span data-multi-label data-empty="Veldu greinar">{picked.length ? picked.join(', ') : 'Veldu greinar'}</span></summary>
+          <summary><span data-multi-label data-empty="Veldu">{picked.length ? picked.join(', ') : 'Veldu'}</span></summary>
           <div class="multi-opts">
             {Object.entries(opts).map(([k, l]) => <label class="check"><input type="checkbox" name={f.name} value={k} checked={picked.includes(k)} /> {l}</label>)}
           </div>

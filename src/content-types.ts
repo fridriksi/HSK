@@ -42,6 +42,10 @@ export type ContentType = {
 export const SPORTS = ['Almenningsíþróttir', 'Blak', 'Borðtennis', 'Bogfimi', 'Fimleikar', 'Frjálsíþróttir', 'Glíma', 'Golf', 'Handknattleikur', 'Hestaíþróttir', 'Júdó', 'Knattspyrna', 'Körfuknattleikur', 'Motocross', 'Pílukast', 'Skák', 'Skotíþróttir', 'Starfsíþróttir', 'Sund', 'Taekwondo', 'Annað'];
 const sportOptions = Object.fromEntries(SPORTS.map((s) => [s, s]));
 
+/** Sveitarfélög á sambandssvæði HSK (Árnessýsla og Rangárvallasýsla) */
+export const AREAS = ['Ásahreppur', 'Bláskógabyggð', 'Flóahreppur', 'Grímsnes- og Grafningshreppur', 'Hrunamannahreppur', 'Hveragerðisbær', 'Rangárþing eystra', 'Rangárþing ytra', 'Skeiða- og Gnúpverjahreppur', 'Sveitarfélagið Árborg', 'Sveitarfélagið Ölfus'];
+const areaOptions = Object.fromEntries(AREAS.map((a) => [a, a]));
+
 /** Flokkar metaskráa: hver flokkur er eitt spjald á síðunni HSK met */
 export const RECORD_CATEGORIES: Record<string, string> = {
   utanhuss: 'Utanhúss', innanhuss: 'Innanhúss', oldungar_uti: 'Öldungar utanhúss', oldungar_inni: 'Öldungar innanhúss',
@@ -128,7 +132,7 @@ export const contentTypes: ContentType[] = [
       { name: 'name', label: 'Nafn félags', type: 'text', required: true, wide: true, staffOnly: true },
       { name: 'logo', label: 'Merki', type: 'image' },
       { name: 'sports', label: 'Íþróttagreinar', type: 'multiselect', options: sportOptions, help: 'Hakaðu við allar greinar sem félagið býður upp á.' },
-      { name: 'area', label: 'Svæði / sveitarfélag', type: 'text' },
+      { name: 'area', label: 'Svæði / sveitarfélag', type: 'multiselect', options: areaOptions, help: 'Hakaðu við öll sveitarfélög sem félagið starfar í.' },
       { name: 'contact_name', label: 'Formaður / tengiliður', type: 'text' },
       { name: 'email', label: 'Netfang', type: 'email' },
       { name: 'phone', label: 'Sími', type: 'text' },

@@ -302,7 +302,7 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .h2-finder { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; }
 .h2-finder h2 { font-size: 1.7rem; margin: 0 0 8px; }
 .h2-finder p { margin: 0; color: var(--muted); }
-.h2-find { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; }
+.h2-find { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; }
 .h2-find input, .h2-find select { font: inherit; padding: 11px 12px; border: 1px solid #c9d2e6; border-radius: var(--radius); background: #fff; color: var(--ink); min-width: 0; }
 .h2-find .btn-hero { background: var(--blue); color: #fff; }
 .h2-find .btn-hero:hover { background: var(--blue-dark); color: #fff; }

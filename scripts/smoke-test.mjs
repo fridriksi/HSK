@@ -190,6 +190,17 @@ try {
   await admin.click('button:has-text("Vista")');
   await admin.waitForURL(/m=vistad/);
 
+  // 3h. Sveitarfélag félags: sami fellilisti; félagið finnst eftir sveitarfélagi
+  await admin.goto(`${BASE}/stjorn/felog/1`);
+  const areaWas = await admin.locator('#f_area input[value="Bláskógabyggð"]').isChecked();
+  await admin.click('#f_area summary');
+  if (!areaWas) await admin.check('#f_area input[value="Bláskógabyggð"]');
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+  const clubsHtml = await (await fetch(`${BASE}/adildarfelog`)).text();
+  ok(/data-text="[^"]*bláskógabyggð/.test(clubsHtml), 'Sveitarfélag vistast og félagið finnst eftir því');
+  if (!areaWas) { await admin.click('#f_area summary'); await admin.uncheck('#f_area input[value="Bláskógabyggð"]'); await admin.click('button:has-text("Vista")'); await admin.waitForURL(/m=vistad/); }
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);
