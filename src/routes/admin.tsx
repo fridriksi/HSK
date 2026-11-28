@@ -22,6 +22,7 @@ import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
 import { Icon } from '../views/icons';
 import { MAX_RECORD_FILE, uploadedRecordKey, validateRecordSheets } from '../record-books';
 import { asset } from '../static';
+import { readEvent } from '../event-ai';
 
 const app = new Hono<AppEnv>();
 type Row = Record<string, unknown> & { id: number };
@@ -970,6 +971,27 @@ app.post('/saga/:rev{[0-9]+}/endurheimta', async (c) => {
   await logRevision(db, rev.entity, rev.entity_id, c.get('user')!.id, 'restore', data);
   const t = contentTypes.find((x) => x.table === rev.entity);
   return c.redirect((rev.entity === 'pages' ? `/stjorn/sidur/${rev.entity_id}` : `/stjorn/${t?.key}/${rev.entity_id}`) + '?m=endurheimt');
+});
+
+// ---------- Mót og viðburðir: lesa reiti úr texta ----------
+// Starfsmaður eða félag límir inn texta (boðsbréf, tölvupóst) og Claude fyllir út formið; ekkert er vistað hér
+app.post('/vidburdir/lesa', async (c) => {
+  const t = getType('vidburdir')!;
+  if (!canEdit(t, c.get('user')!, null)) return c.json({ error: 'Þú hefur ekki aðgang að þessu.' }, 403);
+  if (!c.env.ANTHROPIC_API_KEY) return c.json({ error: 'Gervigreindin er ekki tengd. Stjórnandi þarf að setja inn API-lykil.' }, 503);
+  const body = await c.req.json<{ text?: string }>().catch(() => ({} as { text?: string }));
+  const text = String(body.text ?? '').trim();
+  if (text.length < 20) return c.json({ error: 'Límdu inn lengri texta um mótið eða viðburðinn.' }, 400);
+  if (text.length > 30000) return c.json({ error: 'Textinn er of langur (hámark 30.000 stafir).' }, 400);
+  const clubs = await all<{ id: number; name: string }>(c.env.DB, 'SELECT id, name FROM clubs ORDER BY name');
+  try {
+    const r = await readEvent(c.env.ANTHROPIC_API_KEY, text, clubs.map((cl) => cl.name), new Date().toISOString().slice(0, 10));
+    const club = clubs.find((cl) => cl.name.toLocaleLowerCase('is') === r.club.trim().toLocaleLowerCase('is'));
+    return c.json({ fields: { ...r, club_id: club ? String(club.id) : '' } });
+  } catch (e) {
+    console.error('vidburdir/lesa', e);
+    return c.json({ error: 'Ekki tókst að lesa textann. Reyndu aftur eða fylltu út handvirkt.' }, 502);
+  }
 });
 
 // ---------- HSK met: öll met í einni töflu ----------

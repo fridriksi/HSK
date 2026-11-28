@@ -229,6 +229,52 @@
     document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target)) d.open = false; });
   });
 
+  // Mót og viðburðir: líma inn texta (boðsbréf, tölvupóst) og láta gervigreind fylla út reitina
+  const evForm = document.querySelector('form.edit-form[action^="/stjorn/vidburdir/"]');
+  if (evForm && document.getElementById('f_starts_at')) {
+    const isNew = evForm.getAttribute('action').endsWith('/nytt');
+    const panel = document.createElement('details');
+    panel.className = 'ai-fill';
+    panel.open = isNew;
+    panel.innerHTML = '<summary>Lesa úr texta</summary>'
+      + '<p class="help">Límdu inn boðsbréf, tölvupóst eða frétt um mótið. Gervigreind les textann og fyllir út reitina hér fyrir neðan. Farðu yfir allt áður en þú vistar.</p>'
+      + '<textarea rows="7" placeholder="Límdu textann hér…"></textarea>'
+      + '<div class="ai-fill-row"><button type="button" class="btn">Fylla út reiti</button><span class="ai-fill-msg" role="status"></span></div>';
+    evForm.prepend(panel);
+    const area = panel.querySelector('textarea');
+    const btn = panel.querySelector('button');
+    const msg = panel.querySelector('.ai-fill-msg');
+    btn.addEventListener('click', async () => {
+      const text = area.value.trim();
+      if (!text) { msg.textContent = 'Límdu fyrst inn texta.'; return; }
+      btn.disabled = true;
+      msg.className = 'ai-fill-msg';
+      msg.textContent = 'Les textann… þetta tekur nokkrar sekúndur.';
+      try {
+        const res = await fetch('/stjorn/vidburdir/lesa', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        const d = await res.json().catch(() => ({ error: 'Óvænt svar frá þjóninum.' }));
+        if (!res.ok || !d.fields) throw new Error(d.error || 'Ekki tókst að lesa textann.');
+        let n = 0;
+        for (const [name, value] of Object.entries(d.fields)) {
+          if (!value) continue;
+          const el = document.getElementById('f_' + name);
+          if (!el) continue;
+          if (name === 'description' && window.tinymce?.get('f_description')) window.tinymce.get('f_description').setContent(value);
+          else if (el.tagName === 'SELECT') { if (![...el.options].some((o) => o.value === value)) continue; el.value = value; }
+          else el.value = value;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          (el.closest('.field') || el).classList.add('ai-filled');
+          n++;
+        }
+        msg.classList.add('ok');
+        msg.textContent = n ? `${n} reitir fylltir út og merktir. Farðu yfir þá og vistaðu.` : 'Engar upplýsingar fundust í textanum.';
+      } catch (e) {
+        msg.classList.add('bad');
+        msg.textContent = e.message;
+      } finally { btn.disabled = false; }
+    });
+  }
+
   // Síur í listum uppfærast strax þegar valið er
   document.querySelectorAll('select[data-autosubmit]').forEach((sel) => sel.addEventListener('change', () => sel.form.submit()));
 

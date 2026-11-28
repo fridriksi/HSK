@@ -13,9 +13,11 @@
     "static": "node scripts/build-static.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "exceljs": "4.4.0",
     "hono": "^4.13.23",
-    "xss": "^1.0.17"
+    "xss": "^1.0.17",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261127.1",
