@@ -3,7 +3,7 @@
  * Nýrri efnistegund er bætt við með því að bæta við færslu hér (og töflu í migrations/).
  */
 
-export type FieldType = 'text' | 'textarea' | 'richtext' | 'date' | 'datetime' | 'select' | 'multiselect' | 'image' | 'file' | 'number' | 'url' | 'email' | 'club' | 'event' | 'album';
+export type FieldType = 'text' | 'textarea' | 'richtext' | 'date' | 'datetime' | 'select' | 'multiselect' | 'suggest' | 'image' | 'file' | 'number' | 'url' | 'email' | 'club' | 'event' | 'album';
 
 export type Field = {
   name: string;
@@ -15,6 +15,8 @@ export type Field = {
   /** Reitir sem aðeins starfsfólk HSK sér (ekki félagsaðgangur) */
   staffOnly?: boolean;
   wide?: boolean;
+  /** Fyrir 'suggest': hvaðan tillögur koma (t.d. greinar úr HSK met) */
+  suggest?: 'record_events' | 'record_groups' | 'record_places';
 };
 
 export type ContentType = {
@@ -113,7 +115,7 @@ export const contentTypes: ContentType[] = [
     searchFields: ['title', 'sport'],
   },
   {
-    key: 'met', table: 'records', label: 'HSK met', singular: 'metaskrá', titleField: 'title', order: "CASE category WHEN 'reglur' THEN 0 ELSE 1 END, year DESC, category, title",
+    key: 'met', table: 'records', label: 'Metaskrár', singular: 'metaskrá', titleField: 'title', order: "CASE category WHEN 'reglur' THEN 0 ELSE 1 END, year DESC, category, title",
     fields: [
       { name: 'title', label: 'Heiti', type: 'text', required: true, help: 'T.d. HSK metaskrá öldunga í frjálsum innanhúss 2027', wide: true },
       { name: 'category', label: 'Flokkur', type: 'select', required: true, options: RECORD_CATEGORIES, help: 'Ræður á hvaða spjaldi skráin birtist á síðunni HSK met.' },
@@ -124,6 +126,24 @@ export const contentTypes: ContentType[] = [
     ],
     listColumns: [{ field: 'title', label: 'Heiti' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'year', label: 'Ár' }],
     searchFields: ['title'],
+  },
+  {
+    // Stök met sem skráð eru í vefumsjón; birtast í töflunni á HSK met með metum úr metaskrám
+    key: 'ny-met', table: 'record_entries', label: 'Ný met', singular: 'nýtt met', titleField: 'event', dateField: 'date', order: 'date DESC, id DESC',
+    publicUrl: () => '/mot/hsk-met',
+    fields: [
+      { name: 'event', label: 'Grein', type: 'suggest', suggest: 'record_events', required: true, help: 'Veldu grein úr listanum svo metið raðist með sömu grein í töflunni, t.d. „60 m hlaup“ eða „Kúluvarp (4 kg)“.', wide: true },
+      { name: 'result', label: 'Árangur', type: 'text', required: true, help: 'Eins og í metaskrá, t.d. 7,41 eða 2:05,30' },
+      { name: 'athlete', label: 'Nafn', type: 'text', required: true, help: 'Fyrir boðhlaup: nafn sveitar eða félags' },
+      { name: 'category', label: 'Flokkur', type: 'select', required: true, options: Object.fromEntries(Object.entries(RECORD_CATEGORIES).filter(([k]) => k !== 'reglur')) },
+      { name: 'age_group', label: 'Aldursflokkur', type: 'suggest', suggest: 'record_groups', help: 'T.d. „Piltar 15 ára“, „Konur 60–64 ára“ eða „Karlar“' },
+      { name: 'date', label: 'Met sett', type: 'date', required: true },
+      { name: 'place', label: 'Staður', type: 'suggest', suggest: 'record_places' },
+      { name: 'club', label: 'Félag', type: 'text', help: 'Valfrjálst' },
+      { name: 'note', label: 'Athugasemd', type: 'textarea', help: 'Valfrjálst, t.d. meðvindur eða liðsmenn í boðhlaupi', wide: true },
+    ],
+    listColumns: [{ field: 'event', label: 'Grein' }, { field: 'athlete', label: 'Nafn' }, { field: 'result', label: 'Árangur' }, { field: 'category', label: 'Flokkur', format: 'option' }, { field: 'date', label: 'Met sett', format: 'date' }],
+    searchFields: ['event', 'athlete', 'place', 'age_group'],
   },
   {
     key: 'felog', table: 'clubs', label: 'Aðildarfélög', singular: 'félag', titleField: 'name', order: 'name', slug: true, clubOwnRecord: true,

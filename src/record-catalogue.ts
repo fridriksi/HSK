@@ -17,7 +17,8 @@ export type RecordResult = {
 };
 
 export const CATALOGUE_PAGE_SIZE = 50;
-export const catalogueSource = ({ book, sheet }: RecordResult) => `${RECORDS_PATH}/skra/${encodeURIComponent(book)}?blad=${sheet}`;
+// Met skráð beint í vefumsjón eiga enga metaskrá að baki (book er tómt)
+export const catalogueSource = ({ book, sheet }: RecordResult) => book ? `${RECORDS_PATH}/skra/${encodeURIComponent(book)}?blad=${sheet}` : '';
 export const formatRecordCount = (count: number) => String(count).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 const ICELANDIC = new Intl.Collator('is', { numeric: true, sensitivity: 'base' });

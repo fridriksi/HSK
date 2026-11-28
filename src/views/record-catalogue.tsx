@@ -30,7 +30,7 @@ export function RecordCatalogue({ rows }: { rows: RecordResult[] }) {
           <td>{row.athlete || '—'}{row.teammates && <small>{row.teammates}</small>}</td>
           <td>{row.categories.join(' · ')}{row.groups.length > 0 && <small>{row.groups.join(' · ')}</small>}</td>
           <td>{row.date || '—'}</td><td>{row.place || '—'}</td>
-          <td><a href={catalogueSource(row)} aria-label={`Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`}>Heimild</a></td>
+          <td>{catalogueSource(row) ? <a href={catalogueSource(row)} aria-label={`Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`}>Heimild</a> : <span class="muted">Nýtt met</span>}</td>
         </tr>)}</tbody>
       </table>
     </div>

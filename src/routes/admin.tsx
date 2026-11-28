@@ -11,6 +11,7 @@ import {
 } from '../auth';
 import { sendMail, notifyAdmins } from '../mail';
 import { GRANT_FIELDS } from '../grant';
+import { archivedRecords } from '../record-catalogue-data';
 import { DEFAULT_TILES } from '../lib';
 import { contentTypes, getType, STATUS_LABELS, type ContentType, type Field } from '../content-types';
 import { AdminLayout, FieldInput, StatusPill } from '../views/admin';
@@ -943,6 +944,18 @@ async function refOptions(c: Context<AppEnv>, t: ContentType) {
     club: need.has('club') ? (await all<{ id: number; name: string }>(db, 'SELECT id, name FROM clubs ORDER BY name')).map((r) => ({ id: r.id, label: r.name })) : [],
     event: need.has('event') ? (await all<{ id: number; title: string; starts_at: string }>(db, 'SELECT id, title, starts_at FROM events ORDER BY starts_at DESC LIMIT 400')).map((r) => ({ id: r.id, label: `${dateLong(r.starts_at)} – ${r.title}` })) : [],
     album: need.has('album') ? (await all<{ id: number; title: string; date: string }>(db, 'SELECT id, title, date FROM albums ORDER BY date DESC LIMIT 300')).map((r) => ({ id: r.id, label: `${dateLong(r.date)} – ${r.title}` })) : [],
+    ...(need.has('suggest') ? await recordSuggestions(db) : {}),
+  };
+}
+
+/** Tillögur fyrir skráningu nýrra meta: greinar, aldursflokkar og staðir sem þegar eru í HSK met */
+async function recordSuggestions(db: D1Database) {
+  const added = await all<{ event: string; age_group: string; place: string }>(db, 'SELECT event, age_group, place FROM record_entries');
+  const uniq = (xs: string[]) => [...new Set(xs.map((x) => x.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'is', { numeric: true })).map((label, id) => ({ id, label }));
+  return {
+    record_events: uniq([...archivedRecords.map((r) => r.event), ...added.map((r) => r.event)]),
+    record_groups: uniq([...archivedRecords.flatMap((r) => r.groups), ...added.map((r) => r.age_group)]),
+    record_places: uniq([...archivedRecords.map((r) => r.place), ...added.map((r) => r.place)]),
   };
 }
 
@@ -1064,7 +1077,7 @@ async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | 
           {t.slug && isStaff(user) && !isNew && (
             <div class="field"><label for="f_slug">Slóð</label><input id="f_slug" name="slug" value={String(row?.slug ?? '')} /></div>
           )}
-          {visibleFields(t, user).map((f) => <FieldInput f={f} value={row?.[f.name]} options={opts[f.type as 'club' | 'event' | 'album']} />)}
+          {visibleFields(t, user).map((f) => <FieldInput f={f} value={row?.[f.name]} options={f.type === 'suggest' && f.suggest ? (opts as Record<string, { id: number; label: string }[]>)[f.suggest] : opts[f.type as 'club' | 'event' | 'album']} />)}
         </div>
         {t.table === 'records' && <><input type="hidden" name="record_sheets" /><p role="status" data-record-status hidden></p></>}
         <div class="form-actions">

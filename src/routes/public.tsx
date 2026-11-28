@@ -10,7 +10,7 @@ import {
 import { Icon } from '../views/icons';
 import { RecordBookView, recordBook, recordEditions, recordLink } from '../views/records';
 import { RECORDS_PATH, uploadedRecordKey, type RecordBook, type RecordSheet } from '../record-books';
-import { buildCatalogue, mergeCatalogue } from '../record-catalogue';
+import { buildCatalogue, mergeCatalogue, type RecordResult } from '../record-catalogue';
 import { archivedRecords } from '../record-catalogue-data';
 import { RecordCatalogue } from '../views/record-catalogue';
 import { GRANT_FIELDS, GRANT_FILES, saveGrant } from '../grant';
@@ -618,7 +618,20 @@ async function catalogueRows(c: Context<AppEnv>) {
     return { id: `innflutt-${row.id}`, category: RECORD_CATEGORIES[row.category] ?? RECORD_CATEGORIES.annad, year: row.year, sheets: await data.json<RecordSheet[]>() };
   }));
   const available = books.filter((book) => book !== null);
-  return available.length ? mergeCatalogue([...buildCatalogue(available).rows, ...archivedRecords]) : archivedRecords;
+  // Met skráð í vefumsjón (Ný met)
+  const entries = await all<{ id: number; event: string; result: string; athlete: string; club: string; category: string; age_group: string; date: string; place: string; note: string }>(c.env.DB,
+    'SELECT * FROM record_entries ORDER BY date DESC, id DESC');
+  const added: RecordResult[] = entries.map((e) => {
+    const [y, m, d] = e.date.split('-').map(Number);
+    return {
+      key: JSON.stringify(['vefumsjon', e.id]), event: e.event, result: e.result, athlete: e.athlete, place: e.place,
+      date: `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`, dateKey: y * 10000 + m * 100 + d,
+      categories: [RECORD_CATEGORIES[e.category] ?? RECORD_CATEGORIES.annad], groups: e.age_group ? [e.age_group] : [],
+      book: '', sheet: 0, teammates: [e.club, e.note].filter(Boolean).join(' · ') || undefined,
+    };
+  });
+  const base = available.length ? mergeCatalogue([...buildCatalogue(available).rows, ...archivedRecords]) : archivedRecords;
+  return added.length ? mergeCatalogue([...added, ...base]) : base;
 }
 
 app.get(`${RECORDS_PATH}/gogn`, async (c) => {

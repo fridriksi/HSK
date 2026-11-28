@@ -201,6 +201,24 @@ try {
   ok(/data-text="[^"]*bláskógabyggð/.test(clubsHtml), 'Sveitarfélag vistast og félagið finnst eftir því');
   if (!areaWas) { await admin.click('#f_area summary'); await admin.uncheck('#f_area input[value="Bláskógabyggð"]'); await admin.click('button:has-text("Vista")'); await admin.waitForURL(/m=vistad/); }
 
+  // 3i. Nýtt met skráð í vefumsjón birtist í töflunni á HSK met
+  await admin.goto(`${BASE}/stjorn/ny-met/nytt`);
+  ok(await admin.locator('#f_event_list option[value="60 m hlaup"]').count() > 0, 'Greinar úr metaskrám eru í boði við skráningu nýs mets');
+  await admin.fill('#f_event', '60 m hlaup');
+  await admin.fill('#f_result', '6,99');
+  await admin.fill('#f_athlete', `Prufa Metsdóttir ${stamp}`);
+  await admin.selectOption('#f_category', 'innanhuss');
+  await admin.fill('#f_age_group', 'Konur');
+  await admin.fill('#f_date', '2026-11-20');
+  await admin.fill('#f_place', 'Selfoss');
+  await admin.click('button:has-text("Vista")');
+  await admin.waitForURL(/m=vistad/);
+  const recs = await (await fetch(`${BASE}/mot/hsk-met/gogn`)).json();
+  const mine = recs.find((r) => r.athlete === `Prufa Metsdóttir ${stamp}`);
+  ok(mine && mine.result === '6,99' && mine.categories.includes('Innanhúss') && mine.date === '20.11.2026', 'Nýja metið birtist í töflunni á HSK met');
+  await admin.click('button:has-text("Eyða")');
+  await admin.waitForURL(/m=eytt/);
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

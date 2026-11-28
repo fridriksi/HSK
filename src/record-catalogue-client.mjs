@@ -52,11 +52,19 @@ if (catalogue) {
     cell(tr, row.date);
     cell(tr, row.place);
     const source = document.createElement('td');
-    const link = document.createElement('a');
-    link.href = catalogueSource(row);
-    link.textContent = 'Heimild';
-    link.setAttribute('aria-label', `Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`);
-    source.append(link);
+    const href = catalogueSource(row);
+    if (href) {
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = 'Heimild';
+      link.setAttribute('aria-label', `Heimild fyrir ${row.event}${row.athlete ? `, ${row.athlete}` : ''}`);
+      source.append(link);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'muted';
+      span.textContent = 'Nýtt met';
+      source.append(span);
+    }
     tr.append(source);
     return tr;
   }

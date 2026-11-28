@@ -43,7 +43,8 @@ export const AdminLayout: FC<{ title: string; user: User | null; active?: string
                     <ul>
                       {link('/stjorn/vidburdir', 'Mót og viðburðir', 'vidburdir')}
                       {link('/stjorn/urslit', 'Úrslit', 'urslit')}
-                      {link('/stjorn/met', 'HSK met', 'met')}
+                      {link('/stjorn/ny-met', 'Ný met', 'ny-met')}
+                      {link('/stjorn/met', 'Metaskrár', 'met')}
                     </ul>
                     <h3 class="side-h">Aðildarfélög</h3>
                     <ul>
@@ -136,6 +137,15 @@ export const FieldInput: FC<{ f: Field; value: unknown; options?: { id: number; 
       );
       break;
     }
+    case 'suggest':
+      // Textareitur með tillögum (datalist); hægt að velja úr lista eða skrifa nýtt
+      input = (
+        <>
+          <input id={id} name={f.name} value={v} required={f.required} list={id + '_list'} autocomplete="off" />
+          <datalist id={id + '_list'}>{(options ?? []).map((o) => <option value={o.label} />)}</datalist>
+        </>
+      );
+      break;
     case 'club':
     case 'event':
     case 'album':
