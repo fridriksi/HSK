@@ -388,6 +388,34 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .record-table thead th, .record-table tbody tr:nth-child(even) { background: var(--tint); }
 .record-table tbody tr:last-child > * { border-bottom: 0; }
 
+.record-catalogue { margin-bottom: 32px; }
+.record-catalogue-form fieldset { display: grid; grid-template-columns: minmax(160px, 1.3fr) minmax(140px, 1.1fr) minmax(120px, 1fr) minmax(95px, .65fr) minmax(85px, .55fr) auto; gap: 12px; align-items: end; padding: 0; margin: 0; border: 0; min-width: 0; }
+.record-catalogue-field { display: grid; gap: 4px; min-width: 0; }
+.record-catalogue-field label { font-weight: 600; }
+.record-catalogue-form input, .record-catalogue-form select { min-width: 0; width: 100%; min-height: 40px; padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); font: inherit; font-weight: 400; }
+.record-catalogue-pages { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-block: 16px 8px; }
+.record-catalogue-pages p { margin: 0; color: var(--muted); }
+.record-catalogue-pages button:disabled { opacity: .45; cursor: default; }
+.record-catalogue th button { border: 0; padding: 0; background: none; color: var(--ink); font: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
+.record-catalogue th button:not(:disabled):hover { text-decoration: underline; }
+.record-catalogue th button::after { content: ' ↕'; color: var(--muted); }
+.record-catalogue th[aria-sort='ascending'] button::after { content: ' ↑'; color: var(--blue); }
+.record-catalogue th[aria-sort='descending'] button::after { content: ' ↓'; color: var(--blue); }
+.record-catalogue td small { display: block; color: var(--muted); }
+.record-catalogue td:nth-child(5) { white-space: nowrap; }
+.record-archive { margin-top: 16px; }
+
+@media (max-width: 900px) {
+  .record-catalogue-form fieldset { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .record-catalogue-form button { justify-self: start; }
+}
+@media (max-width: 550px) {
+  .record-catalogue-form fieldset { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .record-catalogue-field:first-child { grid-column: 1 / -1; }
+  .record-catalogue-form input, .record-catalogue-form select { width: 100%; max-width: 100%; }
+  .record-catalogue-form button { justify-self: start; grid-column: 1 / -1; }
+}
+
 @media (max-width: 550px) {
   .record-book-filters { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
   .record-book-filters .btn { justify-self: start; }

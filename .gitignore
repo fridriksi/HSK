@@ -5,3 +5,4 @@ public/vendor/
 *.log
 .migration/
 src/static-files.ts
+src/record-catalogue-data.ts
