@@ -1451,7 +1451,9 @@ app.get('/:type', async (c) => {
     const val = c.req.query(fl.field) ?? '';
     if (val && present.includes(val)) { filterVals[fl.field] = val; where.push(`${fl.field} = ?`); params.push(val); }
   }
-  const per = 50;
+  // Dráttarröðun: aðeins þegar allur listinn sést (engin leit eða sía)
+  const dragging = !!t.dragSort && !q && !Object.keys(filterVals).length && pageNo === 1;
+  const per = dragging ? 1000 : 50;
   const rows = await all<Row>(c.env.DB, `SELECT * FROM ${t.table} ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${t.order} LIMIT ? OFFSET ?`, ...params, per + 1, (pageNo - 1) * per);
   const fmt = (col: ContentType['listColumns'][number], r: Row): Child => {
     const v = r[col.field];
@@ -1493,11 +1495,15 @@ app.get('/:type', async (c) => {
         )}
         <button class="btn small">Sía</button>
       </form>
+      {dragging && <p class="muted small sort-hint">Dragðu línu í handfanginu <span aria-hidden="true">⋮⋮</span> til að breyta röðinni, eða notaðu örvarnar. Röðin vistast strax og birtist eins á vefnum. <span role="status" data-sort-status></span></p>}
       <table class="tbl">
-        <thead><tr>{t.listColumns.map((col) => <th>{col.label}</th>)}<th></th></tr></thead>
-        <tbody>
+        <thead><tr>{dragging && <th class="drag-col"><span class="sr">Röð</span></th>}{t.listColumns.map((col) => <th>{col.label}</th>)}<th></th></tr></thead>
+        <tbody data-sortable={dragging ? `/stjorn/${t.key}/rod` : undefined}>
           {rows.slice(0, per).map((r) => (
-            <tr>
+            <tr data-id={dragging ? String(r.id) : undefined} draggable={dragging ? 'true' : undefined}>
+              {dragging && <td class="drag-col"><span class="drag-handle" title="Dragðu til að raða" aria-hidden="true">⋮⋮</span>
+                <button type="button" class="sort-btn" data-move="-1" aria-label={`Færa ${String(r[t.titleField] ?? '')} upp`}>↑</button>
+                <button type="button" class="sort-btn" data-move="1" aria-label={`Færa ${String(r[t.titleField] ?? '')} niður`}>↓</button></td>}
               {t.listColumns.map((col, i) => <td>{i === 0 ? <a href={`/stjorn/${t.key}/${r.id}`}><strong>{fmt(col, r)}</strong></a> : fmt(col, r)}</td>)}
               <td class="row-actions">{t.publicUrl && (!t.status || r.status === 'published') && <a class="btn small ghost" href={t.publicUrl(r)} target="_blank">Skoða</a>}</td>
             </tr>
@@ -1512,6 +1518,18 @@ app.get('/:type', async (c) => {
       </nav>
     </>
   ));
+});
+
+// Ný röð úr dráttarröðun: listi af auðkennum í réttri röð → sort 1, 2, 3 …
+app.post('/:type/rod', async (c) => {
+  const t = getType(c.req.param('type'));
+  if (!t || !t.dragSort) return c.notFound();
+  const deny = staffOnly(c); if (deny) return deny;
+  const body = await c.req.json<{ ids?: unknown[] }>().catch(() => ({ ids: [] as unknown[] }));
+  const ids = (body.ids ?? []).map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  if (!ids.length) return c.json({ error: 'Engin röð' }, 400);
+  await c.env.DB.batch(ids.map((id, i) => c.env.DB.prepare(`UPDATE ${t.table} SET sort = ? WHERE id = ?`).bind(i + 1, id)));
+  return c.json({ ok: true });
 });
 
 async function editForm(c: Context<AppEnv>, t: ContentType, row: Partial<Row> | null, error?: string) {
@@ -1716,6 +1734,8 @@ async function saveItem(c: Context<AppEnv>, t: ContentType, id: number | null) {
     const wantSlug = isStaff(user) && f.get('slug') ? String(f.get('slug')) : existing?.slug ? String(existing.slug) : String(data[t.titleField]);
     data.slug = await uniqueSlug(db, t.table, wantSlug, id ?? undefined);
   }
+  // Ný færsla í lista sem raðað er með því að draga fer aftast
+  if (t.dragSort && !id) data.sort = ((await one<{ s: number }>(db, `SELECT coalesce(max(sort), 0) + 1 AS s FROM ${t.table}`))?.s ?? 1);
   const cols = Object.keys(data);
   const hasUpdated = ['news', 'events', 'results', 'records', 'clubs', 'committees', 'documents', 'sponsors', 'albums'].includes(t.table);
   if (id) {

@@ -41,6 +41,8 @@ export type ContentType = {
   searchFields: string[];
   /** Síur í lista í vefumsjón: fellilisti fyrir hvern reit (valkostir úr reitnum eða gildum í töflunni) */
   filters?: { field: string; label: string }[];
+  /** Röð stillt með því að draga línur í listanum (dálkurinn sort); reiturinn „Röð“ er ekki í forminu */
+  dragSort?: boolean;
 };
 
 export const SPORTS = ['Almenningsíþróttir', 'Blak', 'Borðtennis', 'Bogfimi', 'Fimleikar', 'Frjálsíþróttir', 'Glíma', 'Golf', 'Handknattleikur', 'Hestaíþróttir', 'Júdó', 'Knattspyrna', 'Körfuknattleikur', 'Motocross', 'Pílukast', 'Skák', 'Skotíþróttir', 'Starfsíþróttir', 'Sund', 'Taekwondo', 'Annað'];
@@ -179,10 +181,9 @@ export const contentTypes: ContentType[] = [
     searchFields: ['name', 'sports', 'area'],
   },
   {
-    key: 'nefndir', table: 'committees', label: 'Stjórn, nefndir og ráð', singular: 'nefnd', titleField: 'name', order: 'sort, name',
+    key: 'nefndir', table: 'committees', label: 'Stjórn, nefndir og ráð', singular: 'nefnd', titleField: 'name', order: 'sort, name', dragSort: true,
     fields: [
       { name: 'name', label: 'Heiti', type: 'text', required: true, wide: true },
-      { name: 'sort', label: 'Röð', type: 'number' },
       { name: 'body', label: 'Fólk og hlutverk', type: 'richtext', wide: true },
     ],
     listColumns: [{ field: 'name', label: 'Heiti' }, { field: 'updated_at', label: 'Uppfært', format: 'datetime' }],
@@ -201,13 +202,12 @@ export const contentTypes: ContentType[] = [
     searchFields: ['title'],
   },
   {
-    key: 'styrktaradilar', table: 'sponsors', label: 'Styrktaraðilar', singular: 'styrktaraðila', titleField: 'name', order: 'sort, name',
+    key: 'styrktaradilar', table: 'sponsors', label: 'Styrktaraðilar', singular: 'styrktaraðila', titleField: 'name', order: 'sort, name', dragSort: true,
     fields: [
       { name: 'name', label: 'Nafn', type: 'text', required: true },
       { name: 'tier', label: 'Flokkur', type: 'select', options: { adalstyrktaradili: 'Aðalstyrktaraðili', styrktaradili: 'Styrktaraðili', samstarfsadili: 'Samstarfsaðili' } },
       { name: 'logo', label: 'Merki', type: 'image', help: 'Helst SVG eða PNG með gegnsæjum bakgrunni.' },
       { name: 'url', label: 'Vefsíða', type: 'url' },
-      { name: 'sort', label: 'Röð', type: 'number' },
       { name: 'active_from', label: 'Birtist frá', type: 'date' },
       { name: 'active_to', label: 'Birtist til', type: 'date', help: 'Tómt = ótímabundið' },
     ],

@@ -326,3 +326,14 @@ dl.facts dd { margin: 0; }
 .photo-order { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--muted); }
 .photo-order input { width: 56px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; font: inherit; font-size: .88rem; }
 .photo-fields input:focus { outline: 2px solid var(--blue); outline-offset: 0; border-color: var(--blue); }
+
+/* Röðun með drætti */
+.drag-col { width: 96px; white-space: nowrap; }
+.drag-handle { display: inline-block; cursor: grab; color: var(--muted); font-weight: 700; letter-spacing: -2px; padding: 4px 8px 4px 2px; user-select: none; }
+tr[draggable="true"]:active .drag-handle { cursor: grabbing; }
+.sort-btn { border: 1px solid var(--line); background: #fff; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; color: var(--ink); font-size: .9rem; line-height: 1; }
+.sort-btn:hover { border-color: var(--blue); color: var(--blue); }
+tr.dragging { opacity: .5; background: var(--tint); }
+.sort-hint { margin: -6px 0 12px; }
+.sort-hint [data-sort-status] { font-weight: 600; color: var(--ok); margin-left: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

@@ -377,6 +377,17 @@ try {
   ok(adHome.includes(`ad=${stamp}`) && adHome.includes('ad-row') && !(await (await fetch(`${BASE}/`)).text()).includes(`ad=${stamp}`),
     'Auglýsing birtist í auglýsingaplássi á forsíðu og hverfur þegar hún er falin');
 
+  // 3q. Stjórnir og nefndir: röð breytt með örvum í listanum og birtist eins á vefnum; enginn Röð-reitur í formi
+  await admin.goto(`${BASE}/stjorn/nefndir`);
+  const firstName = (await admin.textContent('tbody[data-sortable] tr:nth-child(1) td:nth-child(2)')).trim();
+  const secondName = (await admin.textContent('tbody[data-sortable] tr:nth-child(2) td:nth-child(2)')).trim();
+  await Promise.all([admin.waitForResponse((r) => r.url().endsWith('/stjorn/nefndir/rod') && r.ok()), admin.click('tbody[data-sortable] tr:nth-child(2) [data-move="-1"]')]);
+  await admin.reload();
+  const nowFirst = (await admin.textContent('tbody[data-sortable] tr:nth-child(1) td:nth-child(2)')).trim();
+  await Promise.all([admin.waitForResponse((r) => r.url().endsWith('/stjorn/nefndir/rod') && r.ok()), admin.click('tbody[data-sortable] tr:nth-child(2) [data-move="-1"]')]);
+  await admin.goto(`${BASE}/stjorn/nefndir/nytt`);
+  ok(nowFirst === secondName && firstName !== secondName && await admin.locator('#f_sort').count() === 0, 'Röð stjórna og nefnda breytist í listanum og Röð-reitur er farinn úr forminu');
+
   // 4. Viðburður (mót)
   await admin.goto(`${BASE}/stjorn/vidburdir/nytt`);
   await admin.fill('#f_title', `Héraðsmót ${stamp}`);

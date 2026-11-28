@@ -289,6 +289,54 @@
     });
   }
 
+  // Röðun með því að draga línur (t.d. stjórnir og nefndir); örvar fyrir síma og lyklaborð. Vistast strax.
+  document.querySelectorAll('tbody[data-sortable]').forEach((body) => {
+    const status = document.querySelector('[data-sort-status]');
+    let dragged = null;
+    const save = async () => {
+      const ids = [...body.querySelectorAll('tr[data-id]')].map((tr) => tr.dataset.id);
+      if (status) status.textContent = 'Vista röð…';
+      try {
+        const r = await fetch(body.dataset.sortable, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
+        if (!r.ok) throw new Error();
+        if (status) status.textContent = 'Röð vistuð.';
+      } catch { if (status) status.textContent = 'Ekki tókst að vista röðina. Endurhlaðið síðuna og reynið aftur.'; }
+    };
+    body.addEventListener('dragstart', (e) => {
+      dragged = e.target.closest('tr[data-id]');
+      if (!dragged) return;
+      dragged.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragged.dataset.id);
+    });
+    body.addEventListener('dragover', (e) => {
+      if (!dragged) return;
+      e.preventDefault();
+      const over = e.target.closest('tr[data-id]');
+      if (!over || over === dragged) return;
+      const box = over.getBoundingClientRect();
+      over.parentNode.insertBefore(dragged, e.clientY > box.top + box.height / 2 ? over.nextSibling : over);
+    });
+    body.addEventListener('drop', (e) => e.preventDefault());
+    body.addEventListener('dragend', () => {
+      if (!dragged) return;
+      dragged.classList.remove('dragging');
+      dragged = null;
+      save();
+    });
+    body.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-move]');
+      if (!btn) return;
+      const tr = btn.closest('tr');
+      const other = btn.dataset.move === '-1' ? tr.previousElementSibling : tr.nextElementSibling;
+      if (!other) return;
+      if (btn.dataset.move === '-1') tr.parentNode.insertBefore(tr, other);
+      else tr.parentNode.insertBefore(other, tr);
+      btn.focus();
+      save();
+    });
+  });
+
   // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
   const mediaForm = document.querySelector('form[data-media-delete]');
   if (mediaForm) {
