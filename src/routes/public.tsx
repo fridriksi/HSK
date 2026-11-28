@@ -1064,19 +1064,40 @@ app.get('/*', async (c) => {
       break;
     }
     case 'albums': {
+      // Myndasöfn: leit í heiti og lýsingu og ár, með leit við innslátt
       const page = pageNum(c);
-      const rows = await all<{ slug: string; title: string; cover: string; date: string }>(c.env.DB, 'SELECT slug, title, cover, date FROM albums ORDER BY date DESC LIMIT ? OFFSET ?', 25, (page - 1) * 24);
+      const term = (c.req.query('q') || '').trim().slice(0, 100);
+      const year = /^\d{4}$/.test(c.req.query('ar') || '') ? c.req.query('ar')! : '';
+      const where: string[] = [];
+      const params: unknown[] = [];
+      if (year) { where.push('substr(date, 1, 4) = ?'); params.push(year); }
+      for (const w of term.split(/\s+/).filter(Boolean)) { where.push('(title LIKE ? OR description LIKE ?)'); params.push(`%${w}%`, `%${w}%`); }
+      const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
+      const rows = await all<{ slug: string; title: string; cover: string; date: string }>(c.env.DB,
+        `SELECT slug, title, coalesce(nullif(cover, ''), (SELECT src FROM photos p WHERE p.album_id = albums.id ORDER BY sort LIMIT 1), '') AS cover, date FROM albums ${w} ORDER BY date DESC LIMIT ? OFFSET ?`,
+        ...params, 25, (page - 1) * 24);
+      const total = (await one<{ n: number }>(c.env.DB, `SELECT count(*) AS n FROM albums ${w}`, ...params))?.n ?? 0;
+      const years = (await all<{ y: string }>(c.env.DB, "SELECT DISTINCT substr(date, 1, 4) AS y FROM albums WHERE date <> '' ORDER BY y DESC")).map((r) => r.y).filter(Boolean);
       moduleView = (
         <>
-          <div class="album-grid">
-            {rows.slice(0, 24).map((a) => (
-              <a class="album-card" href={'/album/' + a.slug}>
-                <div class="thumb">{a.cover ? <img src={a.cover} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
-                <strong>{a.title}</strong><small>{a.date.slice(0, 4)}</small>
-              </a>
-            ))}
+          <form action={base} method="get" class="filter-row" role="search" aria-label="Leita í myndasöfnum" data-section-search>
+            <SectionSearchField term={term} placeholder="T.d. landsmót, glíma eða Selfoss" />
+            <YearFilter id="ar" years={years} year={year} />
+            <button class="btn">Leita</button>
+          </form>
+          <div id="section-results" data-count={total}>
+            <p class="muted small">{total === 1 ? '1 myndasafn' : `${total.toLocaleString('de-DE')} myndasöfn`}</p>
+            {rows.length === 0 && <p class="muted">Engin myndasöfn fundust. Prófaðu annað leitarorð eða veldu „Öll ár“.</p>}
+            <div class="album-grid">
+              {rows.slice(0, 24).map((a) => (
+                <a class="album-card" href={'/album/' + a.slug}>
+                  <div class="thumb">{a.cover ? <img src={a.cover} alt="" loading="lazy" /> : <img class="ph" src="/img/hsk-merki.svg" alt="" />}</div>
+                  <strong>{a.title}</strong><small>{/-01-01/.test(a.date) ? a.date.slice(0, 4) : dateLong(a.date)}</small>
+                </a>
+              ))}
+            </div>
+            <Pager page={page} hasNext={rows.length > 24} base={sectionUrl(base, { ar: year, q: term })} />
           </div>
-          <Pager page={page} hasNext={rows.length > 24} base={base} />
         </>
       );
       break;
