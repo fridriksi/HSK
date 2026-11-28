@@ -290,6 +290,20 @@ try {
   await admin.waitForSelector('.photo-grid figure:nth-child(2)', { timeout: 20000 });
   ok(await admin.locator('.photo-grid figure').count() === 2, 'Tvær myndir hlaðnar í albúm');
 
+  // 5b. Myndir og skjöl: eyða ónotaðri skrá; skrá sem er notuð í myndasafni er ekki eytt
+  const usedSrc = await admin.getAttribute('.photo-grid figure img', 'src');
+  await admin.goto(`${BASE}/stjorn/skrar?uppruni=nyjar`);
+  await Promise.all([admin.waitForEvent('load'), admin.setInputFiles('.upload-drop input[type=file]', ['seed/media/sjalfbodalidar.png'])]);
+  const newest = await admin.getAttribute('.media-grid figure:first-child button[name=key]', 'value');
+  await Promise.all([admin.waitForURL(/eytt=1/), admin.click('.media-grid figure:first-child button[name=key]')]);
+  const gone = (await fetch(`${BASE}/media/${newest}`)).status === 404;
+  const usedKey = usedSrc.replace(/^\/media\//, '');
+  await admin.goto(`${BASE}/stjorn/skrar?uppruni=nyjar&q=${encodeURIComponent(usedKey.split('/').pop().replace(/^[^-]+-/, ''))}`);
+  await admin.check(`input[name=keys][value="${usedKey}"]`);
+  await Promise.all([admin.waitForURL(/eytt=0/), admin.click('.media-select-bar button[name=bulk]')]);
+  ok(gone && (await admin.textContent('.flash')).includes(`Albúm ${stamp}`) && (await fetch(`${BASE}${usedSrc}`)).status === 200,
+    'Myndir og skjöl: ónotaðri skrá eytt en skrá í myndasafni haldið');
+
   // 6. Bjóða formanni
   await admin.goto(`${BASE}/stjorn/notendur`);
   const clubEmail = `formadur.${stamp}@gmail.com`;

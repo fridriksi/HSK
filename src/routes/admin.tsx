@@ -329,6 +329,56 @@ app.post('/upload', async (c) => {
   return c.json({ location: '/media/' + key });
 });
 
+// Hvar skrá er notuð á vefnum: skrá sem er í notkun er ekki eytt svo myndir og tenglar brotni ekki
+const MEDIA_USES: [string, string, string, string[]][] = [
+  ['Síða', 'pages', 'title', ['body']],
+  ['Frétt', 'news', 'title', ['body', 'image']],
+  ['Mót/viðburður', 'events', 'title', ['description', 'image', 'attachment']],
+  ['Úrslit', 'results', 'title', ['body', 'attachment']],
+  ['Metaskrá', 'records', 'title', ['body', 'file']],
+  ['Aðildarfélag', 'clubs', 'name', ['logo', 'description']],
+  ['Stjórn/nefnd', 'committees', 'name', ['body']],
+  ['Skjal', 'documents', 'title', ['body', 'file']],
+  ['Styrktaraðili', 'sponsors', 'name', ['logo']],
+  ['Myndasafn', 'albums', 'title', ['description', 'cover']],
+  ['Héraðsþing', 'assembly_docs', 'title', ['file']],
+  ['Stilling', 'settings', 'key', ['value']],
+];
+async function mediaUses(db: D1Database, key: string): Promise<string[]> {
+  const url = '/media/' + key;
+  const out: string[] = [];
+  for (const [label, table, name, cols] of MEDIA_USES) {
+    const hits = await all<{ n: string }>(db, `SELECT ${name} AS n FROM ${table} WHERE ${cols.map((col) => `instr(${col}, ?) > 0`).join(' OR ')} LIMIT 3`, ...cols.map(() => url));
+    for (const h of hits) out.push(`${label} „${h.n}“`);
+  }
+  const photos = await all<{ n: string }>(db, 'SELECT a.title AS n FROM photos p JOIN albums a ON a.id = p.album_id WHERE instr(p.src, ?) > 0 LIMIT 3', url);
+  for (const h of photos) out.push(`Myndasafn „${h.n}“`);
+  return out;
+}
+
+// Eyða skrám: ein eða fleiri í einu. Félagsaðgangur getur aðeins eytt eigin skrám.
+app.post('/skrar/eyda', async (c) => {
+  const user = c.get('user')!;
+  const f = await c.req.formData();
+  const keys = [...new Set((f.getAll('key').length ? f.getAll('key') : f.getAll('keys')).map(String))].slice(0, 200);
+  let deleted = 0;
+  const kept: string[] = [];
+  for (const key of keys) {
+    const m = await one<{ id: number; uploaded_by: number | null }>(c.env.DB, 'SELECT id, uploaded_by FROM media WHERE key = ?', key);
+    if (!m || (!isStaff(user) && m.uploaded_by !== user.id)) continue;
+    if ((await mediaUses(c.env.DB, key)).length) { kept.push(key); continue; }
+    await c.env.MEDIA.delete(key);
+    await run(c.env.DB, 'DELETE FROM media WHERE id = ?', m.id);
+    deleted++;
+  }
+  const back = new URLSearchParams(String(f.get('back') || ''));
+  back.set('eytt', String(deleted));
+  back.delete('notad');
+  for (const k of kept.slice(0, 10)) back.append('notad', k);
+  if (kept.length > 10) back.set('fleiri', String(kept.length - 10));
+  return c.redirect('/stjorn/skrar?' + back);
+});
+
 app.get('/skrar', async (c) => {
   const user = c.get('user')!;
   const q = (c.req.query('q') || '').trim();
@@ -350,9 +400,28 @@ app.get('/skrar', async (c) => {
     `SELECT key, filename, content_type, size, created_at FROM media WHERE ${w} ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`, ...params, PER, (pageNo - 1) * PER);
   const qs = (extra: Record<string, string>) => '?' + new URLSearchParams(Object.entries({ q, tegund: kind, uppruni: source, ...extra }).filter(([, v]) => v));
   const pages = Math.max(1, Math.ceil(total / PER));
+  // Niðurstaða eyðingar: fjöldi eyddra og skrár sem voru ekki eyddar af því þær eru í notkun
+  const deletedN = c.req.query('eytt');
+  const keptKeys = c.req.queries('notad') ?? [];
+  const kept = await Promise.all(keptKeys.map(async (k) => ({
+    name: (await one<{ filename: string }>(c.env.DB, 'SELECT filename FROM media WHERE key = ?', k))?.filename ?? k,
+    uses: await mediaUses(c.env.DB, k),
+  })));
+  const more = Number(c.req.query('fleiri') || 0);
+  const backQs = new URLSearchParams(Object.entries({ q, tegund: kind, uppruni: source, s: pageNo > 1 ? String(pageNo) : '' }).filter(([, v]) => v)).toString();
   return page(c, 'Myndir og skjöl', 'skrar', (
     <>
       <h1>Myndir og skjöl</h1>
+      {deletedN !== undefined && (
+        <div class={kept.length ? 'flash err' : 'flash ok'} role="status">
+          {Number(deletedN) === 1 ? '1 skrá eytt.' : `${fmtNum(Number(deletedN))} skrám eytt.`}
+          {kept.length > 0 && <>
+            {' '}{kept.length + more === 1 ? 'Einni skrá var ekki eytt' : `${kept.length + more} skrám var ekki eytt`} af því að {kept.length + more === 1 ? 'hún er' : 'þær eru'} notuð á vefnum. Fjarlægðu þær þaðan fyrst:
+            <ul class="kept-list">{kept.map((k) => <li><strong>{k.name}</strong>: {k.uses.join(', ')}</li>)}</ul>
+            {more > 0 && <p>…og {more} í viðbót.</p>}
+          </>}
+        </div>
+      )}
       <div class="upload-drop" data-library>
         <p><strong>Dragðu skrár hingað</strong> eða <label class="linklike">veldu skrár<input type="file" multiple hidden /></label>. Myndir eru minnkaðar sjálfkrafa.</p>
         <progress hidden max="100" value="0"></progress>
@@ -368,17 +437,29 @@ app.get('/skrar', async (c) => {
         <button class="btn small">Leita</button>
       </form>
       <p class="muted">{fmtNum(total)} {total === 1 ? 'skrá' : 'skrár'}{pages > 1 && ` · síða ${pageNo} af ${pages}`}</p>
-      <div class="media-grid">
-        {rows.map((m) => (
-          <figure>
-            {m.content_type.startsWith('image/') ? <a href={'/media/' + m.key} target="_blank"><img src={'/media/' + m.key} alt="" loading="lazy" /></a> : <a class="file-icon" href={'/media/' + m.key} target="_blank">{m.filename.split('.').pop()?.toUpperCase()}</a>}
-            <figcaption>
-              <span title={m.filename}>{m.filename}</span>
-              <button type="button" class="btn small ghost" data-copy={'/media/' + m.key}>Afrita slóð</button>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
+      <form method="post" action="/stjorn/skrar/eyda" id="media-form" data-media-delete>
+        <input type="hidden" name="back" value={backQs} />
+        <div class="media-select-bar" hidden>
+          <span data-selected-count>0 valdar</span>
+          <button type="button" class="btn small ghost" data-select-none>Afvelja</button>
+          <button class="btn small danger" name="bulk" value="1">Eyða völdum</button>
+        </div>
+        <div class="media-grid">
+          {rows.map((m) => (
+            <figure>
+              <label class="media-check" title="Velja"><input type="checkbox" name="keys" value={m.key} aria-label={`Velja ${m.filename}`} /></label>
+              {m.content_type.startsWith('image/') ? <a href={'/media/' + m.key} target="_blank"><img src={'/media/' + m.key} alt="" loading="lazy" /></a> : <a class="file-icon" href={'/media/' + m.key} target="_blank">{m.filename.split('.').pop()?.toUpperCase()}</a>}
+              <figcaption>
+                <span title={m.filename}>{m.filename}</span>
+                <div class="media-actions">
+                  <button type="button" class="btn small ghost" data-copy={'/media/' + m.key}>Afrita slóð</button>
+                  <button class="btn small ghost danger" name="key" value={m.key} data-name={m.filename}>Eyða</button>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </form>
       {pages > 1 && (
         <nav class="pager-admin">
           {pageNo > 1 ? <a class="btn small ghost" href={qs({ s: String(pageNo - 1) })}>Fyrri síða</a> : <span></span>}

@@ -169,6 +169,30 @@
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); handle(e.dataTransfer.files); });
   });
 
+  // Myndir og skjöl: eyða einni skrá eða mörgum völdum, með staðfestingu
+  const mediaForm = document.querySelector('form[data-media-delete]');
+  if (mediaForm) {
+    const bar = mediaForm.querySelector('.media-select-bar');
+    const count = mediaForm.querySelector('[data-selected-count]');
+    const boxes = () => [...mediaForm.querySelectorAll('input[name=keys]:checked')];
+    const update = () => {
+      const n = boxes().length;
+      bar.hidden = n === 0;
+      count.textContent = n === 1 ? '1 valin' : `${n} valdar`;
+      mediaForm.querySelectorAll('input[name=keys]').forEach((b) => b.closest('figure').classList.toggle('selected', b.checked));
+    };
+    mediaForm.addEventListener('change', (e) => { if (e.target.name === 'keys') update(); });
+    mediaForm.querySelector('[data-select-none]').addEventListener('click', () => { boxes().forEach((b) => { b.checked = false; }); update(); });
+    mediaForm.addEventListener('submit', (e) => {
+      const btn = e.submitter;
+      const msg = btn && btn.name === 'key'
+        ? `Eyða „${btn.dataset.name}“? Það er ekki hægt að afturkalla.`
+        : `Eyða ${boxes().length} völdum skrám? Það er ekki hægt að afturkalla.`;
+      if (!confirm(msg)) e.preventDefault();
+    });
+    update();
+  }
+
   // Síðutré: sýna/fela kafla undir yfirsíðu
   document.querySelectorAll('[data-unfold]').forEach((btn) => {
     const label = btn.textContent;
