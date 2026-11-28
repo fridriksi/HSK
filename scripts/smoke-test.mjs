@@ -194,15 +194,18 @@ try {
   await admin.click('button:has-text("Eyða")');
   await admin.waitForURL(/m=eytt/);
 
-  // 3e. Reitir neðst á forsíðu eru stillanlegir
+  // 3e. Flýtireitir neðst á forsíðu eru stillanlegir í töflu (fyrirsögn, texti, síða)
   await admin.goto(`${BASE}/stjorn/stillingar`);
-  const tilesBefore = await admin.inputValue('#home_tiles');
-  await admin.fill('#home_tiles', `Prufureitur ${stamp} | Texti | /um-hsk`);
-  await admin.click('button:has-text("Vista")');
-  ok((await (await fetch(`${BASE}/`)).text()).includes(`Prufureitur ${stamp}`), 'Reitir á forsíðu breytast í stillingum');
+  const lastTitle = admin.locator('input[name=tile_title]').last();
+  const lastUrl = admin.locator('input[name=tile_url]').last();
+  await lastTitle.fill(`Prufureitur ${stamp}`);
+  await lastUrl.fill('/um-hsk');
+  await Promise.all([admin.waitForURL(/m=/), admin.click('form .form-actions button:has-text("Vista")')]);
+  const tilesHome = await (await fetch(`${BASE}/`)).text();
   await admin.goto(`${BASE}/stjorn/stillingar`);
-  await admin.fill('#home_tiles', tilesBefore);
-  await admin.click('button:has-text("Vista")');
+  await admin.locator(`input[name=tile_title][value="Prufureitur ${stamp}"]`).fill('');
+  await Promise.all([admin.waitForURL(/m=/), admin.click('form .form-actions button:has-text("Vista")')]);
+  ok(tilesHome.includes(`Prufureitur ${stamp}`) && !(await (await fetch(`${BASE}/`)).text()).includes(`Prufureitur ${stamp}`), 'Flýtireitir á forsíðu breytast í stillingum');
 
   // 3f. Héraðsþing: nýtt þing með þinggögnum birtist efst á síðunni Héraðsþing
   await admin.goto(`${BASE}/stjorn/heradsthing/nytt`);

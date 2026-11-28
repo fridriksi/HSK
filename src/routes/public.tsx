@@ -95,7 +95,7 @@ app.get('/', async (c) => {
   const sports = [...new Set((await all<{ sports: string }>(db, "SELECT sports FROM clubs WHERE sports <> ''")).flatMap((r) => r.sports.split(/\s*,\s*/)).filter((x) => x && x !== 'Annað'))].sort((a, b) => a.localeCompare(b, 'is'));
   const clubCount = (await one<{ n: number }>(db, 'SELECT count(*) AS n FROM clubs'))?.n ?? 0;
   // Ein mynd úr hverju af nýjustu myndasöfnunum
-  const tiles = (await getSetting(db, 'home_tiles', DEFAULT_TILES)).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[2]);
+  const tiles = (await getSetting(db, 'home_tiles', DEFAULT_TILES)).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0] && l[2]).slice(0, 6);
   const photos = await all<{ src: string; slug: string; title: string }>(db, "SELECT coalesce(nullif(a.cover, ''), (SELECT src FROM photos p WHERE p.album_id = a.id ORDER BY sort LIMIT 1)) AS src, a.slug, a.title FROM albums a ORDER BY a.date DESC, a.id DESC LIMIT 6").then((r) => r.filter((x) => x.src));
 
   // Auglýsingar: ein af handahófi í hverju plássi af þeim sem eru virkar í dag
@@ -221,7 +221,7 @@ app.get('/', async (c) => {
 
       {tiles.length > 0 && (
         <section class="wrap h2-block h2-tiles">
-          {tiles.map(([t, txt, url]) => <a href={url}><strong>{t}</strong><span>{txt}</span></a>)}
+          {tiles.map(([t, txt, url]) => <a href={url}><strong>{t}<Icon name="chevronRight" /></strong>{txt && <span>{txt}</span>}</a>)}
         </section>
       )}
       </div>

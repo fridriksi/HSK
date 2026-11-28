@@ -316,3 +316,8 @@ dl.facts dd { margin: 0; }
 .ff-main .field.wide { grid-column: 1 / -1; }
 .ff-main input, .ff-main select, .ff-main textarea { width: 100%; box-sizing: border-box; }
 .ff-tools { flex: 1 1 120px; display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.tiles-edit { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.tiles-edit th { text-align: left; font-size: .85rem; color: var(--muted); padding: 4px 6px; }
+.tiles-edit td { padding: 4px 6px 4px 0; }
+.tiles-edit input { width: 100%; box-sizing: border-box; }
+@media (max-width: 700px) { .tiles-edit thead { display: none; } .tiles-edit tr { display: grid; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--line); } }

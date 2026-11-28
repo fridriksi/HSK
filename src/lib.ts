@@ -179,7 +179,7 @@ export async function uniqueSlug(db: D1Database, table: string, base: string, ex
 /** Reitir neðst á forsíðu ef ekkert hefur verið stillt (Fyrirsögn | texti | slóð) */
 export const DEFAULT_TILES = [
   'Styrkir og sjóðir | Verkefnasjóður HSK, umsóknir og úthlutanir | /um-hsk/verkefnasjodur',
-  'Fyrir félögin | Lög, reglugerðir, eyðublöð og innskráning formanna | /um-hsk/log-og-reglugerdir',
+  'Fyrir félögin | Lög, reglugerðir, fundargerðir og eyðublöð | /um-hsk/log-og-reglugerdir',
   'Um HSK | Saga, stjórn, nefndir og starfsfólk | /um-hsk',
 ].join('\n');
 

@@ -384,10 +384,12 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .h2-photos img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .15s; }
 .h2-photos a:hover img { opacity: .85; }
 .h2-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.h2-tiles a { display: block; padding: 22px 22px 24px; border: 1px solid var(--line); border-top: 3px solid var(--blue); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
-.h2-tiles strong { display: block; font: 700 1.2rem var(--display); color: var(--blue); margin-bottom: 4px; }
-.h2-tiles span { color: var(--muted); }
-.h2-tiles a:hover strong { text-decoration: underline; }
+.h2-tiles a { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border: 1px solid var(--line); border-top: 3px solid var(--blue); border-radius: var(--radius); text-decoration: none; color: var(--ink); background: #fff; transition: background .15s, border-color .15s; }
+.h2-tiles strong { display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 700 1.15rem var(--display); color: var(--blue); }
+.h2-tiles strong .icon { width: 20px; height: 20px; flex: none; transition: transform .15s; }
+.h2-tiles span { color: var(--muted); line-height: 1.45; }
+.h2-tiles a:hover { background: var(--tint); border-color: #c9d2e6; }
+.h2-tiles a:hover .icon { transform: translateX(3px); }
 @media (max-width: 1000px) {
   .h2-dates { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .h2-finder { grid-template-columns: 1fr; gap: 18px; }

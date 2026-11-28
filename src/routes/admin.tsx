@@ -656,6 +656,9 @@ app.get('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const db = c.env.DB;
   const s = async (k: string, d = '') => getSetting(db, k, d);
+  const tilesRaw = await s('home_tiles', DEFAULT_TILES);
+  // Síður sem hægt er að velja fyrir flýtireiti (birtar síður, efstu tvö stigin)
+  const tilePages = await all<{ path: string; title: string }>(db, "SELECT path, title FROM pages WHERE status = 'published' AND (parent_id IS NULL OR parent_id IN (SELECT id FROM pages WHERE parent_id IS NULL)) ORDER BY path");
   return page(c, 'Forsíða og stillingar', 'stillingar', (
     <>
       <h1>Forsíða og stillingar</h1>
@@ -681,9 +684,23 @@ app.get('/stillingar', async (c) => {
             <textarea id="notice" name="notice" class="rte rte-small" rows={3}>{await s('notice')}</textarea>
             <small class="help">Skildu eftir tómt til að fela borðann. T.d. „Opið fyrir umsóknir í Hvatasjóð til 12. desember“.</small>
           </div>
-          <div class="field wide"><label for="home_tiles">Reitir neðst á forsíðu</label>
-            <textarea id="home_tiles" name="home_tiles" rows={4}>{await s('home_tiles', DEFAULT_TILES)}</textarea>
-            <small class="help">Ein lína fyrir hvern reit: Fyrirsögn | stuttur texti | slóð. T.d. „Styrkir og sjóðir | Verkefnasjóður HSK | /um-hsk/verkefnasjodur“</small>
+          <div class="field wide"><label>Flýtireitir neðst á forsíðu</label>
+            <small class="help">Hver reitur er hnappur sem vísar á síðu. Fylltu út fyrirsögn, stuttan texta og veldu síðuna sem reiturinn opnar. Tómar línur eru ekki sýndar. Mest 6 reitir; 3 passa í eina röð.</small>
+            <table class="tiles-edit">
+              <thead><tr><th>Fyrirsögn</th><th>Stuttur texti</th><th>Opnar síðu</th></tr></thead>
+              <tbody>{(() => {
+                const rows = (tilesRaw).split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((l) => l[0]);
+                while (rows.length < 6) rows.push(['', '', '']);
+                return rows.slice(0, 6).map(([t, txt, url], i) => (
+                  <tr>
+                    <td><input name="tile_title" value={t ?? ''} aria-label={`Fyrirsögn reits ${i + 1}`} placeholder={i === 0 ? 'T.d. Styrkir og sjóðir' : ''} /></td>
+                    <td><input name="tile_text" value={txt ?? ''} aria-label={`Texti reits ${i + 1}`} placeholder={i === 0 ? 'T.d. Verkefnasjóður HSK og umsóknir' : ''} /></td>
+                    <td><input name="tile_url" value={url ?? ''} list="tile-pages" aria-label={`Síða reits ${i + 1}`} placeholder="Veldu síðu eða skrifaðu slóð" /></td>
+                  </tr>
+                ));
+              })()}</tbody>
+            </table>
+            <datalist id="tile-pages">{tilePages.map((p) => <option value={'/' + p.path}>{p.title}</option>)}</datalist>
           </div>
           <div class="field"><label for="contact_address">Heimilisfang</label><input id="contact_address" name="contact_address" value={await s('contact_address', 'Selinu, Engjavegi 48, 800 Selfossi')} /></div>
           <div class="field"><label for="contact_phone">Sími</label><input id="contact_phone" name="contact_phone" value={await s('contact_phone', '482 1189')} /></div>
@@ -703,7 +720,13 @@ app.get('/stillingar', async (c) => {
 app.post('/stillingar', async (c) => {
   const deny = staffOnly(c); if (deny) return deny;
   const f = await c.req.formData();
-  for (const k of ['hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'home_tiles', 'contact_address', 'contact_phone', 'contact_email', 'social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
+  // Flýtireitir: ein lína á reit, „Fyrirsögn | texti | slóð“
+  const tt = f.getAll('tile_title').map(String), tx = f.getAll('tile_text').map(String), tu = f.getAll('tile_url').map(String);
+  if (tt.length) {
+    const clean = (v: string) => v.replace(/\|/g, '/').trim();
+    await setSetting(c.env.DB, 'home_tiles', tt.map((t, i) => [clean(t), clean(tx[i] ?? ''), clean(tu[i] ?? '')]).filter(([t, , u]) => t && u).map((r) => r.join(' | ')).join('\n'));
+  }
+  for (const k of ['hero_title', 'hero_text', 'hero_image', 'hero_link', 'hero_button', 'contact_address', 'contact_phone', 'contact_email', 'social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube']) await setSetting(c.env.DB, k, String(f.get(k) ?? '').trim());
   const notice = sanitizeHtml(String(f.get('notice') ?? '')).trim();
   await setSetting(c.env.DB, 'notice', plainText(notice) ? notice : '');
   await logRevision(c.env.DB, 'settings', 0, c.get('user')!.id, 'update', Object.fromEntries(f));
