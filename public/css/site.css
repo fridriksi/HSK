@@ -193,7 +193,9 @@ a .icon:last-child:not(:first-child) { margin-inline: .3em 0; }
 .club-grid strong { display: block; }
 .club-grid small { color: var(--muted); }
 .club-logo { flex: none; width: 52px; height: 52px; display: grid; place-items: center; background: var(--tint); color: var(--blue); font: 800 .9rem var(--display); border-radius: 50%; overflow: hidden; }
-.club-logo img { width: 100%; height: 100%; object-fit: contain; }
+.club-logo img { max-width: 52px; max-height: 52px; width: auto; height: auto; object-fit: contain; display: block; }
+/* Merki fá að njóta sín í heild: enginn hringur sem sker horn eða brúnir af */
+.club-logo:has(img) { border-radius: 0; background: none; overflow: visible; }
 .club-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 40px; padding-block: 28px 48px; }
 .club-card img { max-width: 160px; margin-bottom: 16px; }
 .club-card .facts-list { grid-template-columns: 1fr; }
